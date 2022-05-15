@@ -41,7 +41,7 @@ namespace psycho_clinic.AppInfrastructure.Middleware
             return parts.Length <= 1 ? null : parts[1];
         }
 
-        public const string ApiTokenCookieName = "Patient-Token";
+        private const string ApiTokenCookieName = "Patient-Token";
 
         private readonly IAuthenticator authenticator;
         private readonly RequestDelegate next;

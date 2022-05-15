@@ -1,4 +1,4 @@
-﻿namespace psycho_clinic.Requests
+﻿namespace psycho_clinic.Models
 {
     public class TreatmentProcedure
     {

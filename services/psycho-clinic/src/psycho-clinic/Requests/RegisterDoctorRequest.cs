@@ -1,7 +1,7 @@
-﻿using psycho_clinic;
-using psycho_clinic.Models;
+﻿using psycho_clinic.Models;
 
-namespace psycho
+namespace psycho_clinic.Requests
 {
-    public record RegisterDoctorRequest(DoctorId Id, string Name, string ProcedureDescription, EducationLevel EducationLevel);
+    public record RegisterDoctorRequest(DoctorId Id, string Name, string ProcedureDescription,
+        EducationLevel EducationLevel);
 }

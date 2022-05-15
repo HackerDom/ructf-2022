@@ -11,8 +11,8 @@ namespace psycho_clinic
     {
         public static async Task Main()
         {
-            var appDataPath = ServiceSettings.AppPrefix;
-            var storageDataPath = ServiceSettings.StorageDataPrefix;
+            var appDataPath = ClinicSettings.AppPrefix;
+            var storageDataPath = ClinicSettings.StorageDataPrefix;
 
             if (!Directory.Exists(appDataPath))
                 Directory.CreateDirectory(appDataPath);
@@ -23,18 +23,9 @@ namespace psycho_clinic
             if (!File.Exists(path))
                 File.Create(path);
 
-            /*var tp = new[]
-            {
-                new TreatmentProcedure(new TreatmentProcedureId(Guid.NewGuid()), new PatientId(Guid.NewGuid()),
-                    new DoctorId(Guid.NewGuid()), ProcedureType.First),
-                new TreatmentProcedure(new TreatmentProcedureId(Guid.NewGuid()), new PatientId(Guid.NewGuid()),
-                    new DoctorId(Guid.NewGuid()), ProcedureType.Second),
-            };*/
-
-
             var host = new VostokHost(
                 new VostokHostSettings(
-                    new ServiceApplication(),
+                    new ClinicApplication(),
                     SetUpEnvironment)
             );
 
@@ -58,7 +49,7 @@ namespace psycho_clinic
                 .SetupLog(logBuilder => logBuilder.SetupFileLog(fileLogBuilder =>
                     fileLogBuilder.CustomizeSettings(settings =>
                     {
-                        settings.FilePath = Path.Combine(ServiceSettings.AppPrefix, "logs", "log");
+                        settings.FilePath = Path.Combine(ClinicSettings.AppPrefix, "logs", "log");
                         settings.RollingStrategy.Type = RollingStrategyType.BySize;
                         settings.RollingStrategy.MaxSize = 1024 * 8;
                         settings.RollingStrategy.MaxFiles = 10; //TODO: save first file
@@ -66,7 +57,7 @@ namespace psycho_clinic
                 .SetupConfiguration(
                     config =>
                     {
-                        config.AddInMemoryObject(new ServiceSettings
+                        config.AddInMemoryObject(new ClinicSettings
                         {
                             //Path = "asd",
                             //ServiceAdminApiKey = Guid.NewGuid()

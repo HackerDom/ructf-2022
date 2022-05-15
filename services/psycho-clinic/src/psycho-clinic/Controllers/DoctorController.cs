@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using psycho;
 using psycho_clinic.Models;
+using psycho_clinic.Requests;
 using psycho_clinic.Storage;
 
 namespace psycho_clinic.Controllers

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using psycho_clinic.Requests;
-
+using psycho_clinic.Models;
 
 namespace psycho_clinic.Storage
 {
@@ -8,6 +7,7 @@ namespace psycho_clinic.Storage
     {
         bool AddProcedure(PatientId patientId, TreatmentProcedure procedure);
         List<TreatmentProcedure> GetPatientProcedures(PatientId patientId);
+
         bool GetPatientProcedure(PatientId patientId, TreatmentProcedureId procedureId, out TreatmentProcedure procedure);
     }
 }

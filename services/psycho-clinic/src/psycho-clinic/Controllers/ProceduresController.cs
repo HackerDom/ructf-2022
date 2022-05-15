@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using psycho;
 using psycho_clinic.AppInfrastructure;
 using psycho_clinic.Models;
 using psycho_clinic.Requests;
@@ -17,12 +17,13 @@ namespace psycho_clinic.Controllers
         public ProceduresController(
             IProceduresStorage proceduresStorage,
             IContractsStorage contractsStorage,
-            IDoctorsStorage doctorsStorage
-        )
+            IDoctorsStorage doctorsStorage,
+            IReportsStorage<TreatmentProcedureReport> reportsStorage)
         {
             this.proceduresStorage = proceduresStorage;
             this.contractsStorage = contractsStorage;
             this.doctorsStorage = doctorsStorage;
+            this.reportsStorage = reportsStorage;
         }
 
         [HttpPost("prescribe/")]
@@ -60,6 +61,36 @@ namespace psycho_clinic.Controllers
             return Task.FromResult(report);
         }
 
+        [HttpPost("report/create")]
+        public void CreateReport(CreateReportRequest request)
+        {
+            var patient = Context.GetAuthenticatedPatient();
+
+            var (procedureId, doctorId) = request;
+            doctorsStorage.Get(doctorId, out var doctor);
+
+            reportsStorage.Add(
+                new TreatmentProcedureReport(
+                    procedureId,
+                    patient.Id,
+                    doctorId,
+                    new TreatmentProcedureResult(true, "asd")
+                ),
+                Path.Combine(doctor.Name, procedureId.Id.ToString())
+            );
+        }
+
+        [HttpPost("report/")]
+        public async Task<string> GetReport(GetReportRequest request)
+        {
+            var (doctorName, procedureId) = request;
+
+            var report = await reportsStorage.Get(Path.Combine(doctorName, procedureId));
+
+            var result = string.Join("", report);
+            return await Task.FromResult(result);
+        }
+
         private TreatmentProcedureReport PerformProcedure(Patient patient, TreatmentProcedureId procedureId)
         {
             if (!proceduresStorage.GetPatientProcedure(patient.Id, procedureId, out var procedure))
@@ -88,5 +119,6 @@ namespace psycho_clinic.Controllers
         private readonly IProceduresStorage proceduresStorage;
         private readonly IContractsStorage contractsStorage;
         private readonly IDoctorsStorage doctorsStorage;
+        private readonly IReportsStorage<TreatmentProcedureReport> reportsStorage;
     }
 }

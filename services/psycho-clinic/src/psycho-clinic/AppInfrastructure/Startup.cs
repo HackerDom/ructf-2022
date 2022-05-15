@@ -6,10 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using psycho_clinic.AppInfrastructure.Middleware;
-using psycho_clinic.Configuration;
 using psycho_clinic.Extensions;
-using psycho_clinic.Formatting.Rendering;
-using psycho_clinic.Storage;
 using Vostok.Context;
 using Vostok.Hosting.Abstractions;
 using Vostok.Logging.Abstractions;
@@ -57,17 +54,7 @@ namespace psycho_clinic.AppInfrastructure
                         };
                     });
 
-            services.AddSingleton<ILog>(_ => vostokHostingEnvironment.Log);
-            services.AddSingleton<ISettingsProvider>(_ =>
-                new SettingsProvider(vostokHostingEnvironment.ConfigurationProvider));
-            
-            services.AddSingleton<IAuthenticator, Authenticator>();
-            services.AddSingleton<IPatientsStorage, PatientsStorage>();
-            services.AddSingleton<IContractsStorage, ContractsStorage>();
-            services.AddSingleton<IProceduresStorage, ProceduresStorage>();
-            services.AddSingleton<IDoctorsStorage, DoctorsStorage>();
-
-            //DependencyResolution.RegisterDependencies(services, vostokHostingEnvironment);
+            DependencyResolution.RegisterDependencies(services, vostokHostingEnvironment);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -80,13 +67,6 @@ namespace psycho_clinic.AppInfrastructure
             app.UseMiddleware<AuthenticationMiddleware>();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-
-            StartUpdating(app.ApplicationServices);
-        }
-
-        private static void StartUpdating(IServiceProvider serviceProvider)
-        {
-            //serviceProvider.GetService<ISpacePicturesUpdater>().Start();
         }
     }
 

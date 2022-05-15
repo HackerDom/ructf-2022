@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using psycho_clinic.Configuration;
 using psycho_clinic.Extensions;
-using psycho_clinic.Requests;
+using psycho_clinic.Models;
 using Vostok.Commons.Time;
 using Vostok.Logging.Abstractions;
 

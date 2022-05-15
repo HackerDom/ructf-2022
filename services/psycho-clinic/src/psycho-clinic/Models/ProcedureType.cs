@@ -1,4 +1,4 @@
-﻿namespace psycho_clinic
+﻿namespace psycho_clinic.Models
 {
     public enum ProcedureType
     {

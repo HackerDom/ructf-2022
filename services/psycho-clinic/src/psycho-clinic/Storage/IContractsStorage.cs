@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 using psycho_clinic.Models;
 
 namespace psycho_clinic.Storage

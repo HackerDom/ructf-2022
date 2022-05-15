@@ -1,4 +1,6 @@
-﻿namespace psycho_clinic.Requests
+﻿using psycho_clinic.Models;
+
+namespace psycho_clinic.Requests
 {
     public record PrescribeProcedureRequest(
         ContractModel ContractModel,

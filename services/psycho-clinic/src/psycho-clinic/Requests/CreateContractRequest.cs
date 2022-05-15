@@ -1,4 +1,5 @@
 ﻿using System;
+using psycho_clinic.Models;
 
 
 namespace psycho_clinic.Requests

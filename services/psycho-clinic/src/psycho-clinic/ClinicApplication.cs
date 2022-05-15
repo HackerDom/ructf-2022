@@ -15,8 +15,8 @@ using Vostok.Throttling.Config;
 
 namespace psycho_clinic
 {
-    [RequiresConfiguration(typeof(ServiceSettings))]
-    internal class ServiceApplication : VostokAspNetCoreApplication<Startup>
+    [RequiresConfiguration(typeof(ClinicSettings))]
+    internal class ClinicApplication : VostokAspNetCoreApplication<Startup>
     {
         private IPatientsStorage patientsStorage;
         private IContractsStorage contractsStorage;

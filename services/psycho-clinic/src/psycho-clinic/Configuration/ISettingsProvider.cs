@@ -2,6 +2,6 @@
 {
     public interface ISettingsProvider
     {
-        ServiceSettings GetSettings();
+        ClinicSettings GetSettings();
     }
 }

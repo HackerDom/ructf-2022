@@ -7,9 +7,9 @@
             provider = configProvider;
         }
 
-        public ServiceSettings GetSettings()
+        public ClinicSettings GetSettings()
         {
-            return provider.Get<ServiceSettings>();
+            return provider.Get<ClinicSettings>();
         }
 
         private readonly Vostok.Configuration.Abstractions.IConfigurationProvider provider;
