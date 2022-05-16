@@ -1,0 +1,22 @@
+version: '3.3'
+services:
+  psycho_clinic:
+
+    image: psycho_clinic
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+     - "18323:18323"
+    volumes:
+      - data:/app/data
+
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 3G
+          
+volumes:
+    data:
