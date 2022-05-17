@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+option go_package = "hackerdom.com/models";
+
+package models;
+
+// The greeting service definition.
+service Kleptophobia {
+  // Sends a greeting
+  rpc Register (RegisterRequest) returns (RegisterReply) {}
+}
+
+// The request message containing the user's name.
+message RegisterRequest {
+  PrivatePerson person = 1;
+}
+
+// The response message containing the greetings
+message RegisterReply {
+  enum Status {
+    OK = 0;
+    FAIL = 1;
+  }
+  Status status = 1;
+  optional string message = 2;
+}
+
+message PrivatePerson {
+  string first_name = 1;
+  optional string middle_name = 2;
+  string second_name = 3;
+  string username = 4;
+  string password = 5;
+  string diagnosis = 6;
+}
+
+message PublicPerson {
+  string first_name = 1;
+  string second_name = 2;
+  string encrypted_diagnosis = 3;
+}
