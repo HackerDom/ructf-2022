@@ -1,0 +1,25 @@
+<!doctype html>
+
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>افتح يا سمسم</title>
+  <style type="text/css">body,input{font-family:monospace}body{background-image:url(A);background-size:cover;image-rendering:pixelated;color:white;padding:50px}</style>
+</head>
+
+<body>
+  <div>
+    <h1>حفظ</h1>
+    <form method="post">
+      <input type="text" name="secret" size="31" maxlength="31" pattern="[0-9A-Z]+" placeholder="سر" autocomplete="off" required autofocus></input>
+      <input type="submit" value="حفظ">
+    </form>
+  </div>
+  <div>
+    <h1>شاهد</h1>
+    <div id="key">%s</div>
+    <div id="secret">%s</div>
+  </div>
+</body>
+</html>
+
