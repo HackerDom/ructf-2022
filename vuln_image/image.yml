@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: yes
+
+  gather_facts: no
+  pre_tasks:
+    - name: 'Ensure tmp exists'
+      raw: sudo mkdir -p /run/ansible_tmp/
+      changed_when: False
+    - name: 'Ensure tmp dir rights'
+      raw: sudo chmod a+rwx /run/ansible_tmp/
+      changed_when: False
+
+  roles:
+    - { role: base_image, tags: [base] }
+    - bay_cloud_config
+    - { role: nginx, tags: [front] }
+    - { role: service, service_name: scrolls, tags: [scrolls] }
+    - { role: service, service_name: sesame, tags: [sesame] }
+    - { role: service, service_name: keeper, tags: [keeper] }
+    - { role: service, service_name: mumbler, tags: [mumbler] }
+    - { role: service, service_name: mudarabah, tags: [mudarabah] }
+    - { role: service, service_name: carpetradar24, tags: [carpetradar24] }
+    - { role: service, service_name: notary, tags: [notary] }
