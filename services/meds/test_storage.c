@@ -1,6 +1,6 @@
 #include "storage.h"
 
-#define QUEUE_SIZE (TREE_MAXITEMS * 3)
+#define QUEUE_SIZE (TREE_MAXITEMS * 10)
 uuid_t queue[QUEUE_SIZE];
 int queue_idx = 0;
 

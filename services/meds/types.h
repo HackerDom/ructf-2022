@@ -22,7 +22,7 @@ typedef int bool;
 #define min(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
 
 #if DEBUG_ON
-#define DEBUG(...) { printf(__VA_ARGS__); fflush(stdout); }
+#define DEBUG(...) { fprintf(stderr, __VA_ARGS__); fflush(stderr); }
 #else
 #define DEBUG(...) {}
 #endif
