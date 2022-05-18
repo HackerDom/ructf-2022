@@ -7,6 +7,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"kleptophobia/crypto"
 	"kleptophobia/models"
 	"kleptophobia/utils"
 	"time"
@@ -54,8 +55,8 @@ func buildRegisterRequest() *models.RegisterRequest {
 	}
 }
 
-func buildGetPublicInfoRequest() *models.GetPublicInfoRequest {
-	return &models.GetPublicInfoRequest{
+func buildGetByUsernameRequest() *models.GetByUsernameRequest {
+	return &models.GetByUsernameRequest{
 		Username: utils.ReadValue("Username: "),
 	}
 }
@@ -88,7 +89,7 @@ func (cliClient *CliClient) Register() error {
 }
 
 func (cliClient *CliClient) GetPublicInfo() error {
-	getPublicInfoRequest := buildGetPublicInfoRequest()
+	getPublicInfoRequest := buildGetByUsernameRequest()
 
 	return withDefaultContext(func(ctx context.Context) error {
 		getPublicInfoReply, err := (*cliClient.GrpcClient).GetPublicInfo(ctx, getPublicInfoRequest)
@@ -103,6 +104,36 @@ func (cliClient *CliClient) GetPublicInfo() error {
 
 		fmt.Println("\nPublic info: ")
 		fmt.Println(proto.MarshalTextString(getPublicInfoReply.GetPerson()))
+
+		return nil
+	})
+}
+
+func (cliClient *CliClient) GetFullInfo() error {
+	getByUsernameRequest := buildGetByUsernameRequest()
+	password := utils.ReadHiddenValue("Password: ")
+
+	return withDefaultContext(func(ctx context.Context) error {
+		getEncryptedFullInfo, err := (*cliClient.GrpcClient).GetEncryptedFullInfo(ctx, getByUsernameRequest)
+
+		if err != nil {
+			return errors.New("can not get full info: " + err.Error())
+		}
+
+		if getEncryptedFullInfo.Status != models.GetEncryptedFullInfoReply_OK {
+			return errors.New("can not get full info: " + getEncryptedFullInfo.GetMessage())
+		}
+
+		encryptedFullInfo := getEncryptedFullInfo.GetEncryptedFullInfo()
+		fullInfo := crypto.Decrypt(encryptedFullInfo, utils.GetHash(password))
+		var privatePerson models.PrivatePerson
+
+		if err := proto.Unmarshal(fullInfo, &privatePerson); err != nil {
+			return errors.New("invalid username or password")
+		}
+
+		fmt.Println("\nFull info: ")
+		fmt.Println(proto.MarshalTextString(&privatePerson))
 
 		return nil
 	})

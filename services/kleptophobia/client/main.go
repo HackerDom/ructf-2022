@@ -15,12 +15,14 @@ func main() {
 	var commands = map[int64]func() error{
 		1: cliClient.Register,
 		2: cliClient.GetPublicInfo,
+		3: cliClient.GetFullInfo,
 	}
 
 	fmt.Println(commands)
 	for {
 		fmt.Println("1. Registration")
 		fmt.Println("2. Get public info")
+		fmt.Println("3. Get full info")
 		fmt.Println("0. Exit")
 
 		choice := utils.ReadIntValue("Input option number: ")

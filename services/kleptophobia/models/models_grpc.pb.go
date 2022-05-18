@@ -23,7 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type KleptophobiaClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error)
-	GetPublicInfo(ctx context.Context, in *GetPublicInfoRequest, opts ...grpc.CallOption) (*GetPublicInfoReply, error)
+	GetPublicInfo(ctx context.Context, in *GetByUsernameRequest, opts ...grpc.CallOption) (*GetPublicInfoReply, error)
+	GetEncryptedFullInfo(ctx context.Context, in *GetByUsernameRequest, opts ...grpc.CallOption) (*GetEncryptedFullInfoReply, error)
 }
 
 type kleptophobiaClient struct {
@@ -43,9 +44,18 @@ func (c *kleptophobiaClient) Register(ctx context.Context, in *RegisterRequest, 
 	return out, nil
 }
 
-func (c *kleptophobiaClient) GetPublicInfo(ctx context.Context, in *GetPublicInfoRequest, opts ...grpc.CallOption) (*GetPublicInfoReply, error) {
+func (c *kleptophobiaClient) GetPublicInfo(ctx context.Context, in *GetByUsernameRequest, opts ...grpc.CallOption) (*GetPublicInfoReply, error) {
 	out := new(GetPublicInfoReply)
 	err := c.cc.Invoke(ctx, "/models.Kleptophobia/GetPublicInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *kleptophobiaClient) GetEncryptedFullInfo(ctx context.Context, in *GetByUsernameRequest, opts ...grpc.CallOption) (*GetEncryptedFullInfoReply, error) {
+	out := new(GetEncryptedFullInfoReply)
+	err := c.cc.Invoke(ctx, "/models.Kleptophobia/GetEncryptedFullInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +67,8 @@ func (c *kleptophobiaClient) GetPublicInfo(ctx context.Context, in *GetPublicInf
 // for forward compatibility
 type KleptophobiaServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
-	GetPublicInfo(context.Context, *GetPublicInfoRequest) (*GetPublicInfoReply, error)
+	GetPublicInfo(context.Context, *GetByUsernameRequest) (*GetPublicInfoReply, error)
+	GetEncryptedFullInfo(context.Context, *GetByUsernameRequest) (*GetEncryptedFullInfoReply, error)
 	mustEmbedUnimplementedKleptophobiaServer()
 }
 
@@ -68,8 +79,11 @@ type UnimplementedKleptophobiaServer struct {
 func (UnimplementedKleptophobiaServer) Register(context.Context, *RegisterRequest) (*RegisterReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (UnimplementedKleptophobiaServer) GetPublicInfo(context.Context, *GetPublicInfoRequest) (*GetPublicInfoReply, error) {
+func (UnimplementedKleptophobiaServer) GetPublicInfo(context.Context, *GetByUsernameRequest) (*GetPublicInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPublicInfo not implemented")
+}
+func (UnimplementedKleptophobiaServer) GetEncryptedFullInfo(context.Context, *GetByUsernameRequest) (*GetEncryptedFullInfoReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEncryptedFullInfo not implemented")
 }
 func (UnimplementedKleptophobiaServer) mustEmbedUnimplementedKleptophobiaServer() {}
 
@@ -103,7 +117,7 @@ func _Kleptophobia_Register_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _Kleptophobia_GetPublicInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPublicInfoRequest)
+	in := new(GetByUsernameRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -115,7 +129,25 @@ func _Kleptophobia_GetPublicInfo_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/models.Kleptophobia/GetPublicInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KleptophobiaServer).GetPublicInfo(ctx, req.(*GetPublicInfoRequest))
+		return srv.(KleptophobiaServer).GetPublicInfo(ctx, req.(*GetByUsernameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Kleptophobia_GetEncryptedFullInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByUsernameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KleptophobiaServer).GetEncryptedFullInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/models.Kleptophobia/GetEncryptedFullInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KleptophobiaServer).GetEncryptedFullInfo(ctx, req.(*GetByUsernameRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -134,6 +166,10 @@ var Kleptophobia_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPublicInfo",
 			Handler:    _Kleptophobia_GetPublicInfo_Handler,
+		},
+		{
+			MethodName: "GetEncryptedFullInfo",
+			Handler:    _Kleptophobia_GetEncryptedFullInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

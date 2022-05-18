@@ -30,7 +30,7 @@ func (s *server) Register(ctx context.Context, in *models.RegisterRequest) (*mod
 	return &models.RegisterReply{Status: models.RegisterReply_OK}, nil
 }
 
-func (s *server) GetPublicInfo(ctx context.Context, in *models.GetPublicInfoRequest) (*models.GetPublicInfoReply, error) {
+func (s *server) GetPublicInfo(ctx context.Context, in *models.GetByUsernameRequest) (*models.GetPublicInfoReply, error) {
 	person, err := s.dbApi.getPublicInfo(in.Username)
 	if err != nil {
 		msg := "can not get public info: " + err.Error()
@@ -43,6 +43,23 @@ func (s *server) GetPublicInfo(ctx context.Context, in *models.GetPublicInfoRequ
 	return &models.GetPublicInfoReply{
 		Status: models.GetPublicInfoReply_OK,
 		Person: models.PersonRecordToPublic(person),
+	}, nil
+}
+
+func (s *server) GetEncryptedFullInfo(ctx context.Context, in *models.GetByUsernameRequest) (*models.GetEncryptedFullInfoReply, error) {
+	encryptedFullInfo, err := s.dbApi.getEncryptedFullInfo(in.Username)
+	if err != nil {
+		msg := "can not get public info: " + err.Error()
+		return &models.GetEncryptedFullInfoReply{
+			Status:            models.GetEncryptedFullInfoReply_FAIL,
+			Message:           &msg,
+			EncryptedFullInfo: nil,
+		}, nil
+	}
+	return &models.GetEncryptedFullInfoReply{
+		Status:            models.GetEncryptedFullInfoReply_OK,
+		Message:           nil,
+		EncryptedFullInfo: encryptedFullInfo,
 	}, nil
 }
 

@@ -54,3 +54,11 @@ func (dbapi *DBApi) getPublicInfo(username string) (*pb.PersonRecord, error) {
 
 	return &person, nil
 }
+
+func (dbapi *DBApi) getEncryptedFullInfo(username string) ([]byte, error) {
+	person, err := dbapi.getPublicInfo(username)
+	if err != nil {
+		return nil, err
+	}
+	return person.EncryptedPrivatePerson, nil
+}
