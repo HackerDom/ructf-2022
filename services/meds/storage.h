@@ -2,8 +2,8 @@
 
 #include "types.h"
 
-#define TREE_MAXITEMS 10000
-#define TREE_MAXNODES (TREE_MAXITEMS * TREE_MAXITEMS)
+#define TREE_MAXITEMS 10
+#define TREE_MAXNODES 200000
 
 void init_storage(const char* file_path);
 

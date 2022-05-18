@@ -19,3 +19,10 @@ typedef int bool;
 #define MAXSEND 4096
 
 #define max(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
+#define min(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+
+#if DEBUG_ON
+#define DEBUG(...) { printf(__VA_ARGS__); fflush(stdout); }
+#else
+#define DEBUG(...) {}
+#endif
