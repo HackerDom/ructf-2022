@@ -12,8 +12,8 @@ output = subprocess.check_output(
     input='\n'.join(uuids).encode('ascii'),
 ).decode('ascii')
 
-print(output.strip(), math.log2(count	))
+print(output.strip())
 
-# with open("tree/tree.html", "r") as f:
-# 	with open("bin/tree.html", "w") as fout:
-# 		fout.write(f.read().replace("JSON", output))
+with open("tree/tree.html", "r") as f:
+	with open("bin/tree.html", "w") as fout:
+		fout.write(f.read().replace("JSON", output))

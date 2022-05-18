@@ -1,10 +1,9 @@
 #pragma once
 
-#include <uuid/uuid.h>
-
 #include "types.h"
 
-#define TREECAP 1000000
+#define TREE_MAXITEMS 10000
+#define TREE_MAXNODES (TREE_MAXITEMS * TREE_MAXITEMS)
 
 void init_storage(const char* file_path);
 

@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "storage.h"
 
 int main() {
