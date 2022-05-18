@@ -1,4 +1,4 @@
-package main
+package crypto
 
 import (
 	"encoding/binary"
@@ -14,7 +14,7 @@ func performXor(data, result, key []byte) {
 }
 
 func Encrypt(data, key []byte) []byte {
-	resultLen := (len(data) / BlockLength) + BlockLength
+	resultLen := (len(data)/BlockLength)*BlockLength + BlockLength
 	result := make([]byte, resultLen)
 
 	performXor(data, result, key)
@@ -36,8 +36,8 @@ func Decrypt(data, key []byte) []byte {
 }
 
 func main() {
-	data := []byte("Hello world!")
-	key := []byte("key")
+	data := []byte("123")
+	key := []byte("d")
 	mid := Encrypt(data, key)
 	res := Decrypt(mid, key)
 	fmt.Println(data)

@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"google.golang.org/grpc"
-	pb "kleptophobia/models"
+	"kleptophobia/models"
 	"log"
 	"net"
 )
@@ -15,16 +15,35 @@ var (
 )
 
 type server struct {
-	pb.UnimplementedKleptophobiaServer
+	models.UnimplementedKleptophobiaServer
 	dbApi *DBApi
 }
 
-func (s *server) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.RegisterReply, error) {
-	if err := s.dbApi.register(in.Person); err != nil {
-		fmt.Println(err.Error())
-		return nil, err
+func (s *server) Register(ctx context.Context, in *models.RegisterRequest) (*models.RegisterReply, error) {
+	if err := s.dbApi.register(in.Person, in.Password); err != nil {
+		msg := "can not register user: " + err.Error()
+		return &models.RegisterReply{
+			Status:  models.RegisterReply_FAIL,
+			Message: &msg,
+		}, nil
 	}
-	return &pb.RegisterReply{Status: pb.RegisterReply_OK}, nil
+	return &models.RegisterReply{Status: models.RegisterReply_OK}, nil
+}
+
+func (s *server) GetPublicInfo(ctx context.Context, in *models.GetPublicInfoRequest) (*models.GetPublicInfoReply, error) {
+	person, err := s.dbApi.getPublicInfo(in.Username)
+	if err != nil {
+		msg := "can not get public info: " + err.Error()
+		return &models.GetPublicInfoReply{
+			Status:  models.GetPublicInfoReply_FAIL,
+			Message: &msg,
+			Person:  nil,
+		}, nil
+	}
+	return &models.GetPublicInfoReply{
+		Status: models.GetPublicInfoReply_OK,
+		Person: models.PersonRecordToPublic(person),
+	}, nil
 }
 
 func main() {
@@ -37,7 +56,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterKleptophobiaServer(s, &server{dbApi: &dbApi})
+	models.RegisterKleptophobiaServer(s, &server{dbApi: &dbApi})
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

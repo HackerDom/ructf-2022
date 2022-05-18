@@ -8,16 +8,11 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	pb "kleptophobia/models"
+	"kleptophobia/utils"
 )
 
 type DBApi struct {
 	db *gorm.DB
-}
-
-func failOnError(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
 
 func (dbapi *DBApi) init(host string, port int, dbUsername, password, dbname string) {
@@ -28,14 +23,14 @@ func (dbapi *DBApi) init(host string, port int, dbUsername, password, dbname str
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{})
 
-	failOnError(err)
+	utils.FailOnError(err)
 
-	failOnError(db.AutoMigrate(&pb.PrivatePersonRecord{}))
+	utils.FailOnError(db.AutoMigrate(pb.PersonRecord{}))
 	dbapi.db = db
 }
 
-func (dbapi *DBApi) register(person *pb.PrivatePerson) error {
-	privatePersonRecord := pb.ToRecord(person)
+func (dbapi *DBApi) register(person *pb.PrivatePerson, password string) error {
+	privatePersonRecord := pb.PrivatePersonToRecord(person, password)
 	result := dbapi.db.Create(&privatePersonRecord)
 
 	if result.Error != nil {
@@ -48,4 +43,14 @@ func (dbapi *DBApi) register(person *pb.PrivatePerson) error {
 		}
 	}
 	return nil
+}
+
+func (dbapi *DBApi) getPublicInfo(username string) (*pb.PersonRecord, error) {
+	var person pb.PersonRecord
+
+	if res := dbapi.db.Take(&person, "username = ?", username); errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, errors.New("can not found user with username = " + username)
+	}
+
+	return &person, nil
 }
