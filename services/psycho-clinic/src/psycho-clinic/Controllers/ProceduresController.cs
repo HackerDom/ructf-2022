@@ -67,7 +67,7 @@ namespace psycho_clinic.Controllers
             var patient = Context.GetAuthenticatedPatient();
 
             var (procedureId, doctorId) = request;
-            doctorsStorage.Get(doctorId, out var doctor);
+            doctorsStorage.TryGet(doctorId, out var doctor);
 
             reportsStorage.Add(
                 new TreatmentProcedureReport(
@@ -97,7 +97,7 @@ namespace psycho_clinic.Controllers
                 throw new KeyNotFoundException(
                     $"Procedure with id: {procedureId.Id} for patient with id: {patient.Id} was not found");
 
-            if (!doctorsStorage.Get(procedure.DoctorId, out var doctor))
+            if (!doctorsStorage.TryGet(procedure.DoctorId, out var doctor))
                 throw new KeyNotFoundException($"Doctor with id: {procedure.DoctorId} was not found");
 
             return new TreatmentProcedureReport(

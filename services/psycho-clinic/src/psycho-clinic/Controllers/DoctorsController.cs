@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using psycho_clinic.Models;
@@ -9,9 +10,9 @@ namespace psycho_clinic.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class DoctorController
+    public class DoctorsController
     {
-        public DoctorController(IDoctorsStorage storage)
+        public DoctorsController(IDoctorsStorage storage)
         {
             this.storage = storage;
         }
@@ -26,15 +27,28 @@ namespace psycho_clinic.Controllers
             return Task.FromResult(doctor);
         }
 
-        [HttpPost]
-        public Task<Doctor> GetDoctor([FromBody] DoctorId doctorId)
+        [HttpGet]
+        public Task<IEnumerable<DoctorModel>> GetDoctors(int skip)
         {
-            if (!storage.Get(doctorId, out var doctor))
-                throw new KeyNotFoundException($"Doctor with id {doctorId} was not found");
+            var doctors = storage
+                .GetDoctors()
+                .Skip(skip)
+                .Take(Take)
+                .Select(d => new DoctorModel(d.Id, d.Name, d.EducationLevel));
 
-            return Task.FromResult(doctor);
+            return Task.FromResult(doctors);
         }
 
+        [HttpPost]
+        public Task<DoctorModel> GetDoctor([FromBody] DoctorId doctorId)
+        {
+            if (!storage.TryGet(doctorId, out var doctor))
+                throw new KeyNotFoundException($"Doctor with id {doctorId} was not found");
+
+            return Task.FromResult(new DoctorModel(doctor.Id, doctor.Name, doctor.EducationLevel));
+        }
+
+        private const int Take = 10;
         private readonly IDoctorsStorage storage;
     }
 }

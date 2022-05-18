@@ -90,7 +90,10 @@ namespace psycho_clinic.Storage
             var userProcedures = proceduresByPatient.GetOrAdd(patientId,
                 _ => new ConcurrentDictionary<TreatmentProcedureId, TreatmentProcedure>());
 
-            return userProcedures.TryAdd(procedure.Id, procedure);
+            if (!userProcedures.TryAdd(procedure.Id, procedure))
+                throw new Exception($"Procedure with id: {procedure.Id} already exists");
+
+            return true;
         }
 
         private readonly PeriodicalAction action;

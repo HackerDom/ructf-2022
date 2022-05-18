@@ -69,29 +69,19 @@ namespace psycho_clinic.Storage
         public List<Contract> GetPatientContracts(PatientId patientId)
         {
             return contractsByPatient.TryGetValue(patientId, out var contracts)
-                ? contracts.Values.ToList()
+                ? contracts.Select(x => x.Value).ToList()
                 : new List<Contract>();
         }
-
-        /*public IEnumerable<Medicine> GetPossibleMedicines(int skip = 0, int take = 10)
-        {
-            if (take < 1)
-                throw new ArgumentException("Parameter take should be greater then 0");
-            if (skip < 0)
-                throw new ArgumentException("Parameter skip should be greater or equal to 0");
-            take = Math.Min(take, 100);
-
-            //albumIds.Select(x => albums[x]).Select(x => new AlbumEntry(x.Id, x.Name, date)).ToArray();
-
-            return medicines.Select(pair => pair.Value).ToArray();
-        }*/
 
         public bool AddContract(PatientId patientId, Contract contract)
         {
             var userContracts = contractsByPatient.GetOrAdd(patientId,
                 _ => new ConcurrentDictionary<ContractId, Contract>());
 
-            return userContracts.TryAdd(contract.Id, contract);
+            if (!userContracts.TryAdd(contract.Id, contract))
+                throw new Exception($"Contract with id: {contract.Id} already exists");
+
+            return true;
         }
 
         private readonly PeriodicalAction action;

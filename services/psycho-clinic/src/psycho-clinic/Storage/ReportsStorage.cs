@@ -40,8 +40,8 @@ namespace psycho_clinic.Storage
             var path = Path.Combine(folder, name);
 
             var storageDirectory = Path.GetFileName(ClinicSettings.StorageDataPrefix);
-            if (path.Contains(storageDirectory))
-                throw new InvalidOperationException("File path should not contain path to storage");
+            if (path.Contains(storageDirectory, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("File path should not contain path to storage");
 
             return path;
         }

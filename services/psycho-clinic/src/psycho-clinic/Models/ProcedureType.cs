@@ -2,9 +2,8 @@
 {
     public enum ProcedureType
     {
-        //TODO: add types
-        First,
-        Second,
-        Third
+        MedicationInjection,
+        Psychotherapy,
+        Psychoanalysis,
     }
 }

@@ -19,10 +19,6 @@ namespace psycho_clinic
             if (!Directory.Exists(storageDataPath))
                 Directory.CreateDirectory(storageDataPath);
 
-            var path = Path.Combine(storageDataPath, "asd");
-            if (!File.Exists(path))
-                File.Create(path);
-
             var host = new VostokHost(
                 new VostokHostSettings(
                     new ClinicApplication(),
@@ -51,18 +47,9 @@ namespace psycho_clinic
                     {
                         settings.FilePath = Path.Combine(ClinicSettings.AppPrefix, "logs", "log");
                         settings.RollingStrategy.Type = RollingStrategyType.BySize;
-                        settings.RollingStrategy.MaxSize = 1024 * 8;
-                        settings.RollingStrategy.MaxFiles = 10; //TODO: save first file
+                        settings.RollingStrategy.MaxSize = 100 * 1024;
+                        settings.RollingStrategy.MaxFiles = 10;
                     })))
-                .SetupConfiguration(
-                    config =>
-                    {
-                        config.AddInMemoryObject(new ClinicSettings
-                        {
-                            //Path = "asd",
-                            //ServiceAdminApiKey = Guid.NewGuid()
-                        });
-                    })
                 .SetPort(18323);
         }
     }

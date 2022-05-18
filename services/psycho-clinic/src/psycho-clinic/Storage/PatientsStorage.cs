@@ -79,11 +79,6 @@ namespace psycho_clinic.Storage
             return patientsByTokens.TryGetValue(patientToken, out patient);
         }
 
-        public Patient Get(PatientId patientId)
-        {
-            return patients[patientId];
-        }
-
         private Patient AddInternal(Patient patient)
         {
             try

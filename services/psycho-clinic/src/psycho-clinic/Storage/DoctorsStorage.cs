@@ -74,22 +74,20 @@ namespace psycho_clinic.Storage
             return AddInternal(doctor);
         }
 
-        public bool Get(DoctorId doctorId, out Doctor doctor)
+        public IEnumerable<Doctor> GetDoctors()
+        {
+            return doctors.Select(x => x.Value);
+        }
+
+        public bool TryGet(DoctorId doctorId, out Doctor doctor)
         {
             return doctors.TryGetValue(doctorId, out doctor);
         }
 
         private Doctor AddInternal(Doctor doctor)
         {
-            try
-            {
-                if (!doctors.TryAdd(doctor.Id, doctor))
-                    throw new Exception($"Doctor with id: {doctor.Id} already exists.");
-            }
-            finally
-            {
-                //patientsByTokens[doctor.Token] = doctor;
-            }
+            if (!doctors.TryAdd(doctor.Id, doctor))
+                throw new Exception($"Doctor with id: {doctor.Id} already exists.");
 
             return doctor;
         }

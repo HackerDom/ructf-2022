@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,9 +14,10 @@ namespace psycho_clinic.Controllers
     [Route("[controller]")]
     public class ContractsController
     {
-        public ContractsController(IContractsStorage storage)
+        public ContractsController(IContractsStorage storage, IDoctorsStorage doctorsStorage)
         {
             this.storage = storage;
+            this.doctorsStorage = doctorsStorage;
         }
 
         [HttpPost("create/")]
@@ -23,7 +25,10 @@ namespace psycho_clinic.Controllers
         {
             var patient = Context.GetAuthenticatedPatient();
 
-            var (contractId, doctorId, doctorSignature, dateTime) = request; //TODO: check doctor signature
+            var (contractId, doctorId, doctorSignature, dateTime) = request;
+
+            CheckDoctor(doctorId, doctorSignature);
+
             var contract = new Contract(
                 contractId,
                 new ContractInfo(patient.Id, doctorId),
@@ -45,6 +50,16 @@ namespace psycho_clinic.Controllers
             return Task.FromResult(contracts);
         }
 
+        private void CheckDoctor(DoctorId doctorId, DoctorSignature doctorSignature)
+        {
+            if (!doctorsStorage.TryGet(doctorId, out var doctor))
+                throw new KeyNotFoundException($"Doctor with id: {doctorId} does not exist");
+
+            if (!doctor.Signature.Equals(doctorSignature))
+                throw new InvalidOperationException($"Doctor signature is invalid");
+        }
+
         private readonly IContractsStorage storage;
+        private readonly IDoctorsStorage doctorsStorage;
     }
 }
