@@ -5,7 +5,7 @@ uuid_t queue[QUEUE_SIZE];
 int queue_idx = 0;
 
 int main(int argc, char** argv) {
-	init_storage(0);
+	init_storage("data/storage");
 
 	if (!strcmp(argv[1], "hack")) {
 
@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 
 			char buf[256];
 			if (!strcmp("store", op))
-				store_item(uuid, arg, false);
+				store_item(uuid, arg);
 			else if (!strcmp("load", op))
 				printf("loaded: |%s|\n", load_item(uuid, buf));
 			else
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 			}
 			memcpy(queue[queue_idx++], uuid, sizeof(uuid_t));
 
-			store_item(uuid, "foo", false);
+			store_item(uuid, "foo");
 		}
 	}
 
