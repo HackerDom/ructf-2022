@@ -12,7 +12,9 @@ import models_pb2_grpc as pb2_grpc
 from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
 
 from generators import gen_string, gen_int
-import crypto
+from crypto import Cipher
+from crypto_utils import get_hash
+
 
 checker = NewChecker()
 PORT = 50051
@@ -133,8 +135,9 @@ class CryptoChecker(VulnChecker):
                 ec.verdict = Verdict.MUMBLE(message)
                 return ec.verdict
 
-            password_hash = crypto.get_hash(password.encode())
-            raw_private_person = crypto.decrypt(get_encrypted_full_info_response.encryptedFullInfo, password_hash)
+            password_hash = get_hash(password.encode())
+            cipher = Cipher(password_hash)
+            raw_private_person = cipher.decrypt(get_encrypted_full_info_response.encryptedFullInfo)
 
             private_person = pb2.PrivatePerson()
             try:

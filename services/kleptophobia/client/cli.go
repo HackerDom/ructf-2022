@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/proto"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"kleptophobia/crypto"
 	"kleptophobia/models"
 	"kleptophobia/utils"
 	"time"
+
+	"github.com/golang/protobuf/proto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type CliClient struct {
@@ -125,8 +126,13 @@ func (cliClient *CliClient) GetFullInfo() error {
 			return errors.New("can not get full info: " + getEncryptedFullInfo.GetMessage())
 		}
 
+		c := crypto.NewCipher(utils.GetHash(password))
+
 		encryptedFullInfo := getEncryptedFullInfo.GetEncryptedFullInfo()
-		fullInfo := crypto.Decrypt(encryptedFullInfo, utils.GetHash(password))
+		fullInfo, err := c.Decrypt(encryptedFullInfo)
+		if err != nil {
+			return err
+		}
 		var privatePerson models.PrivatePerson
 
 		if err := proto.Unmarshal(fullInfo, &privatePerson); err != nil {

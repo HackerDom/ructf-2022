@@ -1,10 +1,11 @@
 package models
 
 import (
-	"google.golang.org/protobuf/proto"
-	_ "gorm.io/driver/postgres"
 	"kleptophobia/crypto"
 	"kleptophobia/utils"
+
+	"google.golang.org/protobuf/proto"
+	_ "gorm.io/driver/postgres"
 )
 
 type PersonRecord struct {
@@ -21,7 +22,8 @@ func PrivatePersonToRecord(person *PrivatePerson, password string) *PersonRecord
 	utils.FailOnError(err)
 
 	passwordHash := utils.GetHash(password)
-	encryptedPrivatePerson := crypto.Encrypt(data, passwordHash)
+	c := crypto.NewCipher(passwordHash)
+	encryptedPrivatePerson, _ := c.Encrypt(data)
 
 	return &PersonRecord{
 		Username:               person.Username,
