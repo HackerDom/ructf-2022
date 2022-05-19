@@ -26,3 +26,5 @@ typedef int bool;
 #else
 #define DEBUG(...) {}
 #endif
+
+#define reverse_bytes(a) (((a & 0xff) << 24) | ((a & 0xff00) << 8) | ((a & 0xff0000) >> 8) | ((a & 0xff000000) >> 24))

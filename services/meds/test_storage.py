@@ -23,7 +23,7 @@ def call_storage(arg, count):
 	return (output.decode('ascii', errors='replace').strip(), err)
 
 if command == "stats":
-	for count in range(100, 1000, 100):
+	for count in range(9000, 11000, 500):
 		hmax = 0
 		havg = 0
 		runs = 100

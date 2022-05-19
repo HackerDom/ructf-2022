@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 		}
 		memcpy(queue[queue_idx++], uuid, sizeof(uuid_t));
 
-		store_item(uuid, "foo");
+		store_item(uuid, "foo", false);
 	}
 
 	if (!strcmp(argv[1], "height")) {
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 	if (!strcmp(argv[1], "validate")) {
-		int recent_items = min(TREE_MAXITEMS, queue_idx);
+		int recent_items = min(TREE_MAXITEMS - PRELOAD_ITEMS, queue_idx);
 		for (int i = 0; i < recent_items; i++) {
 			DEBUG("!! load recent item #%d\n", i);
 			char buf[256];
