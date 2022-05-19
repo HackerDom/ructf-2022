@@ -5,9 +5,9 @@ option go_package = "hackerdom.com/models";
 package models;
 
 service Kleptophobia {
-  rpc Register (RegisterRequest) returns (RegisterReply) {}
-  rpc GetPublicInfo (GetByUsernameRequest) returns (GetPublicInfoReply) {}
-  rpc GetEncryptedFullInfo (GetByUsernameRequest) returns (GetEncryptedFullInfoReply) {}
+  rpc Register (RegisterReq) returns (RegisterRsp) {}
+  rpc GetPublicInfo (GetByUsernameReq) returns (GetPublicInfoRsp) {}
+  rpc GetEncryptedFullInfo (GetByUsernameReq) returns (GetEncryptedFullInfoRsp) {}
   rpc Ping (PingBody) returns (PingBody) {}
 }
 
@@ -15,11 +15,11 @@ message PingBody {
   string message = 1;
 }
 
-message GetByUsernameRequest {
+message GetByUsernameReq {
     string username = 1;
 }
 
-message GetPublicInfoReply {
+message GetPublicInfoRsp {
     enum Status {
       OK = 0;
       FAIL = 1;
@@ -29,7 +29,7 @@ message GetPublicInfoReply {
     optional PublicPerson person = 3;
 }
 
-message GetEncryptedFullInfoReply {
+message GetEncryptedFullInfoRsp {
     enum Status {
       OK = 0;
       FAIL = 1;
@@ -40,12 +40,12 @@ message GetEncryptedFullInfoReply {
 }
 
 
-message RegisterRequest {
+message RegisterReq {
   PrivatePerson person = 1;
   string password = 2;
 }
 
-message RegisterReply {
+message RegisterRsp {
   enum Status {
     OK = 0;
     FAIL = 1;
