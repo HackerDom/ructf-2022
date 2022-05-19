@@ -56,7 +56,7 @@ async def check_service(request: CheckRequest) -> Verdict:
 
 
 @checker.define_vuln("flag_id is an username")
-class XSSChecker(VulnChecker):
+class CryptoChecker(VulnChecker):
     @staticmethod
     def put(request: PutRequest) -> Verdict:
         with ErrorChecker() as ec:
