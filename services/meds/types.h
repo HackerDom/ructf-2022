@@ -14,6 +14,7 @@
 #define false 0
 
 typedef int bool;
+typedef unsigned char byte;
 
 #define MAXRECV 1024
 #define MAXSEND 4096

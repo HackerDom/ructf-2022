@@ -7,9 +7,9 @@
 
 #define PORT 16780u
 
-int32 create_listener()
+int create_listener()
 {
-	int32 sock = socket(AF_INET, SOCK_STREAM, 0);
+	int sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock < 0)
 	{
 		perror("fuck socket\n");
@@ -38,9 +38,9 @@ int32 create_listener()
 	return sock;
 }
 
-void make_nonblocking(int32 sfd)
+void make_nonblocking(int sfd)
 {
-	uint32 flags = fcntl(sfd, F_GETFL, 0);
+	int flags = fcntl(sfd, F_GETFL, 0);
 
 	if (flags < 0)
 	{
@@ -64,16 +64,16 @@ struct epoll_event events[MAXEVENTS];
 struct client_state {
 	char recvbuf[MAXRECV];
 	char sendbuf[MAXSEND];
-	uint64 transferred;
-	uint32 connected_at;
-	uint64 to_send;
+	int transferred;
+	int connected_at;
+	int to_send;
 };
 struct client_state clients[MAXFDS];
 
 void collect_garbage()
 {
-	uint32 now = time(0);
-	for (uint32 i = 0; i < MAXFDS; i++)
+	int now = time(0);
+	for (int i = 0; i < MAXFDS; i++)
 	{
 		if (clients[i].connected_at && now - clients[i].connected_at > 2)
 		{
@@ -81,19 +81,21 @@ void collect_garbage()
 			clients[i].connected_at = 0;
 			clients[i].transferred = 0;
 			clients[i].to_send = 0;
+			bzero(clients[i].sendbuf, sizeof(clients[i].sendbuf));
+			bzero(clients[i].recvbuf, sizeof(clients[i].recvbuf));
 		}
 	}
 }
 
 void run()
 {
-	int32 listener = create_listener();
+	int listener = create_listener();
 
 	make_nonblocking(listener);
 
 	listen(listener, 100);
 
-	int32 efd = epoll_create1(0);
+	int efd = epoll_create1(0);
 	if (efd < 0)
 	{
 		perror("fuck epoll\n");
@@ -110,9 +112,9 @@ void run()
 
 	while (true)
 	{
-		int32 n = epoll_wait(efd, events, MAXEVENTS, -1);
+		int n = epoll_wait(efd, events, MAXEVENTS, -1);
 
-		int32 i;
+		int i;
 		for (i = 0; i < n; i++)
 		{
 			if ((events[i].events & EPOLLERR) ||
@@ -128,10 +130,10 @@ void run()
 				while (true)
 				{
 					struct sockaddr_in in_addr;
-					int32 in_len = sizeof(in_addr);
+					int in_len = sizeof(in_addr);
 					bzero(&in_addr, in_len);
 					
-					int32 cli = accept(listener, (struct sockaddr *)&in_addr, &in_len);
+					int cli = accept(listener, (struct sockaddr *)&in_addr, &in_len);
 					if (cli < 0)
 					{
 						if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
@@ -175,7 +177,7 @@ void run()
 				if (events[i].events & EPOLLIN)
 				{
 					// printf("Reading from %d\n", cli);
-					uint64 bytes_read = read(cli, 
+					int bytes_read = read(cli, 
 						clients[cli].recvbuf + clients[cli].transferred, 
 						sizeof(clients[cli].recvbuf) - clients[cli].transferred - 1);
 					if (bytes_read == 0)
@@ -186,17 +188,21 @@ void run()
 					clients[cli].transferred += bytes_read;
 					clients[cli].recvbuf[clients[cli].transferred] = 0;
 					// printf("Request from %d, errno = %d:\n%s\n\n", cli, errno, clients[cli].recvbuf);
-					if (process_request(clients[cli].recvbuf, clients[cli].sendbuf, &clients[cli].to_send))
+					if (process_request(clients[cli].recvbuf, clients[cli].sendbuf, &clients[cli].to_send)) {
 						clients[cli].transferred = 0;
+						bzero(clients[i].recvbuf, sizeof(clients[i].recvbuf));
+					}
 				}
 				else if (clients[cli].to_send > 0)
 				{
-					uint64 bytes_written = write(cli, 
+					int bytes_written = write(cli, 
 						clients[cli].sendbuf + clients[cli].transferred, 
 						clients[cli].to_send - clients[cli].transferred);
 					clients[cli].transferred += bytes_written;
-					if (clients[cli].transferred >= clients[cli].to_send || bytes_written == 0)
+					if (clients[cli].transferred >= clients[cli].to_send || bytes_written == 0) {
 						close(cli);
+						bzero(clients[i].sendbuf, sizeof(clients[i].sendbuf));
+					}
 					//printf("Response:\n%s\n\n", clients[cli].sendbuf);
 				}
 			}
@@ -209,7 +215,7 @@ void run()
 
 int main()
 {
-	init_storage();
+	// init_storage();
 
 	run();
 
