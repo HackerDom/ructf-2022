@@ -1,0 +1,26 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Baby, did you forget to take your meds?</title>
+  <style type="text/css">body,input{font-family:monospace}body{background-image:url(A);background-size:cover;image-rendering:pixelated;padding:50px}textarea{resize:none}</style>
+</head>
+
+<body>
+  <div>
+    <h1>Diagnosis</h1>
+    <form method="post" enctype="text/plain">
+      <div>
+        <textarea name="diag" rows="4" cols="50" maxlength="200" required autofocus>%s</textarea>
+      </div>
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+  <div %s>
+    <h1>Prescription</h1>
+    <div id="meds">%s</div>
+  </div>
+</body>
+</html>
+
