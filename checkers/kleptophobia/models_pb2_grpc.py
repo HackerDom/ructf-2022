@@ -16,18 +16,18 @@ class KleptophobiaStub(object):
         """
         self.Register = channel.unary_unary(
                 '/models.Kleptophobia/Register',
-                request_serializer=models__pb2.RegisterRequest.SerializeToString,
-                response_deserializer=models__pb2.RegisterReply.FromString,
+                request_serializer=models__pb2.RegisterReq.SerializeToString,
+                response_deserializer=models__pb2.RegisterRsp.FromString,
                 )
         self.GetPublicInfo = channel.unary_unary(
                 '/models.Kleptophobia/GetPublicInfo',
-                request_serializer=models__pb2.GetByUsernameRequest.SerializeToString,
-                response_deserializer=models__pb2.GetPublicInfoReply.FromString,
+                request_serializer=models__pb2.GetByUsernameReq.SerializeToString,
+                response_deserializer=models__pb2.GetPublicInfoRsp.FromString,
                 )
         self.GetEncryptedFullInfo = channel.unary_unary(
                 '/models.Kleptophobia/GetEncryptedFullInfo',
-                request_serializer=models__pb2.GetByUsernameRequest.SerializeToString,
-                response_deserializer=models__pb2.GetEncryptedFullInfoReply.FromString,
+                request_serializer=models__pb2.GetByUsernameReq.SerializeToString,
+                response_deserializer=models__pb2.GetEncryptedFullInfoRsp.FromString,
                 )
         self.Ping = channel.unary_unary(
                 '/models.Kleptophobia/Ping',
@@ -68,18 +68,18 @@ def add_KleptophobiaServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Register': grpc.unary_unary_rpc_method_handler(
                     servicer.Register,
-                    request_deserializer=models__pb2.RegisterRequest.FromString,
-                    response_serializer=models__pb2.RegisterReply.SerializeToString,
+                    request_deserializer=models__pb2.RegisterReq.FromString,
+                    response_serializer=models__pb2.RegisterRsp.SerializeToString,
             ),
             'GetPublicInfo': grpc.unary_unary_rpc_method_handler(
                     servicer.GetPublicInfo,
-                    request_deserializer=models__pb2.GetByUsernameRequest.FromString,
-                    response_serializer=models__pb2.GetPublicInfoReply.SerializeToString,
+                    request_deserializer=models__pb2.GetByUsernameReq.FromString,
+                    response_serializer=models__pb2.GetPublicInfoRsp.SerializeToString,
             ),
             'GetEncryptedFullInfo': grpc.unary_unary_rpc_method_handler(
                     servicer.GetEncryptedFullInfo,
-                    request_deserializer=models__pb2.GetByUsernameRequest.FromString,
-                    response_serializer=models__pb2.GetEncryptedFullInfoReply.SerializeToString,
+                    request_deserializer=models__pb2.GetByUsernameReq.FromString,
+                    response_serializer=models__pb2.GetEncryptedFullInfoRsp.SerializeToString,
             ),
             'Ping': grpc.unary_unary_rpc_method_handler(
                     servicer.Ping,
@@ -108,8 +108,8 @@ class Kleptophobia(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/models.Kleptophobia/Register',
-            models__pb2.RegisterRequest.SerializeToString,
-            models__pb2.RegisterReply.FromString,
+            models__pb2.RegisterReq.SerializeToString,
+            models__pb2.RegisterRsp.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -125,8 +125,8 @@ class Kleptophobia(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/models.Kleptophobia/GetPublicInfo',
-            models__pb2.GetByUsernameRequest.SerializeToString,
-            models__pb2.GetPublicInfoReply.FromString,
+            models__pb2.GetByUsernameReq.SerializeToString,
+            models__pb2.GetPublicInfoRsp.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -142,8 +142,8 @@ class Kleptophobia(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/models.Kleptophobia/GetEncryptedFullInfo',
-            models__pb2.GetByUsernameRequest.SerializeToString,
-            models__pb2.GetEncryptedFullInfoReply.FromString,
+            models__pb2.GetByUsernameReq.SerializeToString,
+            models__pb2.GetEncryptedFullInfoRsp.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

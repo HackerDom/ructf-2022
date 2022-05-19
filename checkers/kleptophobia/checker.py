@@ -63,27 +63,37 @@ class CryptoChecker(VulnChecker):
             stub = get_stub(request.hostname)
 
             username = gen_string()
+            first_name = gen_string()
+            second_name = gen_string()
+            room = gen_int()
+
             private_person = pb2.PrivatePerson(
-                first_name=gen_string(),
-                second_name=gen_string(),
+                first_name=first_name,
+                second_name=second_name,
                 username=username,
-                room=gen_int(),
+                room=room,
                 diagnosis=request.flag,
             )
 
             password = gen_string()
-            register_request = pb2.RegisterRequest(
+            register_request = pb2.RegisterReq(
                 person=private_person,
                 password=password,
             )
 
             register_response = stub.Register(register_request)
-            if register_response.status != pb2.RegisterReply.Status.OK:
+            if register_response.status != pb2.RegisterRsp.Status.OK:
                 message = f"Not OK response status: {register_response.message}"
                 print(message)
                 return Verdict.MUMBLE(message)
 
-            flag_id = f"{username}:{password}"
+            flag_id = json.dumps({
+                'username': username,
+                'password': password,
+                'first_name': first_name,
+                'second_name': second_name,
+                'room': room,
+            })
 
             ec.verdict = Verdict.OK_WITH_FLAG_ID(username, flag_id)
         return ec.verdict
@@ -91,13 +101,33 @@ class CryptoChecker(VulnChecker):
     @staticmethod
     def get(request: GetRequest) -> Verdict:
         with ErrorChecker() as ec:
-            flag_id = json.loads(request.flag_id)['private_content']
-            username, password = flag_id.strip().split(':')
+            flag_id_json = json.loads(request.flag_id)
+
+            username = flag_id_json['username']
+            password = flag_id_json['password']
 
             stub = get_stub(request.hostname)
-            get_encrypted_full_info_response = stub.GetEncryptedFullInfo(pb2.GetByUsernameRequest(username=username))
 
-            if get_encrypted_full_info_response.status != pb2.GetEncryptedFullInfoReply.Status.OK:
+            get_public_info_rsp = stub.GetPublicInfo(pb2.GetByUsernameReq(username=username))
+            if get_public_info_rsp.status != pb2.GetPublicInfoRsp.Status.OK:
+                message = f"Not OK response status: {get_public_info_rsp.message}"
+                print(message)
+                ec.verdict = Verdict.MUMBLE(message)
+                return ec.verdict
+
+            for field in ['username', 'first_name', 'second_name', 'room']:
+                expected_value = flag_id_json[field]
+                real_value = getattr(get_public_info_rsp.person, field)
+
+                if expected_value != real_value:
+                    print(f"expected and real values for field {field} are different: {real_value} != {expected_value}")
+                    print(f"person: {get_public_info_rsp.person}")
+                    ec.verdict = Verdict.MUMBLE('Wrong public info')
+                    return ec.verdict
+
+            get_encrypted_full_info_response = stub.GetEncryptedFullInfo(pb2.GetByUsernameReq(username=username))
+
+            if get_encrypted_full_info_response.status != pb2.GetEncryptedFullInfoRsp.Status.OK:
                 message = f"Not OK response status: {get_encrypted_full_info_response.message}"
                 print(message)
                 ec.verdict = Verdict.MUMBLE(message)
