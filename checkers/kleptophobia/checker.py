@@ -1,4 +1,5 @@
 #!/usr/bin/env python3.9
+import json
 import sys
 import traceback
 
@@ -8,12 +9,12 @@ from grpc._channel import _InactiveRpcError
 
 import models_pb2 as pb2
 import models_pb2_grpc as pb2_grpc
-from gornilo import CheckRequest, Verdict, Checker, PutRequest, GetRequest
+from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
 
 from generators import gen_string, gen_int
 import crypto
 
-checker = Checker()
+checker = NewChecker()
 PORT = 50051
 
 
@@ -43,7 +44,7 @@ class ErrorChecker:
 
 
 @checker.define_check
-def check_service(request: CheckRequest) -> Verdict:
+async def check_service(request: CheckRequest) -> Verdict:
     with ErrorChecker() as ec:
         stub = get_stub(request.hostname)
         message = gen_string()
@@ -54,66 +55,69 @@ def check_service(request: CheckRequest) -> Verdict:
     return ec.verdict
 
 
-@checker.define_put(vuln_num=1, vuln_rate=1)
-def put_flag(request: PutRequest) -> Verdict:
-    with ErrorChecker() as ec:
-        stub = get_stub(request.hostname)
+@checker.define_vuln("flag_id is an username")
+class XSSChecker(VulnChecker):
+    @staticmethod
+    def put(request: PutRequest) -> Verdict:
+        with ErrorChecker() as ec:
+            stub = get_stub(request.hostname)
 
-        username = gen_string()
-        private_person = pb2.PrivatePerson(
-            first_name=gen_string(),
-            second_name=gen_string(),
-            username=username,
-            room=gen_int(),
-            diagnosis=request.flag,
-        )
+            username = gen_string()
+            private_person = pb2.PrivatePerson(
+                first_name=gen_string(),
+                second_name=gen_string(),
+                username=username,
+                room=gen_int(),
+                diagnosis=request.flag,
+            )
 
-        password = gen_string()
-        register_request = pb2.RegisterRequest(
-            person=private_person,
-            password=password,
-        )
+            password = gen_string()
+            register_request = pb2.RegisterRequest(
+                person=private_person,
+                password=password,
+            )
 
-        register_response = stub.Register(register_request)
-        if register_response.status != pb2.RegisterReply.Status.OK:
-            message = f"Not OK response status: {register_response.message}"
-            print(message)
-            return Verdict.MUMBLE(message)
+            register_response = stub.Register(register_request)
+            if register_response.status != pb2.RegisterReply.Status.OK:
+                message = f"Not OK response status: {register_response.message}"
+                print(message)
+                return Verdict.MUMBLE(message)
 
-        flag_id = f"{username}:{password}"
-        ec.verdict = Verdict.OK(flag_id)
-    return ec.verdict
+            flag_id = f"{username}:{password}"
 
+            ec.verdict = Verdict.OK_WITH_FLAG_ID(username, flag_id)
+        return ec.verdict
 
-@checker.define_get(vuln_num=1)
-def get_flag(request: GetRequest) -> Verdict:
-    with ErrorChecker() as ec:
-        username, password = request.flag_id.strip().split(':')
+    @staticmethod
+    def get(request: GetRequest) -> Verdict:
+        with ErrorChecker() as ec:
+            flag_id = json.loads(request.flag_id)['private_content']
+            username, password = flag_id.strip().split(':')
 
-        stub = get_stub(request.hostname)
-        get_encrypted_full_info_response = stub.GetEncryptedFullInfo(pb2.GetByUsernameRequest(username=username))
+            stub = get_stub(request.hostname)
+            get_encrypted_full_info_response = stub.GetEncryptedFullInfo(pb2.GetByUsernameRequest(username=username))
 
-        if get_encrypted_full_info_response.status != pb2.GetEncryptedFullInfoReply.Status.OK:
-            message = f"Not OK response status: {get_encrypted_full_info_response.message}"
-            print(message)
-            ec.verdict = Verdict.MUMBLE(message)
-            return ec.verdict
+            if get_encrypted_full_info_response.status != pb2.GetEncryptedFullInfoReply.Status.OK:
+                message = f"Not OK response status: {get_encrypted_full_info_response.message}"
+                print(message)
+                ec.verdict = Verdict.MUMBLE(message)
+                return ec.verdict
 
-        password_hash = crypto.get_hash(password.encode())
-        raw_private_person = crypto.decrypt(get_encrypted_full_info_response.encryptedFullInfo, password_hash)
+            password_hash = crypto.get_hash(password.encode())
+            raw_private_person = crypto.decrypt(get_encrypted_full_info_response.encryptedFullInfo, password_hash)
 
-        private_person = pb2.PrivatePerson()
-        try:
-            private_person.ParseFromString(raw_private_person)
-            if private_person.diagnosis != request.flag:
-                print(f"Wrong flag: {private_person.diagnosis} != {request.flag}")
-                ec.verdict = Verdict.CORRUPT('Wrong flag')
+            private_person = pb2.PrivatePerson()
+            try:
+                private_person.ParseFromString(raw_private_person)
+                if private_person.diagnosis != request.flag:
+                    print(f"Wrong flag: {private_person.diagnosis} != {request.flag}")
+                    ec.verdict = Verdict.CORRUPT('Wrong flag')
 
-        except google.protobuf.message.DecodeError:
-            print(f'Incorrect encrypted data: {raw_private_person}')
-            ec.verdict = Verdict.MUMBLE('Incorrect encrypted data')
+            except google.protobuf.message.DecodeError:
+                print(f'Incorrect encrypted data: {raw_private_person}')
+                ec.verdict = Verdict.MUMBLE('Incorrect encrypted data')
 
-    return ec.verdict
+        return ec.verdict
 
 
 if __name__ == '__main__':
