@@ -14,3 +14,5 @@ char * load_item(const uuid_t key, char *buffer);
 
 void dump_tree(int id);
 int get_tree_height(int id);
+
+void generate_key(char* value, uuid_t key);

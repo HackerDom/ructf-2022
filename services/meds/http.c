@@ -27,11 +27,24 @@ bool try_add_char(struct strbuf * buf, char c)
 	return false;
 }
 
+struct request_info {
+	struct strbuf verb;
+	struct strbuf url;
+	struct strbuf body;
+	int content_length;
+};
+
 struct input {
 	char *buffer;
 	int size;
 	int position;
 };
+
+char peek_char(struct input* input) {
+	if (input->position >= input->size)
+		return 0;
+	return input->buffer[input->position];
+}
 
 char consume_char(struct input* input) {
 	if (input->position >= input->size)
@@ -40,17 +53,211 @@ char consume_char(struct input* input) {
 }
 
 enum action {
+	A_SKIP,
 	A_ADD,
 	A_END,
 	A_ABORT
 };
 
-enum action next_char(char c) {
-	if (c >= 'A' && c <= 'Z')
-		return A_ADD;
-	if (c == ' ')
-		return A_END;
-	return A_ABORT;
+enum state {
+	S_NONE,
+	S_WS,
+	S_VERB,
+	S_URL,
+	S_PROTO,
+	S_HEADER_KEY,
+	S_HEADER_VALUE,
+	S_BODY,
+	S_END
+};
+
+#define RS(x) case x: return #x;
+char * render_state(enum state state) {
+	switch (state) {
+		RS(S_NONE)
+		RS(S_WS)
+		RS(S_VERB)
+		RS(S_URL)
+		RS(S_PROTO)
+		RS(S_HEADER_KEY)
+		RS(S_HEADER_VALUE)
+		RS(S_BODY)
+		RS(S_END)
+	}
+	return "<unk>";
+}
+
+struct parsing_info {
+	struct strbuf* buf;
+	int newline_count;
+	bool is_cl;
+	enum state next_state;
+};
+
+bool is_ws(char c) {
+	return c == ' ' || c == '\r' || c == '\n';
+}
+
+enum action next_char(char c, bool init, enum state* state, struct parsing_info* parsing_info, struct request_info* request_info) {
+	switch (*state) {
+		case S_WS:
+			if (init)
+				parsing_info->newline_count = 0;
+			if (c == '\n')
+				parsing_info->newline_count++;
+			if (is_ws(c))
+				return A_SKIP;
+
+			if (parsing_info->next_state == S_NONE)
+				return A_ABORT;
+
+			*state = parsing_info->next_state;
+			return A_END;
+
+		case S_VERB:
+			if (init) {
+				init_strbuf(&request_info->verb, 8);
+				parsing_info->buf = &request_info->verb;
+				parsing_info->next_state = S_URL;
+			}
+			if (c >= 'A' && c <= 'Z')
+				return A_ADD;
+			if (c == ' ') {
+				*state = S_WS;
+				return A_END;
+			}
+			return A_ABORT;
+
+		case S_URL:
+			if (init) {
+				init_strbuf(&request_info->url, 64);
+				parsing_info->buf = &request_info->url;
+				parsing_info->next_state = S_PROTO;
+			}
+			if (c == '/' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '-' || c >= '0' && c <= '9' || c == '.')
+				return A_ADD;
+			if (c == ' ') {
+				*state = S_WS;
+				return A_END;
+			}
+			return A_ABORT;
+
+		case S_PROTO:
+			if (init) {
+				if (parsing_info->newline_count == 1) {
+					*state = S_HEADER_KEY;
+					return A_END;
+				}
+				if (parsing_info->newline_count == 2) {
+					*state = S_BODY;
+					return A_END;
+				}
+				parsing_info->next_state = S_PROTO;
+			}
+			if (c == '/' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '.')
+				return A_SKIP;
+			if (is_ws(c)) {
+				*state = S_WS;
+				return A_END;
+			}
+			return A_ABORT;
+
+		case S_HEADER_KEY:
+			if (init) {
+				parsing_info->next_state = S_HEADER_VALUE;
+			}
+			if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '-' || c == ':')
+				return A_ADD;
+			if (c == ' ') {
+				parsing_info->is_cl = !strcasecmp(parsing_info->buf->data, "Content-Length:");
+				*state = S_WS;
+				return A_END;
+			}
+			return A_ABORT;
+
+		case S_HEADER_VALUE:
+			if (init) {
+				if (parsing_info->newline_count == 1) {
+					*state = S_HEADER_KEY;
+					return A_END;
+				}
+				if (parsing_info->newline_count == 2) {
+					*state = S_BODY;
+					return A_END;
+				}
+				parsing_info->next_state = S_HEADER_VALUE;
+			}
+				
+			if (parsing_info->is_cl) {
+				if (c >= '0' && c <= '9')
+					return A_ADD;
+			}
+			if (is_ws(c)) {
+				if (parsing_info->is_cl)
+					request_info->content_length = atoi(parsing_info->buf->data);
+				*state = S_WS;
+				return A_END;
+			}
+			return A_SKIP;
+
+		case S_BODY:
+			if (init) {
+				init_strbuf(&request_info->body, 512);
+				parsing_info->buf = &request_info->body;
+			}
+			if (parsing_info->buf->length >= request_info->content_length) {
+				*state = S_END;
+				return A_END;
+			}
+			return A_ADD;
+	}
+}
+
+enum parse_result {
+	PR_SUCCESS,
+	PR_INVALID,
+	PR_INCOMPLETE
+};
+
+enum parse_result parse_request(struct input* input, struct request_info* info) {
+	enum state state = S_VERB;
+	
+	struct strbuf default_buf;
+	init_strbuf(&default_buf, 512);
+
+	struct parsing_info parsing_info;
+	parsing_info.buf = &default_buf;
+	parsing_info.newline_count = -1;
+	parsing_info.is_cl = false;
+	parsing_info.next_state = S_NONE;
+	
+	bool init = true;
+
+	while (state != S_END) {
+		char c = peek_char(input);
+		DEBUG("!! consuming c = %c w/ state = %s, init = %d\n", c, render_state(state), init);
+		enum action action = next_char(c, init, &state, &parsing_info, info);
+		DEBUG("!! got action %d\n", action);
+		if (init)
+			init = false;
+		switch (action) {
+			case A_ADD:
+				if (!try_add_char(parsing_info.buf, c))
+					return PR_INVALID;
+			case A_SKIP:
+				consume_char(input);
+				break;
+			case A_END:
+				init = true;
+				init_strbuf(&default_buf, 512);
+				parsing_info.buf = &default_buf;
+				break;
+			default:
+				return c ? PR_INVALID : PR_INCOMPLETE;
+		}
+	}
+
+	return PR_SUCCESS;
 }
 
 
@@ -98,9 +305,9 @@ void redirect(char *response, int *response_length, const char *location)
 		"Connection: close\r\n\r\n", location);
 }
 
-void render_page(char * buffer, const char * key, const char * secret)
+void render_page(char * buffer, const char* key, const char* value)
 {
-	sprintf(buffer, pg_index, key, secret ? secret : "");
+	sprintf(buffer, pg_index, key, value ? value : "");
 }
 
 bool try_send_resource(const char *name, char *response, int *response_length)
@@ -113,67 +320,95 @@ bool try_send_resource(const char *name, char *response, int *response_length)
 	return false;
 }
 
+bool extract_key(struct strbuf* url, uuid_t key) {
+	if (url->length != 37)
+		return false;
+	return uuid_parse(url->data + 1, key) == 0;
+}
+
+bool extract_value(struct strbuf* body, char *value) {
+	const int key_length = 5;
+	if (body->length < key_length + 1 || body->length - key_length > 250)
+		return false;
+	if (strncmp("diag=", body->data, key_length))
+		return false;
+	bzero(value, 256);
+	memcpy(value, body->data + key_length, body->length - key_length);
+	return strlen(value) > 0;
+}
+
 bool process_request(char *request, char *response, int *response_length)
 {
 	DEBUG("RECV: %s\n", request);
 
+	struct input input;
+	input.buffer = request;
+	input.size = MAXRECV;
+	input.position = 0;
+
+	struct request_info info;
+	bzero(&info, sizeof(info));
+
+	enum parse_result result = parse_request(&input, &info); 
+
+	DEBUG("Parsed: %d, verb = %s, url = %s, cl = %d, body = %s\n", result, info.verb.data, info.url.data, info.content_length, info.body.data);
+
+	if (result == PR_INCOMPLETE)
+		return false;
+
 	char page[MAXSEND];
 	bzero(page, sizeof(page));
 
-	// printf("Verb: %s\nUrl: %s\n\n", verb.data, url.data);
+	if (result == PR_SUCCESS) {
 
-	// if (!strcmp("GET", verb.data))
-	// {
-	// 	if (try_send_resource(url.data, response, response_length))
-	// 		return true;
-	// 	char * value = 0;
-	// 	if (url.length == 32)
-	// 		value = load_item(url.data, secret.data);
-	// 	if (!value)
-	// 		value = "";
-	// 	render_page(page, url.data, value);
-	// 	respond(response, response_length, 200, page, "text/html");
-	// 	return true;
-	// }
+		if (!strcmp("GET", info.verb.data))
+		{
+			if (try_send_resource(info.url.data, response, response_length))
+				return true;
+
+			if (!strcmp("/", info.url.data)) {
+				render_page(page, "", 0);
+				respond(response, response_length, 200, page, "text/html");
+				return true;
+			} else {
+				uuid_t key;
+				if (extract_key(&info.url, key)) {
+					char value[256];
+					if (load_item(key, value)) {
+						render_page(page, "", value);
+						respond(response, response_length, 200, page, "text/html");
+						return true;
+					}
+				}
+			}
+
+			respond(response, response_length, 404, 0, "text/html");
+			return true;
+		}
+	}
 	
-	// if (!strcmp("POST", verb.data))
-	// {
-	// 	if (!read_headers(&request, &cl))
-	// 		return false;
-	// 	if (cl.length != 0)
-	// 	{
-	// 		uint64_t content_length = atoll(cl.data);
-	// 		if (strlen(request) < content_length)
-	// 			return false;
-	// 		read_body(request, content_length, &secret);
-	// 	}
-	// 	if (secret.length == 0)
-	// 	{
-	// 		respond(response, response_length, 400, 0, "text/html");
-	// 		return true;
-	// 	}
+	if (!strcmp("POST", info.verb.data))
+	{
+		char value[256];
+		if (extract_value(&info.body, value)) {
 
-	// 	char value[64];
-	// 	char key[64];
-	// 	bzero(key, sizeof(key));
+			uuid_t key;
+			generate_key(value, key);
 
-	// 	int i = 0;
-	// 	for (i = 0; i < 64; i++)
-	// 	{	
-	// 		gen_key(key, i);
+			if (store_item(key, value)) {
+				render_page(page, "", value);
+				
+				char key_str[37];
+				bzero(key_str, sizeof(uuid_t));
+				uuid_unparse_lower(key, key_str);
+				redirect(response, response_length, key_str);
+				return true;
+			}
 
-	// 		if (load_item(key, value))
-	// 			continue;
-
-	// 		store_item(key, secret.data);
-	// 		break;
-	// 	}
-	// 	// fprintf(stderr, "Sending key: %s for secret: %s, i = %d\n", key, secret.data, i);
-
-	// 	render_page(page, key, secret.data);
-	// 	redirect(response, response_length, key);
-	// 	return true;
-	// }
+			respond(response, response_length, 500, 0, "text/html");
+			return true;
+		}
+	}
 
 	respond(response, response_length, 400, 0, "text/html");
 	return true;

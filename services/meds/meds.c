@@ -215,7 +215,7 @@ void run()
 
 int main()
 {
-	// init_storage();
+	init_storage("data/storage");
 
 	run();
 

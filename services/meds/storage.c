@@ -341,3 +341,7 @@ int get_tree_height(int id) {
 		return 0;
 	return 1 + max(get_tree_height(2 * id + 1), get_tree_height(2 * id + 2)); 
 }
+
+void generate_key(char* value, uuid_t key) {
+	uuid_generate_random(key);
+}
