@@ -210,6 +210,8 @@ enum action next_char(char c, bool init, enum state* state, struct parsing_info*
 				*state = S_END;
 				return A_END;
 			}
+			if (!c)
+				return A_ABORT;
 			return A_ADD;
 	}
 }
