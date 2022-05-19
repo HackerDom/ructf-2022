@@ -7,8 +7,11 @@ struct tree_node {
 	char value[256];
 };
 
-int16_t tree[TREE_MAXNODES];
-struct tree_node tree_items[TREE_MAXITEMS];
+struct {
+	int16_t tree[TREE_MAXNODES];
+	struct tree_node tree_items[TREE_MAXITEMS];
+} data;
+
 int16_t next_item;
 int items_count;
 
@@ -24,7 +27,7 @@ char *render_uuid(const uuid_t uuid) {
 }
 
 bool is_empty(int node) {
-	return tree[node] == 0;
+	return data.tree[node] == 0;
 }
 
 bool is_item_empty(struct tree_node* item) {
@@ -34,11 +37,11 @@ bool is_item_empty(struct tree_node* item) {
 struct tree_node* get_item(int index) {
 	if (index < 1 || index > TREE_MAXITEMS)
 		return 0;
-	return &tree_items[index - 1];
+	return &data.tree_items[index - 1];
 }
 
 bool is_protected(int node) {
-	return get_item(tree[node])->protected;
+	return get_item(data.tree[node])->protected;
 }
 
 const uuid_t max_uuid = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
@@ -95,8 +98,8 @@ void prefill_storage(int depth, const uuid_t lower, const uuid_t upper) {
 
 
 void init_storage(const char* file_path) {
-	bzero(tree, sizeof(tree));
-	bzero(tree_items, sizeof(tree_items));
+	bzero(data.tree, sizeof(data.tree));
+	bzero(data.tree_items, sizeof(data.tree_items));
 	next_item = 0;
 	items_count = 0;
 	most_recent_key = 0;
@@ -111,10 +114,10 @@ int find_node(const uuid_t key, int root) {
 	if (root >= TREE_MAXNODES)
 		DEBUG("!! trying to access OOB node %d\n", root);
 
-	if (is_empty(root))
+	if (is_empty(root) || root >= TREE_MAXNODES)
 		return root;
 
-	int result = memcmp(key, get_item(tree[root])->key, sizeof(uuid_t));
+	int result = memcmp(key, get_item(data.tree[root])->key, sizeof(uuid_t));
 
 	if (result == 0)
 		return root;
@@ -127,12 +130,12 @@ void remove_children(int root, struct tree_node* children, int* children_count) 
 	if (is_empty(root))
 		return;
 
-	struct tree_node* item = get_item(tree[root]);
-	DEBUG("!! deleting item %d (node %d) ~ %s\n", tree[root], root, render_uuid(item->key));
+	struct tree_node* item = get_item(data.tree[root]);
+	DEBUG("!! deleting item %d (node %d) ~ %s\n", data.tree[root], root, render_uuid(item->key));
 
 	memcpy(&children[(*children_count)++], item, sizeof(struct tree_node));
 	bzero(item, sizeof(struct tree_node));
-	tree[root] = 0;
+	data.tree[root] = 0;
 	items_count--;
 
 	remove_children(2 * root + 1, children, children_count);
@@ -171,7 +174,7 @@ int16_t allocate_item() {
 	int16_t item;
 	for (int i = 0; i < TREE_MAXITEMS; i++) {
 		item = (next_item + i) % TREE_MAXITEMS;
-		if (is_item_empty(&tree_items[item]))
+		if (is_item_empty(&data.tree_items[item]))
 			break;
 	}
 	next_item = (item + 1) % TREE_MAXITEMS;
@@ -200,12 +203,12 @@ char * _store_item(const uuid_t key, const char *value, bool protect) {
 			delete_item(find_oldest_node());
 			return _store_item(key, value, protect);
 		}
-		tree[node] = allocate_item();
+		data.tree[node] = allocate_item();
 	}
 
-	DEBUG("!! storing %s to item %d (node %d)\n", render_uuid(key), tree[node], node);
+	DEBUG("!! storing %s to item %d (node %d)\n", render_uuid(key), data.tree[node], node);
 
-	struct tree_node* item = get_item(tree[node]);
+	struct tree_node* item = get_item(data.tree[node]);
 	item->my_node = node;
 	item->protected |= protect;
 	memcpy(item->key, key, sizeof(uuid_t));
@@ -223,11 +226,11 @@ char * store_item(const uuid_t key, const char *value, bool protect) {
 char * load_item(const uuid_t key, char *buffer) {
 	int node = find_node(key, 0);
 
-	DEBUG("!! loading %s from item %d (node %d)\n", render_uuid(key), tree[node], node);
+	DEBUG("!! loading %s from item %d (node %d)\n", render_uuid(key), data.tree[node], node);
 
 	if (is_empty(node))
 		return 0;
-	return strcpy(buffer, get_item(tree[node])->value);
+	return strcpy(buffer, get_item(data.tree[node])->value);
 }
 
 void dump_tree(int id) {
@@ -235,7 +238,7 @@ void dump_tree(int id) {
 		return;
 
     char uuid_str[37];
-    uuid_unparse_lower(get_item(tree[id])->key, uuid_str);
+    uuid_unparse_lower(get_item(data.tree[id])->key, uuid_str);
     uuid_str[7] = 0;
 
     printf("{text:{name:\"%s\"},children:[", uuid_str);
@@ -248,4 +251,16 @@ int get_tree_height(int id) {
 	if (id >= TREE_MAXNODES || is_empty(id))
 		return 0;
 	return 1 + max(get_tree_height(2 * id + 1), get_tree_height(2 * id + 2)); 
+}
+
+void dump_mem() {
+	printf("tree start: %p\n", &data.tree);
+	printf("tree end: %p\n", &data.tree[TREE_MAXNODES]);
+	printf("tree_items start: %p\n", data.tree_items);
+
+	char* start = (char *)&data.tree[TREE_MAXNODES + 12];
+	for (int i = 0; i < 1024; i++) {
+		printf("%02x ", (uint32_t)start[i]);
+	}
+	printf("\n");
 }

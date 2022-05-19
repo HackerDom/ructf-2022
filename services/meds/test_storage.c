@@ -7,23 +7,51 @@ int queue_idx = 0;
 int main(int argc, char** argv) {
 	init_storage(0);
 
-	char key[37];
-	while (fgets(key, 37, stdin)) {
-		if (strlen(key) != 36)
-			continue;
+	if (!strcmp(argv[1], "hack")) {
 
-		uuid_t uuid;
-		uuid_parse(key, uuid);
+		char op[10];
+		char key[37];
+		char arg[30];
+		while (scanf("%s %s %s\n", op, key, arg) != EOF) {
+			if (strlen(key) != 36)
+				continue;
 
-		DEBUG("!! store item: %s\n", key);
+			printf(".. %s %s %s\n", op, key, arg);
 
-		if (queue_idx == QUEUE_SIZE) {
-			printf("Too many items\n");
-			return 1;
+			uuid_t uuid;
+			uuid_parse(key, uuid);
+
+			char buf[256];
+			if (!strcmp("store", op))
+				store_item(uuid, arg, false);
+			else if (!strcmp("load", op))
+				printf("loaded: |%s|\n", load_item(uuid, buf));
+			else
+				printf("what? %s\n", op);
 		}
-		memcpy(queue[queue_idx++], uuid, sizeof(uuid_t));
 
-		store_item(uuid, "foo", false);
+		return 0;
+	}
+
+	{
+		char key[37];
+		while (fgets(key, 37, stdin)) {
+			if (strlen(key) != 36)
+				continue;
+
+			uuid_t uuid;
+			uuid_parse(key, uuid);
+
+			DEBUG("!! store item: %s\n", key);
+
+			if (queue_idx == QUEUE_SIZE) {
+				printf("Too many items\n");
+				return 1;
+			}
+			memcpy(queue[queue_idx++], uuid, sizeof(uuid_t));
+
+			store_item(uuid, "foo", false);
+		}
 	}
 
 	if (!strcmp(argv[1], "height")) {
