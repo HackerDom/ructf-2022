@@ -1,6 +1,6 @@
 version: '2.2'
 services:
-  sesame:
+  meds:
     build: .
     restart: "always"
     stop_grace_period: 1s
@@ -12,6 +12,6 @@ services:
         soft: 12000
         hard: 12000
     ports:
-      - "4280:4280"
+      - "16780:16780"
     volumes:
       - "./volumes/service/:/app/data/"
