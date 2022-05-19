@@ -1,4 +1,5 @@
 #include "storage.h"
+#include "farmhash_adapter.h"
 
 enum store_flags {
 	ST_NONE       = 0x00,
@@ -343,5 +344,5 @@ int get_tree_height(int id) {
 }
 
 void generate_key(const value_t value, uuid_t key) {
-	uuid_generate_random(key);
+	fingerprint128(value, key);
 }
