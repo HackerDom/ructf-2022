@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -66,4 +67,14 @@ func InitConfig[T proto.Message](filename string, config T) {
 
 	err = protojson.Unmarshal(rawConfig, config)
 	FailOnError(err)
+}
+
+var alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
+func RandString(ln int) string {
+	res := make([]rune, ln)
+	for i := range res {
+		res[i] = alphabet[rand.Intn(len(alphabet))]
+	}
+	return string(res)
 }

@@ -139,3 +139,23 @@ func (cliClient *CliClient) GetFullInfo() error {
 		return nil
 	})
 }
+
+func (cliClient *CliClient) Ping() error {
+	return withDefaultContext(func(ctx context.Context) error {
+		message := utils.RandString(10)
+		pingResponse, err := (*cliClient.GrpcClient).Ping(ctx, &models.PingBody{Message: message})
+		if err != nil {
+			return err
+		}
+
+		if pingResponse == nil {
+			return errors.New("ping response is nil")
+		}
+
+		if pingResponse.Message != message {
+			return errors.New("ping messages are different: " + message + " and " + pingResponse.Message)
+		}
+
+		return nil
+	})
+}

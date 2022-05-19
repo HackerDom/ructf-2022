@@ -17,7 +17,12 @@ func main() {
 	utils.InitConfig[*models.ClientConfig](*configFilename, &clientConfig)
 
 	var cliClient CliClient
-	cliClient.init(&clientConfig)
+	closable := cliClient.init(&clientConfig)
+	defer closable.Close()
+
+	if err := cliClient.Ping(); err != nil {
+		panic("can not start client, ping request is not successful: " + err.Error())
+	}
 
 	var commands = map[int64]func() error{
 		1: cliClient.Register,
@@ -30,12 +35,12 @@ func main() {
 		},
 	}
 
-	fmt.Println(commands)
 	for {
 		fmt.Println("1. Registration")
 		fmt.Println("2. Get public info")
 		fmt.Println("3. Get full info")
 		fmt.Println("0. Exit")
+		fmt.Println()
 
 		choice := utils.ReadIntValue("Input option number: ")
 		cmd, ok := commands[choice]
@@ -44,6 +49,8 @@ func main() {
 			log.Println("Wrong option number")
 			continue
 		}
+
+		fmt.Println()
 
 		if err := cmd(); err != nil {
 			log.Println("Can not perform command: " + err.Error())

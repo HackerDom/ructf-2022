@@ -8,6 +8,11 @@ service Kleptophobia {
   rpc Register (RegisterRequest) returns (RegisterReply) {}
   rpc GetPublicInfo (GetByUsernameRequest) returns (GetPublicInfoReply) {}
   rpc GetEncryptedFullInfo (GetByUsernameRequest) returns (GetEncryptedFullInfoReply) {}
+  rpc Ping (PingBody) returns (PingBody) {}
+}
+
+message PingBody {
+  string message = 1;
 }
 
 message GetByUsernameRequest {

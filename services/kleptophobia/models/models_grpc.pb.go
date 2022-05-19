@@ -25,6 +25,7 @@ type KleptophobiaClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error)
 	GetPublicInfo(ctx context.Context, in *GetByUsernameRequest, opts ...grpc.CallOption) (*GetPublicInfoReply, error)
 	GetEncryptedFullInfo(ctx context.Context, in *GetByUsernameRequest, opts ...grpc.CallOption) (*GetEncryptedFullInfoReply, error)
+	Ping(ctx context.Context, in *PingBody, opts ...grpc.CallOption) (*PingBody, error)
 }
 
 type kleptophobiaClient struct {
@@ -62,6 +63,15 @@ func (c *kleptophobiaClient) GetEncryptedFullInfo(ctx context.Context, in *GetBy
 	return out, nil
 }
 
+func (c *kleptophobiaClient) Ping(ctx context.Context, in *PingBody, opts ...grpc.CallOption) (*PingBody, error) {
+	out := new(PingBody)
+	err := c.cc.Invoke(ctx, "/models.Kleptophobia/Ping", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KleptophobiaServer is the server API for Kleptophobia service.
 // All implementations must embed UnimplementedKleptophobiaServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type KleptophobiaServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
 	GetPublicInfo(context.Context, *GetByUsernameRequest) (*GetPublicInfoReply, error)
 	GetEncryptedFullInfo(context.Context, *GetByUsernameRequest) (*GetEncryptedFullInfoReply, error)
+	Ping(context.Context, *PingBody) (*PingBody, error)
 	mustEmbedUnimplementedKleptophobiaServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedKleptophobiaServer) GetPublicInfo(context.Context, *GetByUser
 }
 func (UnimplementedKleptophobiaServer) GetEncryptedFullInfo(context.Context, *GetByUsernameRequest) (*GetEncryptedFullInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEncryptedFullInfo not implemented")
+}
+func (UnimplementedKleptophobiaServer) Ping(context.Context, *PingBody) (*PingBody, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
 func (UnimplementedKleptophobiaServer) mustEmbedUnimplementedKleptophobiaServer() {}
 
@@ -152,6 +166,24 @@ func _Kleptophobia_GetEncryptedFullInfo_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Kleptophobia_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingBody)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KleptophobiaServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/models.Kleptophobia/Ping",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KleptophobiaServer).Ping(ctx, req.(*PingBody))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Kleptophobia_ServiceDesc is the grpc.ServiceDesc for Kleptophobia service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var Kleptophobia_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEncryptedFullInfo",
 			Handler:    _Kleptophobia_GetEncryptedFullInfo_Handler,
+		},
+		{
+			MethodName: "Ping",
+			Handler:    _Kleptophobia_Ping_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

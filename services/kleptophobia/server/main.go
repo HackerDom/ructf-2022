@@ -60,6 +60,10 @@ func (s *server) GetEncryptedFullInfo(ctx context.Context, in *models.GetByUsern
 	}, nil
 }
 
+func (s *server) Ping(ctx context.Context, in *models.PingBody) (*models.PingBody, error) {
+	return in, nil
+}
+
 func main() {
 	configFilename := flag.String("config", "dev_config.json", "server config")
 	flag.Parse()
