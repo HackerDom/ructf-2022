@@ -25,7 +25,7 @@ except FileExistsError:
     print("Remove ./tokens_hashed_dev dir first")
     sys.exit(1)
 
-for i in range(1, N+1):
+for i in range(1, N):
     token = gentoken(i)
     token_hashed = hashlib.sha256(token.encode()).hexdigest()
     open("tokens_dev/%d.txt" % i, "w").write(token + "\n")

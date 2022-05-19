@@ -1,9 +1,9 @@
 import os
 import sys
 
-N = 64
+N = 768
 
-SERVER = "team%d.ctf.hitb.org"
+SERVER = "team%d.cloud.ructfe.org"
 
 CLIENT_DATA = """client
 tls-client
@@ -48,7 +48,7 @@ except FileExistsError:
     print("Remove ./client_entergame_dev dir first")
     sys.exit(1)
 
-for i in range(1, N+1):
+for i in range(1, N):
     ca = open("net_certs_dev/team%d-net/ca.crt" % i).read().strip()
     cert = open("net_certs_dev/team%d-net/issued/team%d-client.crt" % (i, i)).read().strip()
     cert = cert[cert.index("-----BEGIN CERTIFICATE-----"):]

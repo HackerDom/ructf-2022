@@ -1,16 +1,16 @@
 import os
 import sys
 
-N = 64
+N = 768
 
 SERVER_DATA = """mode server
 tls-server
 topology subnet
 port {2}
 
-ifconfig 10.{0}.{1}.190 255.255.255.192
-ifconfig-pool 10.{0}.{1}.129 10.{0}.{1}.189 255.255.255.192
-push "route-gateway 10.{0}.{1}.190"
+ifconfig 10.{0}.{1}.254 255.255.255.128
+ifconfig-pool 10.{0}.{1}.129 10.{0}.{1}.253 255.255.255.128
+push "route-gateway 10.{0}.{1}.254"
 
 cipher AES-128-CBC
 dev team{3}
@@ -60,7 +60,7 @@ except FileExistsError:
     print("Remove ./server_outside_prod dir first")
     sys.exit(1)
 
-for i in range(1, N+1):
+for i in range(1, N):
     dh = open("net_certs_prod/team%d-net/dh.pem" % i).read().strip()
     ca = open("net_certs_prod/team%d-net/ca.crt" % i).read().strip()
     cert = open("net_certs_prod/team%d-net/issued/team%d-server.crt" % (i, i)).read().strip()
