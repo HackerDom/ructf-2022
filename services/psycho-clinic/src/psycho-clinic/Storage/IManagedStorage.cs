@@ -2,11 +2,9 @@
 
 namespace psycho_clinic.Storage
 {
-    public interface IManagedStorage<T>
+    public interface IManagedStorage<T> : IClearableStorage
     {
-        public void Start();
-        public void Stop();
-        public void Initialize(IEnumerable<T> initialElements);
-        public void Dump();
+        void Initialize(IEnumerable<T> initialElements);
+        void Dump();
     }
 }

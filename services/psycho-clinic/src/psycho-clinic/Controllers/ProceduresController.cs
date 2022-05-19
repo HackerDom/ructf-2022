@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using psycho_clinic.AppInfrastructure;
@@ -74,7 +75,7 @@ namespace psycho_clinic.Controllers
                     procedureId,
                     patient.Id,
                     doctorId,
-                    new TreatmentProcedureResult(true, "asd")
+                    new TreatmentProcedureResult(true, string.Empty)
                 ),
                 Path.Combine(doctor.Name, procedureId.Id.ToString())
             );
@@ -83,11 +84,11 @@ namespace psycho_clinic.Controllers
         [HttpPost("report/")]
         public async Task<string> GetReport(GetReportRequest request)
         {
-            var (doctorName, procedureId) = request;
+            var (doctorName, procedureId, skip) = request;
 
             var report = await reportsStorage.Get(Path.Combine(doctorName, procedureId));
 
-            var result = string.Join("", report);
+            var result = string.Join("", report.Skip(skip).Take(Take));
             return await Task.FromResult(result);
         }
 
@@ -120,5 +121,7 @@ namespace psycho_clinic.Controllers
         private readonly IContractsStorage contractsStorage;
         private readonly IDoctorsStorage doctorsStorage;
         private readonly IReportsStorage<TreatmentProcedureReport> reportsStorage;
+
+        private const int Take = 20;
     }
 }

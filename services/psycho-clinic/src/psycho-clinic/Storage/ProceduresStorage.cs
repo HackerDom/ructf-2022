@@ -17,19 +17,30 @@ namespace psycho_clinic.Storage
         public ProceduresStorage(ISettingsProvider settingsProvider, ILog log)
         {
             this.settingsProvider = settingsProvider;
-            action = new PeriodicalAction(() => Dump(), e => log.Error(e), () => 2.Seconds());
+            dumpAction = new PeriodicalAction(() => Dump(), e => log.Error(e), () => 2.Seconds());
+
+            dumpAction = new PeriodicalAction(
+                () => Dump(),
+                e => log.Error(e),
+                () => settingsProvider.GetSettings().StorageDumpPeriod);
+            dropAction = new PeriodicalAction(
+                () => Drop(),
+                e => log.Error(e),
+                () => settingsProvider.GetSettings().StorageDropPeriod, true);
         }
 
         #region Service
 
         public void Start()
         {
-            action.Start();
+            dumpAction.Start();
+            dropAction.Start();
         }
 
         public void Stop()
         {
-            action.Stop();
+            dumpAction.Stop();
+            dropAction.Stop();
         }
 
         public void Dump()
@@ -53,6 +64,14 @@ namespace psycho_clinic.Storage
             }
 
             File.Replace(tmpFileName, dataPath, null);
+        }
+
+        public void Drop()
+        {
+            proceduresByPatient.Clear();
+            proceduresByPatient = new();
+
+            File.Delete(settingsProvider.GetSettings().ProceduresDataPath);
         }
 
         public void Initialize(IEnumerable<TreatmentProcedure>? initialProcedures)
@@ -96,10 +115,11 @@ namespace psycho_clinic.Storage
             return true;
         }
 
-        private readonly PeriodicalAction action;
+        private readonly PeriodicalAction dumpAction;
+        private readonly PeriodicalAction dropAction;
         private readonly ISettingsProvider settingsProvider;
 
-        private readonly ConcurrentDictionary<PatientId, ConcurrentDictionary<TreatmentProcedureId, TreatmentProcedure>>
+        private ConcurrentDictionary<PatientId, ConcurrentDictionary<TreatmentProcedureId, TreatmentProcedure>>
             proceduresByPatient = new();
     }
 }

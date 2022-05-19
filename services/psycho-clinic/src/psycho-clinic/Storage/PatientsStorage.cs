@@ -18,19 +18,28 @@ namespace psycho_clinic.Storage
         {
             this.settingsProvider = settingsProvider;
 
-            action = new PeriodicalAction(() => Dump(), e => log.Error(e), () => 2.Seconds());
+            dumpAction = new PeriodicalAction(
+                () => Dump(),
+                e => log.Error(e),
+                () => settingsProvider.GetSettings().StorageDumpPeriod);
+            dropAction = new PeriodicalAction(
+                () => Drop(),
+                e => log.Error(e),
+                () => settingsProvider.GetSettings().StorageDropPeriod, true);
         }
 
         #region Service
 
         public void Start()
         {
-            action.Start();
+            dumpAction.Start();
+            dropAction.Start();
         }
 
         public void Stop()
         {
-            action.Stop();
+            dumpAction.Stop();
+            dumpAction.Stop();
         }
 
         public void Dump()
@@ -52,6 +61,17 @@ namespace psycho_clinic.Storage
             }
 
             File.Replace(tmpFileName, dataPath, null);
+        }
+
+        public void Drop()
+        {
+            patients.Clear();
+            patientsByTokens.Clear();
+
+            patients = new();
+            patientsByTokens = new();
+
+            File.Delete(settingsProvider.GetSettings().PatientsDataPath);
         }
 
         public void Initialize(IEnumerable<Patient>? initialPatients)
@@ -94,10 +114,11 @@ namespace psycho_clinic.Storage
             return patient;
         }
 
-        private readonly PeriodicalAction action;
+        private readonly PeriodicalAction dumpAction;
+        private readonly PeriodicalAction dropAction;
         private readonly ISettingsProvider settingsProvider;
 
-        private readonly ConcurrentDictionary<PatientId, Patient> patients = new();
-        private readonly ConcurrentDictionary<PatientToken, Patient> patientsByTokens = new();
+        private ConcurrentDictionary<PatientId, Patient> patients = new();
+        private ConcurrentDictionary<PatientToken, Patient> patientsByTokens = new();
     }
 }
