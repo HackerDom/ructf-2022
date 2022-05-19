@@ -43,4 +43,4 @@ def xor(a, b):
 
 
 def get_hash(data):
-    return md5(data).digets()
+    return md5(data).digest()
