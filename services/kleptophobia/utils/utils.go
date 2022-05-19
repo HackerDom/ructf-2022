@@ -5,6 +5,9 @@ import (
 	"crypto/md5"
 	"fmt"
 	"golang.org/x/term"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -55,4 +58,12 @@ func ReadHiddenValue(prompt string) string {
 	password, err := term.ReadPassword(syscall.Stdin)
 	FailOnError(err)
 	return string(password)
+}
+
+func InitConfig[T proto.Message](filename string, config T) {
+	rawConfig, err := ioutil.ReadFile(filename)
+	FailOnError(err)
+
+	err = protojson.Unmarshal(rawConfig, config)
+	FailOnError(err)
 }

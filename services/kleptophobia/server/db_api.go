@@ -7,7 +7,7 @@ import (
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	pb "kleptophobia/models"
+	"kleptophobia/models"
 	"kleptophobia/utils"
 )
 
@@ -15,8 +15,9 @@ type DBApi struct {
 	db *gorm.DB
 }
 
-func (dbapi *DBApi) init(host string, port int, dbUsername, password, dbname string) {
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, dbUsername, password, dbname)
+func (dbapi *DBApi) init(pgConfig *models.PGConfig) {
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		pgConfig.Host, pgConfig.Port, pgConfig.Username, pgConfig.Password, pgConfig.DbName)
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  psqlconn,
@@ -25,12 +26,12 @@ func (dbapi *DBApi) init(host string, port int, dbUsername, password, dbname str
 
 	utils.FailOnError(err)
 
-	utils.FailOnError(db.AutoMigrate(pb.PersonRecord{}))
+	utils.FailOnError(db.AutoMigrate(models.PersonRecord{}))
 	dbapi.db = db
 }
 
-func (dbapi *DBApi) register(person *pb.PrivatePerson, password string) error {
-	privatePersonRecord := pb.PrivatePersonToRecord(person, password)
+func (dbapi *DBApi) register(person *models.PrivatePerson, password string) error {
+	privatePersonRecord := models.PrivatePersonToRecord(person, password)
 	result := dbapi.db.Create(&privatePersonRecord)
 
 	if result.Error != nil {
@@ -45,8 +46,8 @@ func (dbapi *DBApi) register(person *pb.PrivatePerson, password string) error {
 	return nil
 }
 
-func (dbapi *DBApi) getPublicInfo(username string) (*pb.PersonRecord, error) {
-	var person pb.PersonRecord
+func (dbapi *DBApi) getPublicInfo(username string) (*models.PersonRecord, error) {
+	var person models.PersonRecord
 
 	if res := dbapi.db.Take(&person, "username = ?", username); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, errors.New("can not found user with username = " + username)

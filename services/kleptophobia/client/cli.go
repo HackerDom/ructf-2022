@@ -17,8 +17,9 @@ type CliClient struct {
 	GrpcClient *models.KleptophobiaClient
 }
 
-func (cliClient *CliClient) init(addr string) utils.Closable {
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (cliClient *CliClient) init(config *models.ClientConfig) utils.Closable {
+	grpcAddr := fmt.Sprintf("%s:%d", config.GrpcHost, config.GrpcPort)
+	conn, err := grpc.Dial(grpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	utils.FailOnError(err)
 
 	grpcClient := models.NewKleptophobiaClient(conn)

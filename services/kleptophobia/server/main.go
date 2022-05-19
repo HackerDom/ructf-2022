@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"kleptophobia/models"
+	"kleptophobia/utils"
 	"log"
 	"net"
-)
-
-var (
-	port = flag.Int("port", 50051, "The server port")
 )
 
 type server struct {
@@ -64,11 +61,17 @@ func (s *server) GetEncryptedFullInfo(ctx context.Context, in *models.GetByUsern
 }
 
 func main() {
+	configFilename := flag.String("config", "dev_config.json", "server config")
+	flag.Parse()
+
+	var serverConfig models.ServerConfig
+	utils.InitConfig[*models.ServerConfig](*configFilename, &serverConfig)
+
 	dbApi := DBApi{}
-	dbApi.init("localhost", 5432, "myusername", "mypassword", "myusername")
+	dbApi.init(serverConfig.PgConfig)
 
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", serverConfig.GrpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
