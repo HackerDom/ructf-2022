@@ -12,14 +12,13 @@
     <h1>Diagnosis</h1>
     <form method="post" enctype="text/plain">
       <div>
-        <textarea name="diag" rows="4" cols="50" maxlength="250" required autofocus></textarea>
+        <textarea name="diag" rows="4" cols="50" maxlength="200" required autofocus>%s</textarea>
       </div>
       <input type="submit" value="Submit">
     </form>
   </div>
-  <div>
+  <div %s>
     <h1>Prescription</h1>
-    <div id="key">%s</div>
     <div id="meds">%s</div>
   </div>
 </body>

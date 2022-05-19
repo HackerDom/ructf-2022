@@ -1,6 +1,7 @@
 #include "http.h"
 #include "resources.h"
 #include "storage.h"
+#include "diag.h"
 
 struct strbuf
 {
@@ -235,9 +236,8 @@ enum parse_result parse_request(struct input* input, struct request_info* info) 
 
 	while (state != S_END) {
 		char c = peek_char(input);
-		DEBUG("!! consuming c = %c w/ state = %s, init = %d\n", c, render_state(state), init);
+		// DEBUG("!! consuming c = %c w/ state = %s, init = %d\n", c, render_state(state), init);
 		enum action action = next_char(c, init, &state, &parsing_info, info);
-		DEBUG("!! got action %d\n", action);
 		if (init)
 			init = false;
 		switch (action) {
@@ -305,9 +305,26 @@ void redirect(char *response, int *response_length, const char *location)
 		"Connection: close\r\n\r\n", location);
 }
 
-void render_page(char * buffer, const char* key, const char* value)
+void render_page(char * buffer, const char* value, bool has_meds)
 {
-	sprintf(buffer, pg_index, key, value ? value : "");
+	char diag[MAXDIAG + 1];
+	char meds[MAXMEDS];
+	bzero(diag, sizeof(diag));
+	bzero(meds, sizeof(meds));
+
+	if (has_meds) {
+		char *split = strrchr(value, '|');
+		if (split) {
+			strncpy(diag, value, split - value);
+			strcpy(meds, split + 1);
+		} else {
+			strcpy(diag, value);
+		}
+	} else {
+		strcpy(diag, value);
+	}
+
+	sprintf(buffer, pg_index, diag, has_meds ? "" : "hidden", has_meds ? meds : "");
 }
 
 bool try_send_resource(const char *name, char *response, int *response_length)
@@ -326,13 +343,13 @@ bool extract_key(struct strbuf* url, uuid_t key) {
 	return uuid_parse(url->data + 1, key) == 0;
 }
 
-bool extract_value(struct strbuf* body, char *value) {
+bool extract_value(struct strbuf* body, value_t value) {
 	const int key_length = 5;
-	if (body->length < key_length + 1 || body->length - key_length > 250)
+	if (body->length < key_length + 1 || body->length - key_length > MAXDIAG)
 		return false;
 	if (strncmp("diag=", body->data, key_length))
 		return false;
-	bzero(value, 256);
+	bzero(value, sizeof(value_t));
 	memcpy(value, body->data + key_length, body->length - key_length);
 	return strlen(value) > 0;
 }
@@ -367,15 +384,15 @@ bool process_request(char *request, char *response, int *response_length)
 				return true;
 
 			if (!strcmp("/", info.url.data)) {
-				render_page(page, "", 0);
+				render_page(page, "Enter your diagnosis here.", false);
 				respond(response, response_length, 200, page, "text/html");
 				return true;
 			} else {
 				uuid_t key;
 				if (extract_key(&info.url, key)) {
-					char value[256];
+					value_t value;
 					if (load_item(key, value)) {
-						render_page(page, "", value);
+						render_page(page, value, true);
 						respond(response, response_length, 200, page, "text/html");
 						return true;
 					}
@@ -389,14 +406,18 @@ bool process_request(char *request, char *response, int *response_length)
 	
 	if (!strcmp("POST", info.verb.data))
 	{
-		char value[256];
+		value_t value;
 		if (extract_value(&info.body, value)) {
+			char meds[MAXMEDS];
+			prescribe(value, meds);
+			strcat(value, "|");
+			strcat(value, meds);
 
 			uuid_t key;
 			generate_key(value, key);
 
 			if (store_item(key, value)) {
-				render_page(page, "", value);
+				render_page(page, value, true);
 				
 				char key_str[37];
 				bzero(key_str, sizeof(uuid_t));

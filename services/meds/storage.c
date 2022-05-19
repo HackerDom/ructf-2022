@@ -12,7 +12,7 @@ struct tree_node {
 	int my_node;
 	uuid_t key;
 	bool protected;
-	char value[256];
+	value_t value;
 };
 
 struct {
@@ -28,7 +28,7 @@ int most_recent_key;
 
 const char* storage_path;
 
-char * store_item_internal(const uuid_t key, const char *value, enum store_flags flags);
+char *store_item_internal(const uuid_t key, const value_t value, enum store_flags flags);
 
 char *render_uuid(const uuid_t uuid) { // debug only
 	char *s = malloc(37);
@@ -272,7 +272,7 @@ int find_oldest_node() {
 	exit(1);
 }
 
-char * store_item_internal(const uuid_t key, const char *value, enum store_flags flags) {
+char * store_item_internal(const uuid_t key, const value_t value, enum store_flags flags) {
 	if (strlen(value) == 0)
 		return 0;
 
@@ -308,11 +308,11 @@ char * store_item_internal(const uuid_t key, const char *value, enum store_flags
 	return result;
 }
 
-char * store_item(const uuid_t key, const char *value) {
+char * store_item(const uuid_t key, const value_t value) {
 	return store_item_internal(key, value, ST_PERSIST | ST_ADD_RECENT);
 }
 
-char * load_item(const uuid_t key, char *buffer) {
+char * load_item(const uuid_t key, value_t buffer) {
 	int node = find_node(key, 0);
 
 	DEBUG("!! loading %s from item %d (node %d)\n", render_uuid(key), data.tree[node], node);
@@ -342,6 +342,6 @@ int get_tree_height(int id) {
 	return 1 + max(get_tree_height(2 * id + 1), get_tree_height(2 * id + 2)); 
 }
 
-void generate_key(char* value, uuid_t key) {
+void generate_key(const value_t value, uuid_t key) {
 	uuid_generate_random(key);
 }

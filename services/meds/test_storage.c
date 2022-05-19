@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 			uuid_t uuid;
 			uuid_parse(key, uuid);
 
-			char buf[256];
+			value_t buf;
 			if (!strcmp("store", op))
 				store_item(uuid, arg);
 			else if (!strcmp("load", op))
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 		int recent_items = min(TREE_MAXITEMS - PRELOAD_ITEMS, queue_idx);
 		for (int i = 0; i < recent_items; i++) {
 			DEBUG("!! load recent item #%d\n", i);
-			char buf[256];
+			value_t buf;
 			char *val = load_item(queue[--queue_idx], buf);
 			if (val == 0 || strcmp(val, "foo")) {
 				printf("Item mismatch at index -%d\n", i);
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 		}
 		printf("All %d recent items loaded successfully.\n", recent_items);
 		while (queue_idx > 0) {
-			char buf[256];
+			value_t buf;
 			char *val = load_item(queue[--queue_idx], buf);
 			if (val) {
 				printf("A stale item was found at index %d\n", queue_idx);

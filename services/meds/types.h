@@ -15,9 +15,13 @@
 
 typedef int bool;
 typedef unsigned char byte;
+typedef char value_t[256];
 
 #define MAXRECV 1024
 #define MAXSEND 4096
+
+#define MAXMEDS 32
+#define MAXDIAG 200
 
 #define max(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 #define min(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })

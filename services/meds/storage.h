@@ -9,10 +9,10 @@
 
 void init_storage(const char* file_path);
 
-char * store_item(const uuid_t key, const char *value);
-char * load_item(const uuid_t key, char *buffer);
+char * store_item(const uuid_t key, const value_t value);
+char * load_item(const uuid_t key, value_t buffer);
 
 void dump_tree(int id);
 int get_tree_height(int id);
 
-void generate_key(char* value, uuid_t key);
+void generate_key(const value_t value, uuid_t key);
