@@ -28,7 +28,7 @@ func (cliClient *CliClient) init(config *models.ClientConfig) utils.Closable {
 	return conn
 }
 
-func buildRegisterRequest() *models.RegisterRequest {
+func buildRegisterReq() *models.RegisterReq {
 	firstName := utils.ReadValue("First name: ")
 	var middleName *string = nil
 	if val := utils.ReadValue("Middle name (optional): "); val != "" {
@@ -50,14 +50,14 @@ func buildRegisterRequest() *models.RegisterRequest {
 
 	password := utils.ReadHiddenValue("Password: ")
 
-	return &models.RegisterRequest{
+	return &models.RegisterReq{
 		Person:   &privatePerson,
 		Password: password,
 	}
 }
 
-func buildGetByUsernameRequest() *models.GetByUsernameRequest {
-	return &models.GetByUsernameRequest{
+func buildGetByUsernameReq() *models.GetByUsernameReq {
+	return &models.GetByUsernameReq{
 		Username: utils.ReadValue("Username: "),
 	}
 }
@@ -71,17 +71,17 @@ func withDefaultContext(fun WithContextType) error {
 }
 
 func (cliClient *CliClient) Register() error {
-	registerRequest := buildRegisterRequest()
+	registerReq := buildRegisterReq()
 
 	return withDefaultContext(func(ctx context.Context) error {
-		registerReply, err := (*cliClient.GrpcClient).Register(ctx, registerRequest)
+		registerRsp, err := (*cliClient.GrpcClient).Register(ctx, registerReq)
 
 		if err != nil {
 			return errors.New("can not register new user: " + err.Error())
 		}
 
-		if registerReply.Status != models.RegisterReply_OK {
-			return errors.New("can not register new user: " + registerReply.GetMessage())
+		if registerRsp.Status != models.RegisterRsp_OK {
+			return errors.New("can not register new user: " + registerRsp.GetMessage())
 		}
 		fmt.Println("Success!")
 		return nil
@@ -90,38 +90,38 @@ func (cliClient *CliClient) Register() error {
 }
 
 func (cliClient *CliClient) GetPublicInfo() error {
-	getPublicInfoRequest := buildGetByUsernameRequest()
+	getPublicInfoReq := buildGetByUsernameReq()
 
 	return withDefaultContext(func(ctx context.Context) error {
-		getPublicInfoReply, err := (*cliClient.GrpcClient).GetPublicInfo(ctx, getPublicInfoRequest)
+		getPublicInfoRsp, err := (*cliClient.GrpcClient).GetPublicInfo(ctx, getPublicInfoReq)
 
 		if err != nil {
 			return errors.New("can not get public info: " + err.Error())
 		}
 
-		if getPublicInfoReply.Status != models.GetPublicInfoReply_OK {
-			return errors.New("can not get public info: " + getPublicInfoReply.GetMessage())
+		if getPublicInfoRsp.Status != models.GetPublicInfoRsp_OK {
+			return errors.New("can not get public info: " + getPublicInfoRsp.GetMessage())
 		}
 
 		fmt.Println("\nPublic info: ")
-		fmt.Println(proto.MarshalTextString(getPublicInfoReply.GetPerson()))
+		fmt.Println(proto.MarshalTextString(getPublicInfoRsp.GetPerson()))
 
 		return nil
 	})
 }
 
 func (cliClient *CliClient) GetFullInfo() error {
-	getByUsernameRequest := buildGetByUsernameRequest()
+	getByUsernameReq := buildGetByUsernameReq()
 	password := utils.ReadHiddenValue("Password: ")
 
 	return withDefaultContext(func(ctx context.Context) error {
-		getEncryptedFullInfo, err := (*cliClient.GrpcClient).GetEncryptedFullInfo(ctx, getByUsernameRequest)
+		getEncryptedFullInfo, err := (*cliClient.GrpcClient).GetEncryptedFullInfo(ctx, getByUsernameReq)
 
 		if err != nil {
 			return errors.New("can not get full info: " + err.Error())
 		}
 
-		if getEncryptedFullInfo.Status != models.GetEncryptedFullInfoReply_OK {
+		if getEncryptedFullInfo.Status != models.GetEncryptedFullInfoRsp_OK {
 			return errors.New("can not get full info: " + getEncryptedFullInfo.GetMessage())
 		}
 
