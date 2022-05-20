@@ -11,3 +11,8 @@ meds: meds.* storage.* http.* diag.* *.html
 
 test_storage: test_storage.* storage.*
 	gcc-7 test_storage.c storage.c $(FLAGS) -o bin/test_storage -DDEBUG_ON
+
+brute: brute.*
+	g++-7 -c $(ARCH) farmhash.cc -o farmhash.o
+	g++-7 -c $(ARCH) farmhash_adapter.cc -o farmhash_adapter.o
+	gcc-7 brute.c farmhash.o farmhash_adapter.o $(FLAGS) -o bin/brute
