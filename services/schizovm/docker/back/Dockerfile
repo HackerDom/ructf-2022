@@ -1,4 +1,4 @@
-FROM ubuntu:21.10
+FROM ubuntu:20.04
 
 RUN apt update \
     && apt install -y \
@@ -8,8 +8,14 @@ RUN apt update \
         libboost-program-options-dev \
         libpq-dev
 
-COPY backend /
+RUN useradd --no-create-home --shell /bin/false --uid 1000 --user-group schizovm
 
-RUN chmod +x /backend
+RUN mkdir /var/schizovm && chown schizovm:schizovm /var/schizovm
 
-CMD ["/backend"]
+COPY schizovm /
+
+RUN chmod +x /schizovm
+
+USER schizovm
+
+CMD ["/schizovm", "--address", "0.0.0.0", "--port", "31337"]

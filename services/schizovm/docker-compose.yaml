@@ -7,6 +7,8 @@ services:
       context: .
       dockerfile: ./docker/gateway/Dockerfile
     tty: true
+    volumes:
+      - back_data:/var/schizovm
     ports:
       - "15345:15345"
     ulimits:
@@ -25,7 +27,7 @@ services:
       - "5432:5432"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - data:/var/lib/postgresql/data
+      - psql_data:/var/lib/postgresql/data
     mem_limit: 3G
     ulimits:
       nofile:
@@ -38,8 +40,17 @@ services:
     container_name: backend
     build: ./docker/back
     restart: always
+    volumes:
+      - back_data:/var/schizovm
     depends_on:
       - postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: db
+      SVM_STORAGE_PATH: /var/schizovm
     mem_limit: 4G
     ulimits:
       nofile:
@@ -49,4 +60,5 @@ services:
     pids_limit: 1000
 
 volumes:
-  data:
+  psql_data:
+  back_data:

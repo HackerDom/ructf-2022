@@ -3,6 +3,5 @@
 set -uex
 
 make --jobs=9
-cp backend ../docker/back/backend
-strip ../docker/back/backend
-
+cp schizovm ../docker/back/schizovm
+strip ../docker/back/schizovm

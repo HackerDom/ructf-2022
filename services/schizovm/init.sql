@@ -1,8 +1,11 @@
-create table if not exists public.users(
-    id int generated always as identity,
-    login varchar not null unique,
+create table if not exists public.demos(
+    name varchar not null unique,
+    author varchar not null,
+    secret varchar not null,
+    key varchar not null,
+    rom_path varchar not null,
     created_at timestamp not null default now(),
-    password_hash varchar not null,
 
-    primary key (id)
+    primary key (name)
 );
+
