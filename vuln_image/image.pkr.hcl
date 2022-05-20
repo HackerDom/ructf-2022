@@ -13,7 +13,7 @@ variable "api_token" {
 
 source "digitalocean" "vuln_image" {
   droplet_name  = "ructf-2022-{{timestamp}}"
-  snapshot_name = "ructf-2022-{{formatdate(\"EEE, DD MMM YYYY hh:mm:ss ZZZ\", timestamp)}}"
+  snapshot_name = "ructf-2022-{{timestamp}}"
   api_token     = var.api_token
   image         = "ubuntu-20-04-x64"
   region        = "ams3"
