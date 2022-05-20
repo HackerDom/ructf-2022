@@ -1,0 +1,13 @@
+// show user roles privileges and stuff
+https://www.crunchydata.com/blog/postgresql-defaults-and-impact-on-security-part-1
+https://github.com/CrunchyData/crunchy_check_access
+
+git clone https://github.com/CrunchyData/crunchy_check_access.git
+cd crunchy_check_access
+USE_PGXS=1 make install
+create extension check_access;
+
+SELECT *
+FROM all_access()
+WHERE base_role != CURRENT_USER;
+

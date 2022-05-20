@@ -1,10 +1,12 @@
 ## Services
 
 ![kleptophobia](https://github.com/HackerDom/ructf-2022/actions/workflows/check_kleptophobia.yml/badge.svg)
-![meds](https://github.com/HackerDom/ructf-2022/actions/workflows/check_meds_.yml/badge.svg)
-![ambulance](https://github.com/HackerDom/ructf-2022/actions/workflows/check_ambulance_.yml/badge.svg)
-![schizophasia](https://github.com/HackerDom/ructf-2022/actions/workflows/check_schizophasia_.yml/badge.svg)
-![herpetophobia](https://github.com/HackerDom/ructf-2022/actions/workflows/check_herpetophobia_.yml/badge.svg)
+![meds](https://github.com/HackerDom/ructf-2022/actions/workflows/check_meds.yml/badge.svg)
+![ambulance](https://github.com/HackerDom/ructf-2022/actions/workflows/check_ambulance.yml/badge.svg)
+![schizophasia](https://github.com/HackerDom/ructf-2022/actions/workflows/check_schizophasia.yml/badge.svg)
+![schizovm](https://github.com/HackerDom/ructf-2022/actions/workflows/check_schizovm.yml/badge.svg)
+![herpetophobia](https://github.com/HackerDom/ructf-2022/actions/workflows/check_herpetophobia.yml/badge.svg)
+![psycho-clinic](https://github.com/HackerDom/ructf-2022/actions/workflows/check_psycho-clinic.yml/badge.svg)
 
 # RuCTF 2022
 

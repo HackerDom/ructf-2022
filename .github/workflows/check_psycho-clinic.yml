@@ -1,0 +1,52 @@
+
+name: Check psycho-clinic
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/psycho-clinic/**'
+      - 'checkers/psycho-clinic/**'
+  workflow_dispatch:
+    inputs:
+      cleanup_before_deploy:
+        description: 'Stops and fully removes service (with volumes!) before deploying again. Type "yes" to do it.'
+        required: false
+        default: "no"
+jobs:
+  check_psycho-clinic:
+    name: Check psycho-clinic
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    - name: Run prebuilt hook
+      run: if [ -f services/psycho-clinic/before_image_build.sh ]; then (cd ./services/psycho-clinic && ./before_image_build.sh); fi
+    - name: Setup psycho-clinic
+      run: (cd ./services/psycho-clinic && docker-compose pull && docker-compose build && docker-compose up --build -d)
+    - name: Prepare python for checker
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Setup checker libraries
+      run: if [ -f checkers/psycho-clinic/requirements.txt ]; then python -m pip install -r checkers/psycho-clinic/requirements.txt; fi
+    - name: Test checker on service
+      run: (cd ./checkers/psycho-clinic && ./psycho-clinic.checker.py TEST 127.0.0.1)
+  update_psycho-clinic:
+    name: Deploy service using ansible to first teams
+    needs: check_psycho-clinic
+    runs-on: deployer
+    if: ${{ false }} # disable on game just in case
+    steps:
+    #- name: install ansible
+    #  run: sudo apt-get install -y ansible
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    - name: change permission for ssh key
+      run: chmod 0600 ./teams/for_devs.ssh_key
+    - name: Run prebuilt hook
+      run: if [ -f services/psycho-clinic/before_image_build.sh ]; then (cd ./services/psycho-clinic && sudo ./before_image_build.sh); fi
+    - name: update checkers
+      run: cd ./ansible && ansible-playbook cs-checkers.yml
+    - name: deploy psycho-clinic
+      run: cd ./ansible && ansible-playbook --extra-vars cleanup_service=${{ github.event.inputs.cleanup_before_deploy }} -t psycho-clinic -l psycho-clinic deploy-services.yml

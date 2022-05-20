@@ -53,6 +53,8 @@ build {
       # Add users for services
       "useradd -m -s /bin/bash kleptophobia",
       "useradd -m -s /bin/bash meds",
+      "useradd -m -s /bin/bash schizophasia",
+      "useradd -m -s /bin/bash schizovm",
     ]
   }
 
@@ -91,13 +93,27 @@ build {
     destination = "/home/meds/"
   }
 
+  provisioner "file" {
+    source = "../services/schizophasia/"
+    destination = "/home/schizophasia/"
+  }
+
+  provisioner "file" {
+    source = "../services/schizovm/"
+    destination = "/home/schizovm/"
+  }
+
   # Build and run services for the first time
   provisioner "shell" {
     inline = [
       "cd ~kleptophobia",
-      "docker-compose up --build -d",
+      "docker-compose up --build -d || true",
       "cd ~meds",
-      "docker-compose up --build -d",
+      "docker-compose up --build -d || true",
+      "cd ~schizophasia",
+      "docker-compose up --build -d || true",
+      "cd ~schizovm",
+      "docker-compose up --build -d || true",
     ]
   }
 
