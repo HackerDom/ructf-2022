@@ -1,3 +1,8 @@
+## Services
+
+![kleptophobia.yml](https://github.com/HackerDom/ructf-2022/actions/workflows/check_kleptophobia.yml/badge.svg)
+![meds.yml](https://github.com/HackerDom/ructf-2022/actions/workflows/check_meds.yml/badge.svg)
+
 # RuCTF 2022
 
 [RuCTF](https://ructf.org) is an annual online international challenge in the information security.
