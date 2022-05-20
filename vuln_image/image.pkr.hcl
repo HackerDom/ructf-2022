@@ -7,11 +7,16 @@ packer {
   }
 }
 
+locals {
+  truncated_sha = substr(data.git-commit.cwd-head.hash, 0, 8)
+}
+
 variable "api_token" {
   type = string
 }
 
 source "digitalocean" "vuln_image" {
+  image_name   = "image-${local.truncated_sha}"
   api_token    = var.api_token
   image        = "ubuntu-20-04-x64"
   region       = "ams3"
