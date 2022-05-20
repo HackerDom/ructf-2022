@@ -30,7 +30,7 @@ const char* storage_path;
 
 char *store_item_internal(const uuid_t key, const value_t value, enum store_flags flags);
 
-char *render_uuid(const uuid_t uuid) { // debug only
+char *render_uuid(const uuid_t uuid) {
 	char *s = malloc(37);
 	uuid_unparse_lower(uuid, s);
 	return s;
@@ -340,8 +340,4 @@ int get_tree_height(int id) {
 	if (id >= TREE_MAXNODES || is_empty(id))
 		return 0;
 	return 1 + max(get_tree_height(2 * id + 1), get_tree_height(2 * id + 2)); 
-}
-
-void generate_key(const value_t value, uuid_t key) {
-	uuid_generate_random(key);
 }

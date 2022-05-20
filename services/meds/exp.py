@@ -1,18 +1,7 @@
 import random
 import math
 import sys
-
-def compute_path(n):
-	while (n > 2047):
-		if n % 2 == 0:
-			n = (n - 2) // 2
-			print('right', n)
-		else:
-			n = (n - 1) // 2
-			print('left', n)
-
-compute_path(10_000_012)
-exit()
+import subprocess
 
 def insert(tree, item):
 	if item < tree[0]:

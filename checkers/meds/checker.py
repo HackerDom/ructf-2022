@@ -5,6 +5,7 @@ import traceback
 import random
 import string
 import time
+import uuid
 
 from bs4 import BeautifulSoup
 from gornilo import CheckRequest, Verdict, Checker, PutRequest, GetRequest
@@ -20,8 +21,9 @@ def check_service(request: CheckRequest) -> Verdict:
     rand_name = ''.join(random.choice(string.ascii_uppercase) for _ in range(31)) + '='
     diag = get_diagnosis(rand_name)
     meds = get_prescription(diag)
+    key = str(uuid.uuid4())
 
-    url = "http://" + request.hostname + ":16780/"
+    url = "http://" + request.hostname + ":16780/" + key
     try:
         response = requests.post(url, data = "diag=" + diag, allow_redirects = True)
         soup = BeautifulSoup(response.text, features="html.parser")
@@ -40,8 +42,9 @@ def check_service(request: CheckRequest) -> Verdict:
 @checker.define_put(vuln_num=1, vuln_rate=1)
 def put_flag(request: PutRequest) -> Verdict:
     diag = get_diagnosis(request.flag)
+    key = str(uuid.uuid4())
 
-    url = "http://" + request.hostname + ":16780/"
+    url = "http://" + request.hostname + ":16780/" + key
     try:
         for i in range(3):
             response = requests.post(url, data = "diag=" + diag, allow_redirects = False)

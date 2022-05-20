@@ -1,4 +1,5 @@
-FLAGS=-m32 -O2 -std=c11 -luuid -Wl,--strip-all
+ARCH=-m64
+FLAGS=$(ARCH) -O2 -std=c11 -luuid -Wl,--strip-all
 
 meds: meds.* storage.* http.* diag.* *.html
 	python3 embed.py > resources.h

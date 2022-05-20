@@ -416,7 +416,11 @@ bool process_request(char *request, char *response, int *response_length)
 			strcat(value, meds);
 
 			uuid_t key;
-			generate_key(value, key);
+			if (!extract_key(&info.url, key)) {
+				respond(response, response_length, 400, 0, "text/html");
+				return true;
+			}
+			DEBUG("!! extracted key: %s\n", render_uuid(key));
 
 			if (store_item(key, value)) {
 				render_page(page, value, true);
