@@ -2,6 +2,9 @@
 
 ![kleptophobia](https://github.com/HackerDom/ructf-2022/actions/workflows/check_kleptophobia.yml/badge.svg)
 ![meds](https://github.com/HackerDom/ructf-2022/actions/workflows/check_meds_.yml/badge.svg)
+![ambulance](https://github.com/HackerDom/ructf-2022/actions/workflows/check_ambulance_.yml/badge.svg)
+![schizophasia](https://github.com/HackerDom/ructf-2022/actions/workflows/check_schizophasia_.yml/badge.svg)
+![herpetophobia](https://github.com/HackerDom/ructf-2022/actions/workflows/check_herpetophobia_.yml/badge.svg)
 
 # RuCTF 2022
 

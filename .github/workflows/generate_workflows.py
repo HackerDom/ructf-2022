@@ -4,7 +4,13 @@ import os
 ctf_root = os.path.join(os.path.dirname(__file__), '../../')
 services_dir = os.path.join(ctf_root, 'services')
 
-SERVICES = [ d for d in os.listdir(services_dir) if os.path.isdir(os.path.join(services_dir, d)) ]
+SERVICES = [ 
+  'kleptophobia',
+  'meds',
+  'ambulance',
+  'schizophasia',
+  'herpetophobia',
+ ]
 
 TEMPLATE = '''
 name: Check {service}
