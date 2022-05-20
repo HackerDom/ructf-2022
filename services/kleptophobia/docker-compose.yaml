@@ -13,17 +13,14 @@ services:
         hard: 12000
     ports:
       - "50051:50051"
-#    volumes:
-#      - "./volumes/service/:/app/mount/"
   postgres:
     image: postgres:13.2-alpine
     restart: always
     mem_limit: 1G
     memswap_limit: 1G
     pids_limit: 100
-#    volumes:
-#      - data:/var/lib/postgresql/data/
-#      - ./sql/create_schema.sql:/docker-entrypoint-initdb.d/init.sql
+    volumes:
+      - ./data:/var/lib/postgresql/data/
     environment:
       - POSTGRES_PASSWORD=mypassword
       - POSTGRES_USER=myusername
