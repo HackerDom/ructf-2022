@@ -85,7 +85,7 @@ build {
   }
 
   provisioner "file" {
-    source = "../services/meds/"
+    source = "../services/meds/deploy"
     destination = "/home/meds/"
   }
 
