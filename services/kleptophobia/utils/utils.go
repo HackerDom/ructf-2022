@@ -4,9 +4,6 @@ import (
 	"bufio"
 	"crypto/md5"
 	"fmt"
-	"golang.org/x/term"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -15,6 +12,10 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+
+	"golang.org/x/term"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 func GetHash(s string) []byte {
@@ -100,31 +101,4 @@ func RandString(ln int) string {
 		res[i] = alphabet[rand.Intn(len(alphabet))]
 	}
 	return string(res)
-}
-
-type SimpleSet map[byte]bool
-
-func makeSimpleSet(data []byte) *SimpleSet {
-	res := SimpleSet{}
-	for _, v := range data {
-		res[v] = true
-	}
-	return &res
-}
-
-func equals(first, second *SimpleSet) bool {
-	if len(*first) != len(*second) {
-		return false
-	}
-	for k, _ := range *first {
-		_, ok := (*second)[k]
-		if !ok {
-			return false
-		}
-	}
-	return true
-}
-
-func EqualAsSets(first, second []byte) bool {
-	return equals(makeSimpleSet(first), makeSimpleSet(second))
 }

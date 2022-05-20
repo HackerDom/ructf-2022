@@ -3,12 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"kleptophobia/models"
+	"kleptophobia/utils"
+
 	"github.com/jackc/pgconn"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"kleptophobia/models"
-	"kleptophobia/utils"
 )
 
 type DBApi struct {

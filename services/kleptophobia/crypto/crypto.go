@@ -2,10 +2,8 @@ package crypto
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"kleptophobia/utils"
 )
 
 const BlockSize = 16
@@ -23,11 +21,13 @@ func pad(data []byte) []byte {
 }
 
 func unpad(data []byte) ([]byte, error) {
-	padding := data[len(data)-1]
-	if !utils.EqualAsSets(data[-padding:], data[len(data)-1:]) {
-		return nil, errors.New("wrong padding")
+	padding := int(data[len(data)-1])
+	for _, x := range data[len(data)-padding:] {
+		if int(x) != padding {
+			return nil, errors.New("wrong padding")
+		}
 	}
-	return data[:-padding], nil
+	return data[:len(data)-padding], nil
 }
 
 func substitute(data [BlockSize]byte, s [256]byte) [BlockSize]byte {
@@ -180,19 +180,4 @@ func NewCipher(key []byte) Cipher {
 	var goodKey [BlockSize]byte
 	copy(goodKey[:], key)
 	return Cipher{key: goodKey}
-}
-
-func main() {
-	pt := []byte("Hello there! Nice to meet you!")
-	fmt.Printf("PT: %s\n", hex.EncodeToString(pt))
-	var key [BlockSize]byte
-	for i := range key {
-		key[i] = byte(i)
-	}
-	c := Cipher{key: key}
-	ct, _ := c.Encrypt(pt)
-	fmt.Printf("CT: %s\n", hex.EncodeToString(ct))
-	maybePt, _ := c.Decrypt(ct)
-	fmt.Printf("PT? %s\n", hex.EncodeToString(maybePt))
-	fmt.Println(bytes.Compare(pt, maybePt) == 0)
 }

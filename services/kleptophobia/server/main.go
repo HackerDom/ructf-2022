@@ -4,11 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"google.golang.org/grpc"
 	"kleptophobia/models"
 	"kleptophobia/utils"
 	"log"
 	"net"
+
+	"google.golang.org/grpc"
 )
 
 type server struct {

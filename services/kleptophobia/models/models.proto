@@ -56,7 +56,7 @@ message RegisterRsp {
 
 message PrivatePerson {
   string first_name = 1;
-  optional string middle_name = 2;
+  string middle_name = 2;
   string second_name = 3;
   string username = 4;
   uint32 room = 5;

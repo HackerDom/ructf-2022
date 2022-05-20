@@ -38,7 +38,6 @@ class Cipher:
     def encrypt(self, pt):
         pt = pad(pt, BLOCK_SIZE)
         blocks = [pt[i : i+BLOCK_SIZE] for i in range(0, len(pt), BLOCK_SIZE)]
-        for x in blocks: print(x.hex())
         for round in range(ROUNDS):
             round_key = self._round_keys[round]
             blocks = [self._encrypt_block(block, round_key) for block in blocks]

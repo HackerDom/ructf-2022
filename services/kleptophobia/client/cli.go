@@ -31,10 +31,7 @@ func (cliClient *CliClient) init(config *models.ClientConfig) utils.Closable {
 
 func buildRegisterReq() *models.RegisterReq {
 	firstName := utils.ReadValueWithValidation("First name: ", models.NameRegex)
-	var middleName *string = nil
-	if val := utils.ReadValueWithValidation("Middle name (optional): ", models.MiddleNameRegex); val != "" {
-		middleName = &val
-	}
+	middleName := utils.ReadValueWithValidation("Middle name: ", models.NameRegex)
 	secondName := utils.ReadValueWithValidation("Second name: ", models.NameRegex)
 	username := utils.ReadValueWithValidation("Username: ", models.UsernameRegex)
 	room := utils.ReadUIntValue("Room: ")

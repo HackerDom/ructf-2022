@@ -66,11 +66,13 @@ class CryptoChecker(VulnChecker):
 
             username = generators.gen_string(6, 8)
             first_name = names.get_first_name()
+            middle_name = names.get_first_name()
             second_name = names.get_last_name()
             room = generators.gen_int()
 
             private_person = pb2.PrivatePerson(
                 first_name=first_name,
+                middle_name=middle_name,
                 second_name=second_name,
                 username=username,
                 room=room,
@@ -93,6 +95,7 @@ class CryptoChecker(VulnChecker):
                 'username': username,
                 'password': password,
                 'first_name': first_name,
+                'middle_name': middle_name,
                 'second_name': second_name,
                 'room': room,
             })
