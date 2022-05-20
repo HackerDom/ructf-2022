@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"kleptophobia/crypto"
 	"kleptophobia/utils"
 
@@ -17,13 +18,16 @@ type PersonRecord struct {
 	EncryptedPrivatePerson []byte
 }
 
-func PrivatePersonToRecord(person *PrivatePerson, password string) *PersonRecord {
+func PrivatePersonToRecord(person *PrivatePerson, password string) (*PersonRecord, error) {
 	data, err := proto.Marshal(person)
 	utils.FailOnError(err)
 
 	passwordHash := utils.GetHash(password)
 	c := crypto.NewCipher(passwordHash)
-	encryptedPrivatePerson, _ := c.Encrypt(data)
+	encryptedPrivatePerson, err := c.Encrypt(data)
+	if err != nil {
+		return nil, errors.New("can not encrypt data: " + err.Error())
+	}
 
 	return &PersonRecord{
 		Username:               person.Username,
@@ -32,7 +36,7 @@ func PrivatePersonToRecord(person *PrivatePerson, password string) *PersonRecord
 		SecondName:             person.SecondName,
 		Room:                   person.Room,
 		EncryptedPrivatePerson: encryptedPrivatePerson,
-	}
+	}, nil
 }
 
 func PersonRecordToPublic(person *PersonRecord) *PublicPerson {

@@ -34,7 +34,10 @@ func (dbapi *DBApi) register(person *models.PrivatePerson, password string) erro
 	if err := models.ValidatePrivatePerson(person); err != nil {
 		return err
 	}
-	privatePersonRecord := models.PrivatePersonToRecord(person, password)
+	privatePersonRecord, err := models.PrivatePersonToRecord(person, password)
+	if err != nil {
+		return errors.New("can not translate private person to record: " + err.Error())
+	}
 	result := dbapi.db.Create(&privatePersonRecord)
 
 	if result.Error != nil {
