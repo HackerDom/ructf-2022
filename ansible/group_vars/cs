@@ -52,4 +52,5 @@ teams: |
   {name => 'More Smoked Leet Chicken', network => '10.60.2.0/24', host => '10.60.2.3', token => 'token2', tags => []},
 
 services: |
-  {name => 'service1', tcp_port => 12345, timeout => 30, path => 'checkers/service1/checker.sh'},
+  {name => 'kleptophobia', tcp_port => 50051, timeout => 30, path => 'checkers/kleptophobia/kleptophobia.checker.py'},
+  {name => 'meds', tcp_port => 16780, timeout => 30, path => 'checkers/meds/meds.checker.py'},
