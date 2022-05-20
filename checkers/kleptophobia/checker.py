@@ -11,7 +11,7 @@ import models_pb2 as pb2
 import models_pb2_grpc as pb2_grpc
 from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
 
-from generators import gen_string, gen_int
+from generators import gen_string, gen_int, gen_name
 from crypto import Cipher
 from crypto_utils import get_hash
 
@@ -65,8 +65,8 @@ class CryptoChecker(VulnChecker):
             stub = get_stub(request.hostname)
 
             username = gen_string()
-            first_name = gen_string()
-            second_name = gen_string()
+            first_name = gen_name()
+            second_name = gen_name()
             room = gen_int()
 
             private_person = pb2.PrivatePerson(

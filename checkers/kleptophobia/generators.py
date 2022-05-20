@@ -1,11 +1,15 @@
 import random
 import string
 
-ALPHA = string.ascii_lowercase + string.digits
+ALPHA = string.ascii_letters + string.digits
 
 
-def gen_string(a=20, b=20):
-    return ''.join(random.choice(ALPHA) for _ in range(random.randint(a, b)))
+def gen_name():
+    return gen_string(alpha=string.ascii_letters)
+
+
+def gen_string(a=20, b=20, alpha=ALPHA):
+    return ''.join(random.choice(alpha) for _ in range(random.randint(a, b)))
 
 
 def gen_int():
