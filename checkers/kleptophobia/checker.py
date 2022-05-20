@@ -65,7 +65,7 @@ class CryptoChecker(VulnChecker):
         with ErrorChecker() as ec:
             stub = get_stub(request.hostname)
 
-            username = generators.gen_username()
+            username = generators.gen_string(6, 8)
             first_name = names.get_first_name()
             second_name = names.get_last_name()
             room = generators.gen_int()
