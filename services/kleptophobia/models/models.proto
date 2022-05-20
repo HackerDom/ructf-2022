@@ -59,7 +59,7 @@ message PrivatePerson {
   optional string middle_name = 2;
   string second_name = 3;
   string username = 4;
-  int32 room = 5;
+  uint32 room = 5;
   string diagnosis = 6;
 }
 
@@ -67,7 +67,7 @@ message PublicPerson {
   string first_name = 1;
   string second_name = 2;
   string username = 3;
-  int32 room = 4;
+  uint32 room = 4;
 }
 
 message ClientConfig {

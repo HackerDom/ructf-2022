@@ -31,6 +31,9 @@ func (dbapi *DBApi) init(pgConfig *models.PGConfig) {
 }
 
 func (dbapi *DBApi) register(person *models.PrivatePerson, password string) error {
+	if err := models.ValidatePrivatePerson(person); err != nil {
+		return err
+	}
 	privatePersonRecord := models.PrivatePersonToRecord(person, password)
 	result := dbapi.db.Create(&privatePersonRecord)
 
@@ -38,9 +41,9 @@ func (dbapi *DBApi) register(person *models.PrivatePerson, password string) erro
 		if pgError := result.Error.(*pgconn.PgError); errors.Is(result.Error, pgError) {
 			switch pgError.Code {
 			case "23505":
-				return errors.New(fmt.Sprintf("can not register: username %s is already exists", person.Username))
+				return errors.New(fmt.Sprintf("username %s is already exists", person.Username))
 			}
-			return errors.New("can not register: " + result.Error.Error())
+			return result.Error
 		}
 	}
 	return nil

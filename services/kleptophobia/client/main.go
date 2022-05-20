@@ -24,7 +24,7 @@ func main() {
 		panic("can not start client, ping request is not successful: " + err.Error())
 	}
 
-	var commands = map[int64]func() error{
+	var commands = map[uint32]func() error{
 		1: cliClient.Register,
 		2: cliClient.GetPublicInfo,
 		3: cliClient.GetFullInfo,
@@ -42,7 +42,7 @@ func main() {
 		fmt.Println("0. Exit")
 		fmt.Println()
 
-		choice := utils.ReadIntValue("Input option number: ")
+		choice := utils.ReadUIntValue("Input option number: ")
 		cmd, ok := commands[choice]
 
 		if !ok {

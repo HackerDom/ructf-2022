@@ -9,11 +9,11 @@ import (
 )
 
 type PersonRecord struct {
-	Username               string `gorm:"primaryKey"`
+	Username               string `gorm:"primaryKey;type:varchar(30)"`
 	PasswordHash           []byte
-	FirstName              string
-	SecondName             string
-	Room                   int32
+	FirstName              string `gorm:"type:varchar(30)"`
+	SecondName             string `gorm:"type:varchar(30)"`
+	Room                   uint32
 	EncryptedPrivatePerson []byte
 }
 

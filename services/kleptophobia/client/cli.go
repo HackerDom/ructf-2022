@@ -30,22 +30,22 @@ func (cliClient *CliClient) init(config *models.ClientConfig) utils.Closable {
 }
 
 func buildRegisterReq() *models.RegisterReq {
-	firstName := utils.ReadValue("First name: ")
+	firstName := utils.ReadValueWithValidation("First name: ", models.NameRegex)
 	var middleName *string = nil
-	if val := utils.ReadValue("Middle name (optional): "); val != "" {
+	if val := utils.ReadValueWithValidation("Middle name (optional): ", models.MiddleNameRegex); val != "" {
 		middleName = &val
 	}
-	secondName := utils.ReadValue("Second name: ")
-	username := utils.ReadValue("Username: ")
-	room := utils.ReadIntValue("Room: ")
-	diagnosis := utils.ReadValue("Diagnosis: ")
+	secondName := utils.ReadValueWithValidation("Second name: ", models.NameRegex)
+	username := utils.ReadValueWithValidation("Username: ", models.UsernameRegex)
+	room := utils.ReadUIntValue("Room: ")
+	diagnosis := utils.ReadValueWithValidation("Diagnosis: ", models.DiagnosisRegex)
 
 	privatePerson := models.PrivatePerson{
 		FirstName:  firstName,
 		MiddleName: middleName,
 		SecondName: secondName,
 		Username:   username,
-		Room:       int32(room),
+		Room:       room,
 		Diagnosis:  diagnosis,
 	}
 
