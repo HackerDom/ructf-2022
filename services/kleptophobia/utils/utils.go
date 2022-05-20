@@ -4,13 +4,18 @@ import (
 	"bufio"
 	"crypto/md5"
 	"fmt"
-	"golang.org/x/term"
 	"log"
+	"math/rand"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"golang.org/x/term"
 )
+
+var alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
 func GetHash(s string) []byte {
 	res := md5.Sum([]byte(s))
@@ -38,12 +43,34 @@ func ReadValue(prompt string) string {
 	return strings.Trim(text, "\n ")
 }
 
-func ReadIntValue(prompt string) int64 {
+func ReadValueWithValidation(prompt string, regexp *regexp.Regexp) string {
+	for {
+		fmt.Print(prompt)
+		reader := bufio.NewReader(os.Stdin)
+
+		text, err := reader.ReadString('\n')
+		if err != nil {
+			panic(err)
+		}
+		value := strings.Trim(text, "\n ")
+		if !regexp.MatchString(value) {
+			fmt.Printf("Value must match regexp: %v\n", regexp)
+			continue
+		}
+		return value
+	}
+}
+
+func ReadUIntValue(prompt string) uint32 {
 	for {
 		value := ReadValue(prompt)
-		intVal, err := strconv.ParseInt(value, 10, 64)
+		intVal, err := strconv.ParseInt(value, 10, 32)
 		if err == nil {
-			return intVal
+			if intVal < 0 {
+				log.Println("Room number must be positive")
+			} else {
+				return uint32(intVal)
+			}
 		} else {
 			log.Println("Can not parse int: " + err.Error())
 		}
@@ -55,4 +82,12 @@ func ReadHiddenValue(prompt string) string {
 	password, err := term.ReadPassword(syscall.Stdin)
 	FailOnError(err)
 	return string(password)
+}
+
+func RandString(ln int) string {
+	res := make([]rune, ln)
+	for i := range res {
+		res[i] = alphabet[rand.Intn(len(alphabet))]
+	}
+	return string(res)
 }

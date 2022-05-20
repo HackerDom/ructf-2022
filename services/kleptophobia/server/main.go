@@ -4,14 +4,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"google.golang.org/grpc"
-	"kleptophobia/models"
 	"log"
 	"net"
-)
 
-var (
-	port = flag.Int("port", 50051, "The server port")
+	"google.golang.org/grpc"
+
+	"kleptophobia/config"
+	"kleptophobia/models"
 )
 
 type server struct {
@@ -19,56 +18,66 @@ type server struct {
 	dbApi *DBApi
 }
 
-func (s *server) Register(ctx context.Context, in *models.RegisterRequest) (*models.RegisterReply, error) {
+func (s *server) Register(ctx context.Context, in *models.RegisterReq) (*models.RegisterRsp, error) {
 	if err := s.dbApi.register(in.Person, in.Password); err != nil {
 		msg := "can not register user: " + err.Error()
-		return &models.RegisterReply{
-			Status:  models.RegisterReply_FAIL,
+		return &models.RegisterRsp{
+			Status:  models.RegisterRsp_FAIL,
 			Message: &msg,
 		}, nil
 	}
-	return &models.RegisterReply{Status: models.RegisterReply_OK}, nil
+	return &models.RegisterRsp{Status: models.RegisterRsp_OK}, nil
 }
 
-func (s *server) GetPublicInfo(ctx context.Context, in *models.GetByUsernameRequest) (*models.GetPublicInfoReply, error) {
+func (s *server) GetPublicInfo(ctx context.Context, in *models.GetByUsernameReq) (*models.GetPublicInfoRsp, error) {
 	person, err := s.dbApi.getPublicInfo(in.Username)
 	if err != nil {
 		msg := "can not get public info: " + err.Error()
-		return &models.GetPublicInfoReply{
-			Status:  models.GetPublicInfoReply_FAIL,
+		return &models.GetPublicInfoRsp{
+			Status:  models.GetPublicInfoRsp_FAIL,
 			Message: &msg,
 			Person:  nil,
 		}, nil
 	}
-	return &models.GetPublicInfoReply{
-		Status: models.GetPublicInfoReply_OK,
+	return &models.GetPublicInfoRsp{
+		Status: models.GetPublicInfoRsp_OK,
 		Person: models.PersonRecordToPublic(person),
 	}, nil
 }
 
-func (s *server) GetEncryptedFullInfo(ctx context.Context, in *models.GetByUsernameRequest) (*models.GetEncryptedFullInfoReply, error) {
+func (s *server) GetEncryptedFullInfo(ctx context.Context, in *models.GetByUsernameReq) (*models.GetEncryptedFullInfoRsp, error) {
 	encryptedFullInfo, err := s.dbApi.getEncryptedFullInfo(in.Username)
 	if err != nil {
 		msg := "can not get public info: " + err.Error()
-		return &models.GetEncryptedFullInfoReply{
-			Status:            models.GetEncryptedFullInfoReply_FAIL,
+		return &models.GetEncryptedFullInfoRsp{
+			Status:            models.GetEncryptedFullInfoRsp_FAIL,
 			Message:           &msg,
 			EncryptedFullInfo: nil,
 		}, nil
 	}
-	return &models.GetEncryptedFullInfoReply{
-		Status:            models.GetEncryptedFullInfoReply_OK,
+	return &models.GetEncryptedFullInfoRsp{
+		Status:            models.GetEncryptedFullInfoRsp_OK,
 		Message:           nil,
 		EncryptedFullInfo: encryptedFullInfo,
 	}, nil
 }
 
+func (s *server) Ping(ctx context.Context, in *models.PingBody) (*models.PingBody, error) {
+	return in, nil
+}
+
 func main() {
+	configFilename := flag.String("config", "dev_config.json", "server config")
+	flag.Parse()
+
+	var serverConfig config.ServerConfig
+	config.InitConfig[*config.ServerConfig](*configFilename, &serverConfig)
+
 	dbApi := DBApi{}
-	dbApi.init("localhost", 5432, "myusername", "mypassword", "myusername")
+	dbApi.init(serverConfig.PgConfig)
 
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", serverConfig.GrpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

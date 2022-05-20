@@ -3,11 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
+
 	"github.com/jackc/pgconn"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	pb "kleptophobia/models"
+
+	"kleptophobia/config"
+	"kleptophobia/models"
 	"kleptophobia/utils"
 )
 
@@ -15,8 +18,9 @@ type DBApi struct {
 	db *gorm.DB
 }
 
-func (dbapi *DBApi) init(host string, port int, dbUsername, password, dbname string) {
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, dbUsername, password, dbname)
+func (dbapi *DBApi) init(pgConfig *config.PGConfig) {
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		pgConfig.Host, pgConfig.Port, pgConfig.Username, pgConfig.Password, pgConfig.DbName)
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  psqlconn,
@@ -25,28 +29,34 @@ func (dbapi *DBApi) init(host string, port int, dbUsername, password, dbname str
 
 	utils.FailOnError(err)
 
-	utils.FailOnError(db.AutoMigrate(pb.PersonRecord{}))
+	utils.FailOnError(db.AutoMigrate(models.PersonRecord{}))
 	dbapi.db = db
 }
 
-func (dbapi *DBApi) register(person *pb.PrivatePerson, password string) error {
-	privatePersonRecord := pb.PrivatePersonToRecord(person, password)
+func (dbapi *DBApi) register(person *models.PrivatePerson, password string) error {
+	if err := models.ValidatePrivatePerson(person); err != nil {
+		return err
+	}
+	privatePersonRecord, err := models.PrivatePersonToRecord(person, password)
+	if err != nil {
+		return errors.New("can not translate private person to record: " + err.Error())
+	}
 	result := dbapi.db.Create(&privatePersonRecord)
 
 	if result.Error != nil {
 		if pgError := result.Error.(*pgconn.PgError); errors.Is(result.Error, pgError) {
 			switch pgError.Code {
 			case "23505":
-				return errors.New(fmt.Sprintf("can not register: username %s is already exists", person.Username))
+				return errors.New(fmt.Sprintf("username %s is already exists", person.Username))
 			}
-			return errors.New("can not register: " + result.Error.Error())
+			return result.Error
 		}
 	}
 	return nil
 }
 
-func (dbapi *DBApi) getPublicInfo(username string) (*pb.PersonRecord, error) {
-	var person pb.PersonRecord
+func (dbapi *DBApi) getPublicInfo(username string) (*models.PersonRecord, error) {
+	var person models.PersonRecord
 
 	if res := dbapi.db.Take(&person, "username = ?", username); errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, errors.New("can not found user with username = " + username)

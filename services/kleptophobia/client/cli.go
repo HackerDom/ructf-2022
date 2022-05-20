@@ -4,21 +4,25 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"kleptophobia/config"
 	"kleptophobia/crypto"
 	"kleptophobia/models"
 	"kleptophobia/utils"
-	"time"
 )
 
 type CliClient struct {
 	GrpcClient *models.KleptophobiaClient
 }
 
-func (cliClient *CliClient) init(addr string) utils.Closable {
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (cliClient *CliClient) init(config *config.ClientConfig) utils.Closable {
+	grpcAddr := fmt.Sprintf("%s:%d", config.GrpcHost, config.GrpcPort)
+	conn, err := grpc.Dial(grpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	utils.FailOnError(err)
 
 	grpcClient := models.NewKleptophobiaClient(conn)
@@ -27,36 +31,33 @@ func (cliClient *CliClient) init(addr string) utils.Closable {
 	return conn
 }
 
-func buildRegisterRequest() *models.RegisterRequest {
-	firstName := utils.ReadValue("First name: ")
-	var middleName *string = nil
-	if val := utils.ReadValue("Middle name (optional): "); val != "" {
-		middleName = &val
-	}
-	secondName := utils.ReadValue("Second name: ")
-	username := utils.ReadValue("Username: ")
-	room := utils.ReadIntValue("Room: ")
-	diagnosis := utils.ReadValue("Diagnosis: ")
+func buildRegisterReq() *models.RegisterReq {
+	firstName := utils.ReadValueWithValidation("First name: ", models.NameRegex)
+	middleName := utils.ReadValueWithValidation("Middle name: ", models.NameRegex)
+	secondName := utils.ReadValueWithValidation("Second name: ", models.NameRegex)
+	username := utils.ReadValueWithValidation("Username: ", models.UsernameRegex)
+	room := utils.ReadUIntValue("Room: ")
+	diagnosis := utils.ReadValueWithValidation("Diagnosis: ", models.DiagnosisRegex)
 
 	privatePerson := models.PrivatePerson{
 		FirstName:  firstName,
 		MiddleName: middleName,
 		SecondName: secondName,
 		Username:   username,
-		Room:       int32(room),
+		Room:       room,
 		Diagnosis:  diagnosis,
 	}
 
 	password := utils.ReadHiddenValue("Password: ")
 
-	return &models.RegisterRequest{
+	return &models.RegisterReq{
 		Person:   &privatePerson,
 		Password: password,
 	}
 }
 
-func buildGetByUsernameRequest() *models.GetByUsernameRequest {
-	return &models.GetByUsernameRequest{
+func buildGetByUsernameReq() *models.GetByUsernameReq {
+	return &models.GetByUsernameReq{
 		Username: utils.ReadValue("Username: "),
 	}
 }
@@ -70,17 +71,17 @@ func withDefaultContext(fun WithContextType) error {
 }
 
 func (cliClient *CliClient) Register() error {
-	registerRequest := buildRegisterRequest()
+	registerReq := buildRegisterReq()
 
 	return withDefaultContext(func(ctx context.Context) error {
-		registerReply, err := (*cliClient.GrpcClient).Register(ctx, registerRequest)
+		registerRsp, err := (*cliClient.GrpcClient).Register(ctx, registerReq)
 
 		if err != nil {
 			return errors.New("can not register new user: " + err.Error())
 		}
 
-		if registerReply.Status != models.RegisterReply_OK {
-			return errors.New("can not register new user: " + registerReply.GetMessage())
+		if registerRsp.Status != models.RegisterRsp_OK {
+			return errors.New("can not register new user: " + registerRsp.GetMessage())
 		}
 		fmt.Println("Success!")
 		return nil
@@ -89,43 +90,48 @@ func (cliClient *CliClient) Register() error {
 }
 
 func (cliClient *CliClient) GetPublicInfo() error {
-	getPublicInfoRequest := buildGetByUsernameRequest()
+	getPublicInfoReq := buildGetByUsernameReq()
 
 	return withDefaultContext(func(ctx context.Context) error {
-		getPublicInfoReply, err := (*cliClient.GrpcClient).GetPublicInfo(ctx, getPublicInfoRequest)
+		getPublicInfoRsp, err := (*cliClient.GrpcClient).GetPublicInfo(ctx, getPublicInfoReq)
 
 		if err != nil {
 			return errors.New("can not get public info: " + err.Error())
 		}
 
-		if getPublicInfoReply.Status != models.GetPublicInfoReply_OK {
-			return errors.New("can not get public info: " + getPublicInfoReply.GetMessage())
+		if getPublicInfoRsp.Status != models.GetPublicInfoRsp_OK {
+			return errors.New("can not get public info: " + getPublicInfoRsp.GetMessage())
 		}
 
 		fmt.Println("\nPublic info: ")
-		fmt.Println(proto.MarshalTextString(getPublicInfoReply.GetPerson()))
+		fmt.Println(proto.MarshalTextString(getPublicInfoRsp.GetPerson()))
 
 		return nil
 	})
 }
 
 func (cliClient *CliClient) GetFullInfo() error {
-	getByUsernameRequest := buildGetByUsernameRequest()
+	getByUsernameReq := buildGetByUsernameReq()
 	password := utils.ReadHiddenValue("Password: ")
 
 	return withDefaultContext(func(ctx context.Context) error {
-		getEncryptedFullInfo, err := (*cliClient.GrpcClient).GetEncryptedFullInfo(ctx, getByUsernameRequest)
+		getEncryptedFullInfo, err := (*cliClient.GrpcClient).GetEncryptedFullInfo(ctx, getByUsernameReq)
 
 		if err != nil {
 			return errors.New("can not get full info: " + err.Error())
 		}
 
-		if getEncryptedFullInfo.Status != models.GetEncryptedFullInfoReply_OK {
+		if getEncryptedFullInfo.Status != models.GetEncryptedFullInfoRsp_OK {
 			return errors.New("can not get full info: " + getEncryptedFullInfo.GetMessage())
 		}
 
+		c := crypto.NewCipher(utils.GetHash(password))
+
 		encryptedFullInfo := getEncryptedFullInfo.GetEncryptedFullInfo()
-		fullInfo := crypto.Decrypt(encryptedFullInfo, utils.GetHash(password))
+		fullInfo, err := c.Decrypt(encryptedFullInfo)
+		if err != nil {
+			return err
+		}
 		var privatePerson models.PrivatePerson
 
 		if err := proto.Unmarshal(fullInfo, &privatePerson); err != nil {
@@ -134,6 +140,26 @@ func (cliClient *CliClient) GetFullInfo() error {
 
 		fmt.Println("\nFull info: ")
 		fmt.Println(proto.MarshalTextString(&privatePerson))
+
+		return nil
+	})
+}
+
+func (cliClient *CliClient) Ping() error {
+	return withDefaultContext(func(ctx context.Context) error {
+		message := utils.RandString(10)
+		pingResponse, err := (*cliClient.GrpcClient).Ping(ctx, &models.PingBody{Message: message})
+		if err != nil {
+			return err
+		}
+
+		if pingResponse == nil {
+			return errors.New("ping response is nil")
+		}
+
+		if pingResponse.Message != message {
+			return errors.New("ping messages are different: " + message + " and " + pingResponse.Message)
+		}
 
 		return nil
 	})

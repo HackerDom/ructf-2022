@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+option go_package = "../models";
+
+package models;
+
+message PingBody {
+  string message = 1;
+}
+
+message GetByUsernameReq {
+    string username = 1;
+}
+
+message GetPublicInfoRsp {
+    enum Status {
+      OK = 0;
+      FAIL = 1;
+    }
+    Status status = 1;
+    optional string message = 2;
+    optional PublicPerson person = 3;
+}
+
+message GetEncryptedFullInfoRsp {
+    enum Status {
+      OK = 0;
+      FAIL = 1;
+    }
+    Status status = 1;
+    optional string message = 2;
+    optional bytes encryptedFullInfo = 3;
+}
+
+
+message RegisterReq {
+  PrivatePerson person = 1;
+  string password = 2;
+}
+
+message RegisterRsp {
+  enum Status {
+    OK = 0;
+    FAIL = 1;
+  }
+  Status status = 1;
+  optional string message = 2;
+}
+
+message PrivatePerson {
+  string first_name = 1;
+  string middle_name = 2;
+  string second_name = 3;
+  string username = 4;
+  uint32 room = 5;
+  string diagnosis = 6;
+}
+
+message PublicPerson {
+  string first_name = 1;
+  string second_name = 2;
+  string username = 3;
+  uint32 room = 4;
+}
