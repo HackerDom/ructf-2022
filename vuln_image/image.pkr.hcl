@@ -15,7 +15,7 @@ source "digitalocean" "vuln_image" {
   api_token    = var.api_token
   image        = "ubuntu-20-04-x64"
   region       = "sgp1"
-  size         = "s-6vcpu-16gb"
+  size         = "s-4vcpu-8gb"
   ssh_username = "root"
 }
 
