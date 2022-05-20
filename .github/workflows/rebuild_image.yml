@@ -5,7 +5,7 @@ on:
 jobs:
   rebuild_image:
     name: Rebuild and export image
-    runs-on: buildimage
+    runs-on: self-hosted
 
     steps:
     - name: Checkout repo
