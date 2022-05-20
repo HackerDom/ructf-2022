@@ -3,9 +3,8 @@
 enum store_flags {
 	ST_NONE       = 0x00,
 	ST_PROTECT    = 0x01, 
-	ST_PERSIST    = 0x02, 
-	ST_SAFE       = 0x04,
-	ST_ADD_RECENT = 0x08
+	ST_PERSIST    = 0x02,
+	ST_ADD_RECENT = 0x04
 };
 
 struct tree_node {
@@ -160,7 +159,7 @@ void load_from_file() {
 			break;
 		}
 
-		store_item_internal(item.key, item.value, ST_SAFE | ST_ADD_RECENT);
+		store_item_internal(item.key, item.value, ST_ADD_RECENT);
 		items_read++;
 	}
 
@@ -277,7 +276,7 @@ char * store_item_internal(const uuid_t key, const value_t value, enum store_fla
 		return 0;
 
 	int node = find_node(key, 0);
-	if (flags & ST_SAFE && node >= TREE_MAXNODES)
+	if (node >= TREE_MAXNODES)
 		return 0;
 
 	if (is_empty(node)) {
