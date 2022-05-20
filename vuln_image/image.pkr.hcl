@@ -7,6 +7,8 @@ packer {
   }
 }
 
+data "git-commit" "cwd-head" { }
+
 locals {
   truncated_sha = substr(data.git-commit.cwd-head.hash, 0, 8)
 }
