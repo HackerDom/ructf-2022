@@ -31,7 +31,7 @@ const char* storage_path;
 
 char *store_item_internal(const uuid_t key, const value_t value, enum store_flags flags);
 
-char *render_uuid(const uuid_t uuid) { // debug only
+char *render_uuid(const uuid_t uuid) {
 	char *s = malloc(37);
 	uuid_unparse_lower(uuid, s);
 	return s;

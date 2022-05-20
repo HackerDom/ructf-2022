@@ -15,4 +15,4 @@ test_storage: test_storage.* storage.*
 brute: brute.*
 	g++-7 -c $(ARCH) farmhash.cc -o farmhash.o
 	g++-7 -c $(ARCH) farmhash_adapter.cc -o farmhash_adapter.o
-	gcc-7 brute.c farmhash.o farmhash_adapter.o $(FLAGS) -o bin/brute
+	gcc-7 brute.c farmhash.o farmhash_adapter.o diag.c $(FLAGS) -o bin/brute

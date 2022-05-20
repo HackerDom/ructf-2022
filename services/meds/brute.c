@@ -1,5 +1,6 @@
 #include "types.h"
 #include "farmhash_adapter.h"
+#include "diag.h"
 
 char alpha[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ ";
 int alpha_length;
@@ -8,12 +9,22 @@ uuid_t target;
 int target_length;
 
 void check(char* comb) {
+	value_t value;
+	bzero(value, sizeof(value));
+	strcpy(value, comb);
+
+	char meds[MAXMEDS];
+	prescribe(value, meds);
+	strcat(value, "|");
+	strcat(value, meds);
+
 	uuid_t key;
-	fingerprint128(comb, key);
+	fingerprint128(value, key);
 	if (memcmp(key, target, target_length) == 0)	{
 		char buf[37];
 		uuid_unparse_lower(key, buf);
-		printf("%s -> %s (%d)\n", comb, buf, target_length);
+		printf("%s|%s -> %s (%d)\n", comb, meds, buf, target_length);
+		exit(0);
 	}
 }
 
