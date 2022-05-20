@@ -3,18 +3,19 @@ package main
 import (
 	"flag"
 	"fmt"
-	"kleptophobia/models"
-	"kleptophobia/utils"
 	"log"
 	"os"
+
+	"kleptophobia/config"
+	"kleptophobia/utils"
 )
 
 func main() {
 	configFilename := flag.String("config", "dev_config.json", "client config")
 	flag.Parse()
 
-	var clientConfig models.ClientConfig
-	utils.InitConfig[*models.ClientConfig](*configFilename, &clientConfig)
+	var clientConfig config.ClientConfig
+	config.InitConfig[*config.ClientConfig](*configFilename, &clientConfig)
 
 	var cliClient CliClient
 	closable := cliClient.init(&clientConfig)

@@ -3,6 +3,7 @@ module kleptophobia
 go 1.18
 
 require (
+	github.com/golang/protobuf v1.5.2
 	github.com/jackc/pgconn v1.12.1
 	github.com/lib/pq v1.10.6
 	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
@@ -13,7 +14,6 @@ require (
 )
 
 require (
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

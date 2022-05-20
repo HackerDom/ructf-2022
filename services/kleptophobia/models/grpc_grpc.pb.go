@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.20.1
-// source: models/models.proto
+// source: proto/grpc.proto
 
 package models
 
@@ -209,5 +209,5 @@ var Kleptophobia_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "models/models.proto",
+	Metadata: "proto/grpc.proto",
 }

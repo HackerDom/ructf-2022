@@ -3,20 +3,22 @@ package main
 import (
 	"errors"
 	"fmt"
-	"kleptophobia/models"
-	"kleptophobia/utils"
 
 	"github.com/jackc/pgconn"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"kleptophobia/config"
+	"kleptophobia/models"
+	"kleptophobia/utils"
 )
 
 type DBApi struct {
 	db *gorm.DB
 }
 
-func (dbapi *DBApi) init(pgConfig *models.PGConfig) {
+func (dbapi *DBApi) init(pgConfig *config.PGConfig) {
 	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		pgConfig.Host, pgConfig.Port, pgConfig.Username, pgConfig.Password, pgConfig.DbName)
 

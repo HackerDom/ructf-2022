@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"crypto/md5"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -14,9 +13,9 @@ import (
 	"syscall"
 
 	"golang.org/x/term"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 )
+
+var alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
 func GetHash(s string) []byte {
 	res := md5.Sum([]byte(s))
@@ -84,16 +83,6 @@ func ReadHiddenValue(prompt string) string {
 	FailOnError(err)
 	return string(password)
 }
-
-func InitConfig[T proto.Message](filename string, config T) {
-	rawConfig, err := ioutil.ReadFile(filename)
-	FailOnError(err)
-
-	err = protojson.Unmarshal(rawConfig, config)
-	FailOnError(err)
-}
-
-var alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
 func RandString(ln int) string {
 	res := make([]rune, ln)

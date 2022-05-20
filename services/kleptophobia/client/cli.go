@@ -4,21 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"kleptophobia/crypto"
-	"kleptophobia/models"
-	"kleptophobia/utils"
 	"time"
 
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"kleptophobia/config"
+	"kleptophobia/crypto"
+	"kleptophobia/models"
+	"kleptophobia/utils"
 )
 
 type CliClient struct {
 	GrpcClient *models.KleptophobiaClient
 }
 
-func (cliClient *CliClient) init(config *models.ClientConfig) utils.Closable {
+func (cliClient *CliClient) init(config *config.ClientConfig) utils.Closable {
 	grpcAddr := fmt.Sprintf("%s:%d", config.GrpcHost, config.GrpcPort)
 	conn, err := grpc.Dial(grpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	utils.FailOnError(err)

@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = "../config";
+
+package config;
+
+message ClientConfig {
+  string grpc_host = 1;
+  int32 grpc_port = 2;
+}
+
+message PGConfig {
+  string host = 1;
+  int32 port = 2;
+  string username = 3;
+  string password = 4;
+  string db_name = 5;
+}
+
+message ServerConfig {
+  int32 grpc_port = 1;
+  PGConfig pg_config = 2;
+}

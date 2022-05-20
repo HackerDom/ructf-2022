@@ -111,12 +111,7 @@ type Cipher struct {
 	key [BlockSize]byte
 }
 
-type CipherInterface interface {
-	Encrypt(data []byte)
-	Decrypt(data []byte)
-}
-
-func xorBlock(a, b [BlockSize]byte) [BlockSize]byte {
+func xorBlocks(a, b [BlockSize]byte) [BlockSize]byte {
 	var result [BlockSize]byte
 	for i := 0; i < len(a); i++ {
 		result[i] = a[i] ^ b[i]
@@ -125,19 +120,11 @@ func xorBlock(a, b [BlockSize]byte) [BlockSize]byte {
 }
 
 func encryptRound(block [BlockSize]byte, roundKey [BlockSize]byte) [BlockSize]byte {
-	var result [BlockSize]byte
-	result = substitute(block, S)
-	result = permutate(result, P)
-	result = xorBlock(result, roundKey)
-	return result
+	return xorBlocks(permutate(substitute(block, S), P), roundKey)
 }
 
 func decryptRound(block [BlockSize]byte, roundKey [BlockSize]byte) [BlockSize]byte {
-	var result [BlockSize]byte
-	result = xorBlock(block, roundKey)
-	result = permutate(result, PInv)
-	result = substitute(result, SInv)
-	return result
+	return substitute(permutate(xorBlocks(block, roundKey), PInv), SInv)
 }
 
 func (c Cipher) Encrypt(pt []byte) ([]byte, error) {

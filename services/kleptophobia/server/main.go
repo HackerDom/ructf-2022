@@ -4,12 +4,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"kleptophobia/models"
-	"kleptophobia/utils"
 	"log"
 	"net"
 
 	"google.golang.org/grpc"
+
+	"kleptophobia/config"
+	"kleptophobia/models"
 )
 
 type server struct {
@@ -69,8 +70,8 @@ func main() {
 	configFilename := flag.String("config", "dev_config.json", "server config")
 	flag.Parse()
 
-	var serverConfig models.ServerConfig
-	utils.InitConfig[*models.ServerConfig](*configFilename, &serverConfig)
+	var serverConfig config.ServerConfig
+	config.InitConfig[*config.ServerConfig](*configFilename, &serverConfig)
 
 	dbApi := DBApi{}
 	dbApi.init(serverConfig.PgConfig)

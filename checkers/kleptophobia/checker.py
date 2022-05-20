@@ -11,7 +11,7 @@ from grpc._channel import _InactiveRpcError
 
 import generators
 import models.models_pb2 as pb2
-import models.models_pb2_grpc as pb2_grpc
+import models.grpc_pb2_grpc as pb2_grpc
 from crypto.cipher import Cipher
 from crypto.crypto_utils import get_hash, DecodingError
 

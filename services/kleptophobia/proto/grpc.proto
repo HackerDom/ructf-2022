@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "../models";
+
+package models;
+
+import "proto/models.proto";
+
+service Kleptophobia {
+  rpc Register (RegisterReq) returns (RegisterRsp) {}
+  rpc GetPublicInfo (GetByUsernameReq) returns (GetPublicInfoRsp) {}
+  rpc GetEncryptedFullInfo (GetByUsernameReq) returns (GetEncryptedFullInfoRsp) {}
+  rpc Ping (PingBody) returns (PingBody) {}
+}

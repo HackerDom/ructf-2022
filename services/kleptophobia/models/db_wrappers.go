@@ -2,11 +2,12 @@ package models
 
 import (
 	"errors"
-	"kleptophobia/crypto"
-	"kleptophobia/utils"
 
 	"google.golang.org/protobuf/proto"
 	_ "gorm.io/driver/postgres"
+
+	"kleptophobia/crypto"
+	"kleptophobia/utils"
 )
 
 type PersonRecord struct {
