@@ -4,24 +4,26 @@
 <head>
   <meta charset="utf-8">
   <title>Baby, did you forget to take your meds?</title>
-  <style type="text/css">body,input{font-family:monospace}body{background-image:url(A);background-size:cover;image-rendering:pixelated;padding:50px}textarea{resize:none}</style>
+  <style type="text/css">body,input{font-family:monospace}body{background:#eee;background-size:cover;padding:50px}textarea{resize:none}.bg{background:white;box-shadow:0 0 8px 8px white;}</style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
   <script type="text/javascript">window.onload=function(){document.form.action='/'+uuid.v4()}</script>
 </head>
 
 <body>
-  <div>
-    <h1>Diagnosis</h1>
-    <form method="post" name="form" enctype="text/plain">
-      <div>
-        <textarea name="diag" id="diag" rows="4" cols="50" maxlength="200" required autofocus>%s</textarea>
-      </div>
-      <input type="submit" value="Submit">
-    </form>
-  </div>
-  <div %s>
-    <h1>Prescription</h1>
-    <div id="meds">%s</div>
+  <div class="bg">
+    <div>
+      <h1>Diagnosis</h1>
+      <form method="post" name="form" enctype="text/plain">
+        <div>
+          <textarea name="diag" id="diag" rows="4" cols="50" maxlength="190" required autofocus>%s</textarea>
+        </div>
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+    <div %s>
+      <h1>Prescription</h1>
+      <div id="meds">%s</div>
+    </div>
   </div>
 </body>
 </html>

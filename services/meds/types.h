@@ -18,7 +18,7 @@ typedef unsigned char byte;
 typedef char value_t[256];
 
 #define MAXRECV 1024
-#define MAXSEND 4096
+#define MAXSEND 8192
 
 #define MAXMEDS 32
 #define MAXDIAG 200

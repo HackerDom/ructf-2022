@@ -331,11 +331,11 @@ void render_page(char * buffer, const char* value, bool has_meds)
 
 bool try_send_resource(const char *name, char *response, int *response_length)
 {
-	// if (!strcmp("A", name))
-	// {
-	// 	respond_bytes(response, response_length, 200, res_bg, size_bg, "image/png");
-	// 	return true;
-	// }
+	if (!strcmp("/favicon.ico", name))
+	{
+		respond_bytes(response, response_length, 200, res_favicon, size_favicon, "image/x-icon");
+		return true;
+	}
 	return false;
 }
 
@@ -353,6 +353,9 @@ bool extract_value(struct strbuf* body, value_t value) {
 		return false;
 	bzero(value, sizeof(value_t));
 	memcpy(value, body->data + key_length, body->length - key_length);
+	char* end = value + body->length - key_length - 1;
+	while (end > value && is_ws(*end))
+		*end-- = 0;
 	return strlen(value) > 0;
 }
 
