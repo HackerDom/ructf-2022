@@ -99,7 +99,7 @@ build {
   }
 
   provisioner "file" {
-    source = "../services/schizovm/deploy/"
+    source = "../services/schizovm/"
     destination = "/home/schizovm/"
   }
 
