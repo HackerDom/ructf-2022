@@ -22,17 +22,9 @@ func pad(data []byte) []byte {
 	return append(data, paddingBytes...)
 }
 
-/*
-   padding = text[-1]
-   if set(text[-padding:]) != set(text[:1]):
-       raise DecodingError(f"wrong padding: {text[-padding]}, {text[:1]}")
-   return text[:-padding]
-
-*/
-
 func unpad(data []byte) ([]byte, error) {
 	padding := data[len(data)-1]
-	if !utils.EqualAsSets(data[-padding:], data[:1]) {
+	if !utils.EqualAsSets(data[-padding:], data[len(data)-1:]) {
 		return nil, errors.New("wrong padding")
 	}
 	return data[:-padding], nil

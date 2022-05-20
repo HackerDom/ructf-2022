@@ -29,7 +29,7 @@ def pad(text, block_size):
 def unpad(text):
     padding = text[-1]
     if set(text[-padding:]) != set(text[:1]):
-        raise DecodingError(f"wrong padding: {text[-padding]}, {text[:1]}")
+        raise DecodingError(f"wrong padding: {text[-padding]}, {text[-1:]}")
     return text[:-padding]
 
 
