@@ -1,5 +1,4 @@
 #include "storage.h"
-#include "farmhash_adapter.h"
 
 enum store_flags {
 	ST_NONE       = 0x00,
@@ -341,8 +340,4 @@ int get_tree_height(int id) {
 	if (id >= TREE_MAXNODES || is_empty(id))
 		return 0;
 	return 1 + max(get_tree_height(2 * id + 1), get_tree_height(2 * id + 2)); 
-}
-
-void generate_key(const value_t value, uuid_t key) {
-	fingerprint128(value, key);
 }
