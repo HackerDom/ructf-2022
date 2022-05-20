@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
 RUN apt update \
-    && apt install -y software-properties-common libgmp-dev libmpfr-dev socat \
+    && apt install -y software-properties-common libgmp-dev libmpfr-dev libmpc-dev socat \
     && add-apt-repository ppa:deadsnakes/ppa \
     && apt update && apt install -y python3.9-dev python3-pip 
 
