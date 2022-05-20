@@ -5,13 +5,14 @@ import traceback
 
 import google
 import grpc
+import names
 from grpc._channel import _InactiveRpcError
 
 import models_pb2 as pb2
 import models_pb2_grpc as pb2_grpc
 from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
 
-from generators import gen_string, gen_int, gen_name
+import generators
 from crypto import Cipher
 from crypto_utils import get_hash
 
@@ -49,7 +50,7 @@ class ErrorChecker:
 async def check_service(request: CheckRequest) -> Verdict:
     with ErrorChecker() as ec:
         stub = get_stub(request.hostname)
-        message = gen_string()
+        message = generators.gen_string()
         resp = stub.Ping(pb2.PingBody(message=message))
         if resp.message != message:
             print(f"Different ping message: {message} != {resp.message}")
@@ -64,10 +65,10 @@ class CryptoChecker(VulnChecker):
         with ErrorChecker() as ec:
             stub = get_stub(request.hostname)
 
-            username = gen_string()
-            first_name = gen_name()
-            second_name = gen_name()
-            room = gen_int()
+            username = generators.gen_username()
+            first_name = names.get_first_name()
+            second_name = names.get_last_name()
+            room = generators.gen_int()
 
             private_person = pb2.PrivatePerson(
                 first_name=first_name,
@@ -77,7 +78,7 @@ class CryptoChecker(VulnChecker):
                 diagnosis=request.flag,
             )
 
-            password = gen_string()
+            password = generators.gen_string()
             register_request = pb2.RegisterReq(
                 person=private_person,
                 password=password,
