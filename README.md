@@ -1,7 +1,7 @@
 ## Services
 
-![kleptophobia.yml](https://github.com/HackerDom/ructf-2022/actions/workflows/check_kleptophobia.yml/badge.svg)
-![meds.yml](https://github.com/HackerDom/ructf-2022/actions/workflows/check_meds.yml/badge.svg)
+![kleptophobia](https://github.com/HackerDom/ructf-2022/actions/workflows/check_kleptophobia.yml/badge.svg)
+![meds](https://github.com/HackerDom/ructf-2022/actions/workflows/check_meds_.yml/badge.svg)
 
 # RuCTF 2022
 
