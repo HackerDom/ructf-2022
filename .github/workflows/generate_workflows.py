@@ -10,6 +10,7 @@ SERVICES = [
   'ambulance',
   'schizophasia',
   'herpetophobia',
+  'psycho-clinic'
  ]
 
 TEMPLATE = '''
