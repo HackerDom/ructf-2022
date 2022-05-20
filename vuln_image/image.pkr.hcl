@@ -32,12 +32,6 @@ build {
     inline = [
       "apt-get clean",
       "apt-get update",
-      # Wait apt-get lock
-      "while ps -opid= -C apt-get > /dev/null; do sleep 1; done",
-      "apt-get dist-upgrade",
-      # Wait apt-get lock
-      "while ps -opid= -C apt-get > /dev/null; do sleep 1; done",
-      "apt-get update",
 
       # Wait apt-get lock
       "while ps -opid= -C apt-get > /dev/null; do sleep 1; done",
