@@ -54,6 +54,30 @@ build {
     ]
   }
 
+  ### Ructf motd
+  provisioner "shell" {
+    inline = [
+      "rm -rf /etc/update-motd.d/*",
+    ]
+  }
+  provisioner "file" {
+    source = "motd/ructf-banner.txt"
+    destination = "/ructf-banner.txt"
+  }
+  provisioner "file" {
+    source = "motd/00-header"
+    destination = "/etc/update-motd.d/00-header"
+  }
+  provisioner "file" {
+    source = "motd/10-help-text"
+    destination = "/etc/update-motd.d/10-help-text"
+  }
+  provisioner "shell" {
+    inline = [
+      "chmod +x /etc/update-motd.d/*",
+    ]
+  }
+
   # Copy services
   provisioner "file" {
     source = "../services/kleptophobia/"
