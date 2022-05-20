@@ -1,0 +1,32 @@
+version: '2.2'
+
+services:
+  ambulance:
+    build: service
+    cpus: 1
+    pids_limit: 4096
+    mem_limit: 512M
+    restart: unless-stopped
+    stop_grace_period: 3s
+    volumes:
+      - "users:/var/ambulance/users"
+      - "diseases:/var/ambulance/diseases"
+    ports:
+      - "17171:31337"
+
+  cleaner:
+    build: cleaner
+    cpus: 1
+    pids_limit: 128
+    mem_limit: 128M
+    restart: unless-stopped
+    stop_grace_period: 3s
+    volumes:
+      - "users:/tmp/users"
+      - "diseases:/tmp/diseases"
+    depends_on:
+      - ambulance
+
+volumes:
+  users:
+  diseases:
