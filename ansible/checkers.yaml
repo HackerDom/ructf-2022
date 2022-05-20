@@ -1,0 +1,35 @@
+- hosts: checkers, master
+  tasks:
+  - name: sync catalog
+    synchronize:
+      src: "../checkers"
+      dest: "{{ cs_dir }}"
+      rsync_opts:
+        - "--exclude=checkers/example_service"
+    tags: sync
+
+  - name: checkers owner
+    file:
+      path: "{{ cs_dir }}/checkers"
+      owner: "{{ cs_user }}"
+      group: "{{ cs_user }}"
+      recurse: yes
+    tags: sync
+
+  - name: install sys deps
+    apt:
+      name:
+        - g++
+        - make
+        - libssl-dev
+        - python3-pip
+        - libpython3.9-dev
+        - sudo
+      install_recommends: no
+
+  - name: python deps
+    pip:
+      executable: pip3
+      requirements: "{{ cs_dir }}/checkers/{{ item }}/requirements.txt"
+    loop:
+      - meds
