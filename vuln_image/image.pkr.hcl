@@ -95,9 +95,9 @@ build {
   provisioner "shell" {
     inline = [
       "cd ~kleptophobia",
-      "docker-compose up --build -d",
+      "docker-compose up --build -d || true",
       "cd ~meds",
-      "docker-compose up --build -d",
+      "docker-compose up --build -d || true",
     ]
   }
 
