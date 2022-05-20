@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using psycho_clinic.AppInfrastructure;
@@ -18,13 +16,11 @@ namespace psycho_clinic.Controllers
         public ProceduresController(
             IProceduresStorage proceduresStorage,
             IContractsStorage contractsStorage,
-            IDoctorsStorage doctorsStorage,
-            IReportsStorage<TreatmentProcedureReport> reportsStorage)
+            IDoctorsStorage doctorsStorage)
         {
             this.proceduresStorage = proceduresStorage;
             this.contractsStorage = contractsStorage;
             this.doctorsStorage = doctorsStorage;
-            this.reportsStorage = reportsStorage;
         }
 
         [HttpPost("prescribe/")]
@@ -47,9 +43,9 @@ namespace psycho_clinic.Controllers
         {
             var patient = Context.GetAuthenticatedPatient();
 
-            var contracts = proceduresStorage.GetPatientProcedures(patient.Id);
+            var procedures = proceduresStorage.GetPatientProcedures(patient.Id);
 
-            return Task.FromResult(contracts);
+            return Task.FromResult(procedures);
         }
 
         [HttpPost("perform/")]
@@ -60,36 +56,6 @@ namespace psycho_clinic.Controllers
             var report = PerformProcedure(patient, procedureId);
 
             return Task.FromResult(report);
-        }
-
-        [HttpPost("report/create")]
-        public void CreateReport(CreateReportRequest request)
-        {
-            var patient = Context.GetAuthenticatedPatient();
-
-            var (procedureId, doctorId) = request;
-            doctorsStorage.TryGet(doctorId, out var doctor);
-
-            reportsStorage.Add(
-                new TreatmentProcedureReport(
-                    procedureId,
-                    patient.Id,
-                    doctorId,
-                    new TreatmentProcedureResult(true, string.Empty)
-                ),
-                Path.Combine(doctor.Name, procedureId.Id.ToString())
-            );
-        }
-
-        [HttpPost("report/")]
-        public async Task<string> GetReport(GetReportRequest request)
-        {
-            var (doctorName, procedureId, skip) = request;
-
-            var report = await reportsStorage.Get(Path.Combine(doctorName, procedureId));
-
-            var result = string.Join("", report.Skip(skip).Take(Take));
-            return await Task.FromResult(result);
         }
 
         private TreatmentProcedureReport PerformProcedure(Patient patient, TreatmentProcedureId procedureId)
@@ -120,8 +86,5 @@ namespace psycho_clinic.Controllers
         private readonly IProceduresStorage proceduresStorage;
         private readonly IContractsStorage contractsStorage;
         private readonly IDoctorsStorage doctorsStorage;
-        private readonly IReportsStorage<TreatmentProcedureReport> reportsStorage;
-
-        private const int Take = 20;
     }
 }

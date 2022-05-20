@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using psycho_clinic.AppInfrastructure;
 using psycho_clinic.Configuration;
 using psycho_clinic.Extensions;
-using psycho_clinic.Models;
 using psycho_clinic.Storage;
 using Vostok.Applications.AspNetCore;
 using Vostok.Applications.AspNetCore.Builders;
@@ -23,7 +22,6 @@ namespace psycho_clinic
         private IContractsStorage contractsStorage;
         private IProceduresStorage proceduresStorage;
         private IDoctorsStorage doctorsStorage;
-        private IReportsStorage<TreatmentProcedureReport> reportsStorage;
 
         public override void Setup(IVostokAspNetCoreApplicationBuilder builder, IVostokHostingEnvironment environment)
         {
@@ -45,7 +43,6 @@ namespace psycho_clinic
             contractsStorage = serviceProvider.GetService<IContractsStorage>()!;
             proceduresStorage = serviceProvider.GetService<IProceduresStorage>()!;
             doctorsStorage = serviceProvider.GetService<IDoctorsStorage>()!;
-            reportsStorage = serviceProvider.GetService<IReportsStorage<TreatmentProcedureReport>>()!;
 
             InitializeStorage(patientsStorage, settings.PatientsDataPath);
             InitializeStorage(contractsStorage, settings.ContractsDataPath);
@@ -56,7 +53,6 @@ namespace psycho_clinic
             contractsStorage.Start();
             proceduresStorage.Start();
             doctorsStorage.Start();
-            reportsStorage.Start();
 
             return base.WarmupAsync(environment, serviceProvider);
         }
@@ -80,7 +76,6 @@ namespace psycho_clinic
             contractsStorage.Stop();
             proceduresStorage.Stop();
             doctorsStorage.Stop();
-            reportsStorage.Stop();
 
             base.DoDispose();
         }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using psycho_clinic.AppInfrastructure.Middleware;
 using psycho_clinic.Configuration;
-using psycho_clinic.Models;
 using psycho_clinic.Storage;
 using Vostok.Hosting.Abstractions;
 using Vostok.Logging.Abstractions;
@@ -23,7 +22,6 @@ namespace psycho_clinic.AppInfrastructure
             services.AddSingleton<IContractsStorage, ContractsStorage>();
             services.AddSingleton<IProceduresStorage, ProceduresStorage>();
             services.AddSingleton<IDoctorsStorage, DoctorsStorage>();
-            services.AddSingleton<IReportsStorage<TreatmentProcedureReport>, ReportsStorage<TreatmentProcedureReport>>();
         }
     }
 }

@@ -28,7 +28,7 @@ namespace psycho_clinic.Controllers
         }
 
         [HttpGet]
-        public Task<IEnumerable<DoctorModel>> GetDoctors(int skip)
+        public Task<IEnumerable<DoctorModel>> GetDoctors(int skip = 0)
         {
             var doctors = storage
                 .GetDoctors()
