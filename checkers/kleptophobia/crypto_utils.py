@@ -1,6 +1,10 @@
 from hashlib import md5
 
 
+class DecodingError(Exception):
+    pass
+
+
 def expand_key(key, S):
     def key_to_blocks(key):
         return [key[i:i+4] for i in range(0, len(key), 4)]
@@ -23,7 +27,10 @@ def pad(text, block_size):
 
 
 def unpad(text):
-    return text[:-text[-1]]
+    padding = text[-1]
+    if set(text[-padding:]) != set(text[:1]):
+        raise DecodingError(f"wrong padding: {text[-padding]}, {text[:1]}")
+    return text[:-padding]
 
 
 def inverse(arr):

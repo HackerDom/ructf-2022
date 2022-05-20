@@ -3,7 +3,9 @@ package crypto
 import (
 	"bytes"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"kleptophobia/utils"
 )
 
 const BlockSize = 16
@@ -20,8 +22,20 @@ func pad(data []byte) []byte {
 	return append(data, paddingBytes...)
 }
 
-func unpad(data []byte) []byte {
-	return data[:len(data)-int(data[len(data)-1])]
+/*
+   padding = text[-1]
+   if set(text[-padding:]) != set(text[:1]):
+       raise DecodingError(f"wrong padding: {text[-padding]}, {text[:1]}")
+   return text[:-padding]
+
+*/
+
+func unpad(data []byte) ([]byte, error) {
+	padding := data[len(data)-1]
+	if !utils.EqualAsSets(data[-padding:], data[:1]) {
+		return nil, errors.New("wrong padding")
+	}
+	return data[:-padding], nil
 }
 
 func substitute(data [BlockSize]byte, s [256]byte) [BlockSize]byte {
@@ -163,7 +177,11 @@ func (c Cipher) Decrypt(ct []byte) ([]byte, error) {
 		}
 		ptBlocks[i] = block
 	}
-	return unpad(joinBlocks(ptBlocks)), nil
+	res, err := unpad(joinBlocks(ptBlocks))
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func NewCipher(key []byte) Cipher {

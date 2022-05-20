@@ -14,8 +14,7 @@ from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, 
 
 import generators
 from crypto import Cipher
-from crypto_utils import get_hash
-
+from crypto_utils import get_hash, DecodingError
 
 checker = NewChecker()
 PORT = 50051
@@ -138,7 +137,13 @@ class CryptoChecker(VulnChecker):
 
             password_hash = get_hash(password.encode())
             cipher = Cipher(password_hash)
-            raw_private_person = cipher.decrypt(get_encrypted_full_info_response.encryptedFullInfo)
+
+            try:
+                raw_private_person = cipher.decrypt(get_encrypted_full_info_response.encryptedFullInfo)
+            except DecodingError:
+                print(f"Decoding error, full info: {get_encrypted_full_info_response.encryptedFullInfo}")
+                ec.verdict = Verdict.CORRUPT('Wrong info decoding')
+                return ec.verdict
 
             private_person = pb2.PrivatePerson()
             try:

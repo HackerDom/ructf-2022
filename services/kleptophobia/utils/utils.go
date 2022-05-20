@@ -101,3 +101,30 @@ func RandString(ln int) string {
 	}
 	return string(res)
 }
+
+type SimpleSet map[byte]bool
+
+func makeSimpleSet(data []byte) *SimpleSet {
+	res := SimpleSet{}
+	for _, v := range data {
+		res[v] = true
+	}
+	return &res
+}
+
+func equals(first, second *SimpleSet) bool {
+	if len(*first) != len(*second) {
+		return false
+	}
+	for k, _ := range *first {
+		_, ok := (*second)[k]
+		if !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func EqualAsSets(first, second []byte) bool {
+	return equals(makeSimpleSet(first), makeSimpleSet(second))
+}
