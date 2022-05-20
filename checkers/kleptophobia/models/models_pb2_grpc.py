@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import models_pb2 as models__pb2
+import models.models_pb2 as models__pb2
 
 
 class KleptophobiaStub(object):

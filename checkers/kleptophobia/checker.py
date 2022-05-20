@@ -6,15 +6,15 @@ import traceback
 import google
 import grpc
 import names
+from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
 from grpc._channel import _InactiveRpcError
 
-import models_pb2 as pb2
-import models_pb2_grpc as pb2_grpc
-from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
-
 import generators
-from crypto import Cipher
-from crypto_utils import get_hash, DecodingError
+import models.models_pb2 as pb2
+import models.models_pb2_grpc as pb2_grpc
+from crypto.cipher import Cipher
+from crypto.crypto_utils import get_hash, DecodingError
+
 
 checker = NewChecker()
 PORT = 50051
@@ -70,19 +70,17 @@ class CryptoChecker(VulnChecker):
             second_name = names.get_last_name()
             room = generators.gen_int()
 
-            private_person = pb2.PrivatePerson(
-                first_name=first_name,
-                middle_name=middle_name,
-                second_name=second_name,
-                username=username,
-                room=room,
-                diagnosis=request.flag,
-            )
-
             password = generators.gen_string()
             register_request = pb2.RegisterReq(
-                person=private_person,
                 password=password,
+                person=pb2.PrivatePerson(
+                    first_name=first_name,
+                    middle_name=middle_name,
+                    second_name=second_name,
+                    username=username,
+                    room=room,
+                    diagnosis=request.flag,
+                ),
             )
 
             register_response = stub.Register(register_request)
