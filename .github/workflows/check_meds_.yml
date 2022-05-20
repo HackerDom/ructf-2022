@@ -21,9 +21,9 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v2
     - name: Run prebuilt hook
-      run: if [ -f services/meds/before_image_build.sh ]; then (cd ./services/meds && ./before_image_build.sh); fi
+      run: if [ -f services/meds/deploy/before_image_build.sh ]; then (cd ./services/meds/deploy && ./before_image_build.sh); fi
     - name: Setup meds
-      run: (cd ./services/meds && docker-compose pull && docker-compose build && docker-compose up --build -d)
+      run: (cd ./services/meds/deploy && docker-compose pull && docker-compose build && docker-compose up --build -d)
     - name: Prepare python for checker
       uses: actions/setup-python@v2
       with:
