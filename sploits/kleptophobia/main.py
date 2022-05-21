@@ -1,3 +1,5 @@
+from itertools import product
+from string import ascii_letters, digits
 from hashlib import md5
 from sys import argv
 
@@ -9,13 +11,14 @@ import models.models_pb2 as pb2
 import models.grpc_pb2_grpc as pb2_grpc
 
 from crypto.cipher import Cipher, BLOCK_SIZE
-from crypto.crypto_utils import pad, unpad, xor
+from crypto.crypto_utils import pad, unpad, xor, DecodingError
 
-from crack import crack
+from crack import crack, key_from_solver, get_solver
 
 
 PORT = 50051
 HOST = argv[1]
+ALPHA = (ascii_letters + digits).encode()
 
 
 def get_stub():
@@ -68,8 +71,8 @@ def public_to_private_person(public_person):
 def gen_person():
     username = generators.gen_string(10, 10)
     first_name = generators.gen_name(7, 7)
-    middle_name = generators.gen_name(16, 16)
-    second_name = generators.gen_name(16, 16)
+    middle_name = generators.gen_name(26, 26)
+    second_name = generators.gen_name(6, 7)
     room = generators.gen_int()
     flag = generators.gen_string(31, 31) + '='
     return pb2.PrivatePerson(
@@ -81,11 +84,17 @@ def gen_person():
     ), username
 
 
-def hack(iv, ct_block):
-    for i in range(0x100):
-        print(i)
-        pt_block = xor(pad(bytes([i, ord('=')]), BLOCK_SIZE), iv)
-        yield bytes.fromhex(hex(crack(pt_block, ct_block))[2:].zfill(32))
+def hack(unknown_len, iv, ct_block):
+    pt_block = xor(pad(bytes([0]*unknown_len + [ord('=')]), BLOCK_SIZE), iv)
+    states, key_bits, pt_bits = crack(unknown_len*8, pt_block[unknown_len:], ct_block)
+
+    solver = get_solver()
+    for x in product(ALPHA, repeat=unknown_len):
+        x = xor(bytes(x), iv[:unknown_len])
+        x_bits = list(map(int, bin(int(x.hex(), 16))[2:].zfill(unknown_len*8)))
+        new_states = [x_bit == pt_bit for x_bit, pt_bit in zip(x_bits, pt_bits)]
+        yield key_from_solver(key_bits, states + new_states, solver)
+        solver.reset()
 
 
 if __name__ == '__main__':
@@ -102,20 +111,18 @@ if __name__ == '__main__':
     test = fake_public_person.SerializeToString()
     test_len, test_padded = len(test)%16, pad(test, BLOCK_SIZE)
 
-    blocks = [test_padded[i : i + BLOCK_SIZE] for i in range(0, len(test_padded), BLOCK_SIZE)]
-    for block in blocks:
-        print(block)
-
     enc_msg = get_encrypted_full_info(stub, username)
-    real_key = md5(password.encode()).digest()
 
-    for maybe_key in hack(enc_msg[-32:-16], enc_msg[-16:]):
-        dec_msg = Cipher(maybe_key).decrypt(enc_msg)
+    print('HACKING')
+    for maybe_key in hack(test_len-1, enc_msg[-32:-16], enc_msg[-16:]):
+        try:
+            dec_msg = Cipher(maybe_key).decrypt(enc_msg)
+        except DecodingError:
+            continue
         try:
             maybe_person = pb2.PrivatePerson()
             maybe_person.ParseFromString(dec_msg)
             if maybe_person.diagnosis.endswith('='):
-                print(maybe_person.diagnosis, maybe_person.diagnosis == private_person.diagnosis)
-                break
+                print('FLAG?', maybe_person.diagnosis, maybe_person.diagnosis == private_person.diagnosis)
         except DecodeError:
             continue

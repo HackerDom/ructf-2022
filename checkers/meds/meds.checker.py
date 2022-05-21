@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import requests
 import traceback
 import random
 import string
@@ -9,7 +8,7 @@ import uuid
 
 from bs4 import BeautifulSoup
 from gornilo import CheckRequest, Verdict, Checker, PutRequest, GetRequest
-from gornilo.models.verdict.verdict_codes import *
+from gornilo.http_clients import requests_with_retries
 
 from helpers import get_diagnosis, get_prescription
 
@@ -25,7 +24,7 @@ def check_service(request: CheckRequest) -> Verdict:
 
     url = "http://" + request.hostname + ":16780/" + key
     try:
-        response = requests.post(url, data = "diag=" + diag, allow_redirects = True)
+        response = requests_with_retries().post(url, data = "diag=" + diag, allow_redirects = True)
         soup = BeautifulSoup(response.text, features="html.parser")
         actual_meds = soup.find(id="meds").text
 
@@ -47,7 +46,7 @@ def put_flag(request: PutRequest) -> Verdict:
     url = "http://" + request.hostname + ":16780/" + key
     try:
         for i in range(3):
-            response = requests.post(url, data = "diag=" + diag, allow_redirects = False)
+            response = requests_with_retries().post(url, data = "diag=" + diag, allow_redirects = False)
             key = response.headers['Location'][1:]
             if len(key) == 0:
                 print("Couldn't get flag id. Response was: ", vars(response))
@@ -65,7 +64,7 @@ def put_flag(request: PutRequest) -> Verdict:
 def get_flag(request: GetRequest) -> Verdict:
     url = "http://" + request.hostname + ":16780/" + request.flag_id.strip()
     try:
-        response = requests.get(url)
+        response = requests_with_retries().get(url)
         soup = BeautifulSoup(response.text, features="html.parser")
         diag = soup.find(id="diag")
         if diag and request.flag in diag.text:
