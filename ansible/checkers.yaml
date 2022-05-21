@@ -36,7 +36,9 @@
     pip:
       executable: pip3
       requirements: "{{ cs_dir }}/checkers/{{ item }}/requirements.txt"
+      chdir: "{{ cs_dir }}/checkers/{{ item }}"
     loop:
       - meds
       - kleptophobia
       - prosopagnosia
+      - schizophasia
