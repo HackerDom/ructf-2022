@@ -42,8 +42,7 @@ def expand_key(key):
             res.extend(block)
         return res
 
-    blocks = shift(key_to_blocks(key))
-    return blocks_to_key(blocks)
+    return blocks_to_key(shift(key_to_blocks(key)))
 
 
 def gen_round_keys(key_bytes):
@@ -62,9 +61,10 @@ def encrypt_one_round(block, round_key):
     return xor_bytes(block, round_key)
 
 
-def crack(pt, ct):
+def crack(pt_unknown_bits_len, pt, ct):
+    pt_unknown_bits = z3.BitVecs([f'p{i}' for i in range(pt_unknown_bits_len)], 1)
     pt_first_block = list(map(int, ''.join([bin(x)[2:].zfill(8) for x in pt])))
-    pt_bits = [z3.BitVecVal(x, 1) for x in pt_first_block]
+    pt_bits = pt_unknown_bits + [z3.BitVecVal(x, 1) for x in pt_first_block]
     pt_bytes = [pt_bits[i:i+8] for i in range(0, len(pt_bits), 8)]
 
     ct_first_block = list(map(int, ''.join([bin(x)[2:].zfill(8) for x in ct])))
@@ -80,19 +80,26 @@ def crack(pt, ct):
     for i in range(ROUNDS):
         block = encrypt_one_round(block, round_keys[i])
 
-    s = z3.Solver()
+    states = []
     for p_byte, c_byte in zip(block, ct_bytes):
         for p_bit, c_bit in zip(p_byte, c_byte):
-            a = z3.simplify(p_bit ^ c_bit)
-            s.add(a == 0)
-    res = s.check()
+            states.append(z3.simplify(p_bit ^ c_bit) == 0)
+
+    return states, key_bits, pt_unknown_bits
+
+
+def key_from_solver(key_bits, states, solver):
+    solver.add(states)
+    res = solver.check()
     if res != z3.sat:
         return None
-    model = s.model()
-    return int(''.join(
-        str(model[x].as_long())
-        for x in key_bits
-    ), 2)
+    model = solver.model()
+    key = ''.join(str(model[x].as_long()) for x in key_bits)
+    return bytes.fromhex(hex(int(key, 2))[2:].zfill(32))
+
+
+def get_solver():
+    return z3.Solver()
 
 
 def test():
@@ -106,8 +113,8 @@ def test():
     pt_block = pad(pt, 16)[-16:]
     print(pt_block)
     ct_block = ct[-16:]
-    found_key = crack(xor(pt_block, ct[-32:-16]), ct_block)
-    found_key = bytes.fromhex(hex(found_key)[2:].zfill(32))
+    states, key_bits, pt_bits = crack(0, xor(pt_block, ct[-32:-16]), ct_block)
+    found_key = key_from_solver(key_bits, states, get_solver())
     print(key.hex())
     print(found_key.hex())
     is_good = Cipher(found_key).decrypt(ct) == pt

@@ -29,6 +29,7 @@
 #include <time.h>
 #include "stdbool.h"
 #include <string.h>
+#include <openssl/sha.h>
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
@@ -39,9 +40,6 @@ PG_MODULE_MAGIC;
 
 #define SECRETS_COUNT 15
 #define SECRET_LIFETIME 60000
-
-static z_stream deflate_strm, inflate_strm;
-static unsigned char buf[BUFSZ];
 
 void _PG_init(void);
 void _PG_fini(void);
@@ -67,8 +65,8 @@ bool is_expired(secret_token * token) {
 	time_t curr_time;
 	time (&curr_time);
 	printf("diff: %f\n", difftime(curr_time, token->issue_time));
-//	return difftime(curr_time, token->issue_time) > 60.0;
-	return difftime(curr_time, token->issue_time) > 5.0;
+	return difftime(curr_time, token->issue_time) > 60.0;
+//	return difftime(curr_time, token->issue_time) > 5.0;
 }
 
 bool is_invalid(secret_token * token) {
@@ -84,7 +82,8 @@ bool is_invalid(secret_token * token) {
 
 		printf("token: %.*s, issue time: %.*s, diff: %f\n", token->data_len, token->data, len, buffer, difftime(curr_time, token->issue_time));
 		fflush(stdout);
-		return difftime(curr_time, token->issue_time) > (60.0);
+//		return difftime(curr_time, token->issue_time) > (60.0);
+		return difftime(curr_time, token->issue_time) > (60 * 15.0);
 	}
 }
 
@@ -194,11 +193,13 @@ int openssl_encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *
 
 Datum create_meta(PG_FUNCTION_ARGS);
 Datum authorize(PG_FUNCTION_ARGS);
+Datum verify(PG_FUNCTION_ARGS);
+Datum load_token(PG_FUNCTION_ARGS);
 
 static char *
 hex2str(const unsigned char * hex, int hex_len)
 {
-	char *str = malloc(2*hex_len + 1);
+	char *str = palloc(2*hex_len + 1);
 	if (!str) {
 		printf("OH SHIT\n");
 		fflush(stdout);
@@ -239,11 +240,12 @@ static int encrypt_meta(unsigned char* job_id_str, int job_id_len, char ** key) 
 	 * ciphertext which may be longer than the plaintext, depending on the
 	 * algorithm and mode.
 	 */
-	unsigned char * ciphertext = malloc(job_id_len * 2);
+	unsigned char * ciphertext = palloc(job_id_len * 2);
 
 	key_bytes_len = openssl_encrypt(job_id_str, job_id_len, ekey, iv, ciphertext);
 
 	*key = hex2str(ciphertext, key_bytes_len);
+	pfree(ciphertext);
 	return 2 * key_bytes_len + 1;
 }
 
@@ -294,29 +296,11 @@ void _PG_init(void)
 	prev_shmem_startup_hook = shmem_startup_hook;
 	shmem_startup_hook = pgss_shmem_startup;
 	prev_emit_log_hook = emit_log_hook;
-
-	deflate_strm.zalloc = Z_NULL;
-	deflate_strm.zfree  = Z_NULL;
-	deflate_strm.opaque = Z_NULL;
-
-	ret = deflateInit2(&deflate_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, DEFAULT_MEM_LEVEL, Z_DEFAULT_STRATEGY);
-	if (ret != Z_OK)
-		elog(FATAL, "deflateInit2 failed: %d", ret);
-
-	inflate_strm.zalloc = Z_NULL;
-	inflate_strm.zfree  = Z_NULL;
-	inflate_strm.opaque = Z_NULL;
-
-	ret = inflateInit2(&inflate_strm, -MAX_WBITS);
-	if (ret != Z_OK)
-		elog(FATAL, "inflateInit failed: %d", ret);
 }
 
 void
 _PG_fini(void)
 {
-	deflateEnd(&deflate_strm);
-	inflateEnd(&inflate_strm);
 	emit_log_hook = prev_emit_log_hook;
 	shmem_startup_hook = prev_shmem_startup_hook;
 }
@@ -327,60 +311,60 @@ Datum create_meta(PG_FUNCTION_ARGS)
 {
 	char *out;
 	text *in;
+	text * token;
+	text * userid;
 	size_t in_pos;
+	size_t userid_pos;
+	size_t token_len;
 	char * key_out;
-	int32 level;
 	int ret, alloc_size, rc1;
 	size_t out_pos, out_len;
 	char * buffer;
 
-	if (PG_ARGISNULL(0))
+	if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_NULL();
 
-	in = PG_GETARG_BYTEA_P(0);
-	level = 1;
+	in = PG_GETARG_TEXT_P(0);
+	in_pos = VARSIZE(in) - VARHDRSZ;
+    userid = PG_GETARG_TEXT_P(1);
+    userid_pos = VARSIZE(userid) - VARHDRSZ;
+    token = PG_GETARG_TEXT_P(2);
+    token_len = VARSIZE(token) - VARHDRSZ;
 
-	LWLockAcquire(&global_variables->lock, LW_EXCLUSIVE);
-	refresh_token();
-
-
-	in_pos = VARSIZE(in);
-	if (global_variables == NULL) {
-		ereport(ERROR, (errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION), errmsg("token lookup failed")));
-	} else {
-		printf("secret: %s, len: %zu\n", global_variables->curr_secret.data, global_variables->curr_secret.data_len);
-		fflush(stdout);
-	}
-
-	if (in_pos  - VARHDRSZ > 1024 * 1024) {
-		ereport(ERROR, (errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED), errmsg("question is too big")));
-	}
-
-	alloc_size = in_pos  - VARHDRSZ + global_variables->curr_secret.data_len + 200;
+    printf("OK\n");
+    fflush(stdout);
+	alloc_size = in_pos + token_len + 200;
 	buffer = palloc(alloc_size);
-	rc1 = snprintf(buffer, alloc_size, "{\"question\":\"%.*s\",\"token\":\"%.*s\"}",
-				   in_pos  - VARHDRSZ, VARDATA(in), global_variables->curr_secret.data_len, global_variables->curr_secret.data);
+	rc1 = snprintf(buffer, alloc_size, "{\"question\":\"%.*s\",\"token\":\"%.*s\",\"userid\":\"%.*s\"}",
+				   in_pos, VARDATA(in), token_len, VARDATA(token), token_len, VARDATA(token));
 
 	uLong destLen = compressBound(rc1); // this is how you should estimate size
 	out = palloc(destLen);
 	int res = compress(out, &destLen, buffer, rc1);
 
 	if(res == Z_BUF_ERROR){
-		ereport(ERROR, (errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED), errmsg("Buffer was too small")));
-	}
+        pfree(out);
+        pfree(buffer);
+        ereport(ERROR, (errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED), errmsg("Buffer was too small")));
+    }
+
 	if(res ==  Z_MEM_ERROR){
-		ereport(ERROR, (errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED), errmsg("Not enough memory for compression")));
+        pfree(out);
+        pfree(buffer);
+        ereport(ERROR, (errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED), errmsg("Not enough memory for compression")));
 	}
 
 	ret = encrypt_meta((unsigned char *) out, destLen, &key_out);
-	LWLockRelease(&global_variables->lock);
-	PG_RETURN_TEXT_P(cstring_to_text_with_len(key_out, ret));
+    pfree(out);
+    pfree(buffer);
+    text * ret_val = cstring_to_text_with_len(key_out, ret);
+    pfree(key_out);
+	PG_RETURN_TEXT_P(ret_val);
 }
 
 PG_FUNCTION_INFO_V1(authorize);
 Datum authorize(PG_FUNCTION_ARGS)
 {
-	bytea *out;
 	text *in;
 	bool res;
 	size_t in_pos;
@@ -395,4 +379,85 @@ Datum authorize(PG_FUNCTION_ARGS)
 
 	res = token_exists(VARDATA(in), in_pos  - VARHDRSZ);
 	PG_RETURN_BOOL(res);
+}
+
+bool check_match(char * token, size_t token_len, char * suffix, size_t suffix_len, char * h, size_t h_len) {
+    if (h_len < SHA_DIGEST_LENGTH * 2) {
+        ereport(ERROR, (errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION), errmsg("incorrect hash len")));
+    }
+
+    size_t res_len = token_len + suffix_len;
+    char *result = palloc(res_len);
+    int rc;
+    memcpy(result, token, token_len);
+    memcpy(result + token_len, suffix, suffix_len);
+
+    char hash[SHA_DIGEST_LENGTH];
+    SHA1(result, res_len, hash);
+
+    unsigned char * hashstr = palloc(SHA_DIGEST_LENGTH * 2);
+
+    char * key = hex2str(hash, SHA_DIGEST_LENGTH);
+    rc = strncmp(h, key, 2 * SHA_DIGEST_LENGTH);
+
+    pfree(result);
+    pfree(hashstr);
+    pfree(key);
+
+    return rc == 0;
+}
+
+PG_FUNCTION_INFO_V1(verify);
+Datum verify(PG_FUNCTION_ARGS)
+{
+    bytea *out;
+    text *token, *suffix, *hash;
+    bool res;
+    size_t token_len, suffix_len, hash_len;
+
+
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+        PG_RETURN_NULL();
+
+    token		= PG_GETARG_TEXT_P(0);
+    token_len = VARSIZE(token) - VARHDRSZ;
+
+    suffix		= PG_GETARG_TEXT_P(1);
+    suffix_len = VARSIZE(suffix) - VARHDRSZ;
+
+    hash		= PG_GETARG_TEXT_P(2);
+    hash_len = VARSIZE(hash) - VARHDRSZ;
+
+    res = check_match(VARDATA(token), token_len, VARDATA(suffix), suffix_len, VARDATA(hash), hash_len);
+    PG_RETURN_BOOL(res);
+}
+
+PG_FUNCTION_INFO_V1(load_token);
+Datum load_token(PG_FUNCTION_ARGS)
+{
+char *out;
+	text *in;
+	size_t in_pos;
+	char * key_out;
+	int32 level;
+	int ret, alloc_size, rc1;
+	size_t out_pos, out_len;
+	char * buffer;
+
+	LWLockAcquire(&global_variables->lock, LW_EXCLUSIVE);
+	refresh_token();
+
+	in_pos = VARSIZE(in);
+	if (global_variables == NULL) {
+        LWLockRelease(&global_variables->lock);
+        ereport(ERROR, (errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION), errmsg("token lookup failed")));
+	} else {
+		printf("secret: %s, len: %zu\n", global_variables->curr_secret.data, global_variables->curr_secret.data_len);
+		fflush(stdout);
+	}
+
+    text * ret_val = cstring_to_text_with_len(global_variables->curr_secret.data, global_variables->curr_secret.data_len);
+    LWLockRelease(&global_variables->lock);
+
+	PG_RETURN_TEXT_P(ret_val);
 }

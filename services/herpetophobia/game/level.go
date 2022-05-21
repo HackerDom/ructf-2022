@@ -19,6 +19,7 @@ type Level struct {
 	MaxSteps  int64
 	FoodSteps int64
 	FoodTTl   int64
+	FoodNum   int64
 }
 
 func (level *Level) Status() Status {
@@ -69,6 +70,7 @@ func (level *Level) Step(direction Direction) error {
 
 	if cell == CELL_FOOD {
 		level.foodCount -= 1
+		level.FoodNum += 1
 
 		err = level.Field.Set(head.X, head.Y, CELL_EMPTY)
 		if err != nil {
@@ -88,7 +90,7 @@ func (level *Level) Step(direction Direction) error {
 
 	level.steps += 1
 
-	if level.steps > level.MaxSteps || level.FoodSteps+level.FoodTTl <= level.steps {
+	if level.steps > level.MaxSteps || (level.FoodSteps*level.FoodNum+level.FoodTTl) < level.steps {
 		level.status = STATUS_LOSE
 		return nil
 	}

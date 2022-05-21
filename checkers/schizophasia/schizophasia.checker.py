@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.8
 import sys
 import traceback
+
+import gornilo.models.verdict
 import pg8000
 import uuid
 
@@ -10,7 +12,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
 from gornilo.http_clients import requests_with_retries
-
+from gornilo.models.verdict import OK
 checker = NewChecker()
 PG_PORT = 5432
 PG_CONN_STRING = "host=%s port=%d user=svcuser dbname=postgres password=svcpass"
@@ -77,55 +79,55 @@ def get_pg_conn(hostname):
 
 @checker.define_check
 async def check_service(request: CheckRequest) -> Verdict:
-    with PgErrorChecker() as registry_ec:
-        with PgConn(request.hostname) as pgc:
-            cursor = pgc.conn.cursor()
-            cursor.execute("SELECT 1")
-            pgc.conn.commit()
+    with PgErrorChecker() as registry_ec, PgConn(request.hostname) as pgc:
+        cursor = pgc.conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.close()
 
     return registry_ec.verdict
 
 
-@checker.define_vuln("flag_id is a metadata")
+@checker.define_vuln("flag_id is a username")
 class OracleChecker(VulnChecker):
     @staticmethod
     def put(request: PutRequest) -> Verdict:
-        # with ErrorChecker() as doctor_ec:
-        #     # check doctor is alive
-        #     url = f"http://{request.hostname}:{DOCTOR_PORT}/api/v1/jobs"
-        #     payload = {
-        #         'id': '4C3443283C07611254AECD1FDDFA99452AF996EC5819784B69C053B66F4F7F5EA22B7E27B33F7C93C492421D21DBD29FCB0819B4B1AFD9D2548CC831C47C57FCBBFF1CE70E3468E692B7355C02C85EB7812F93F7A6A0905C6730904E2CE27F34A8A018DA1025968453BC73047BC43EC90B7FFE323060CA3D5E1A28D9BB8AA337'}
-        #     files = []
-        #     headers = {}
-        #
-        #     resp = requests_with_retries().put(
-        #         url,
-        #         headers=headers,
-        #         data=payload
-        #     )
-        #     if resp is None:
-        #         return Verdict.CORRUPT("corrupt response from doctor")
-        #
-        #     resp_json = resp.json()
-        #     if "data" not in resp_json:
-        #         doctor_ec.verdict = Verdict.CORRUPT("corrupt response from doctor")
-        #     else:
-        #         doctor_ec.verdict = Verdict.OK()
-        #
-        # with PgErrorChecker() as registry_ec:
-        #     conn = pg8000.connect("svcuser", host=request.hostname, password="svcpass", database="postgres",
-        #                           port=PG_PORT)
-        #     cursor = conn.cursor()
-        #     cursor.execute("SELECT add_job('%s')" % str(uuid.uuid4()))
-        #     conn.commit()
-        #     conn.close()
-        #
-        # if registry_ec.verdict._code > doctor_ec.verdict._code:
-        #     return registry_ec.verdict
-        #
-        # return doctor_ec.verdict
+        priv_flag_id = None
+        public_flag_id = "user_" + str(uuid.uuid4())
+        with PgErrorChecker() as registry_ec, PgConn(request.hostname) as pgc:
+            cursor = pgc.conn.cursor()
+            cursor.execute("SELECT add_job('%s', '%s')" % (public_flag_id, request.flag))
+            pgc.conn.commit()
+            rows = cursor.fetchall()
 
-        return Verdict.OK()
+            if not rows or len(rows) != 1 or len(rows[0]) != 1:
+                return Verdict.MUMBLE("unexpected registry service response")
+
+            priv_flag_id = rows[0][0]
+            cursor.close()
+
+        if registry_ec.verdict._code != OK:
+            return registry_ec.verdict
+
+        print("public flag id:%s, priv flag id:%s\n" % (public_flag_id, priv_flag_id))
+        with ErrorChecker() as doctor_ec:
+            url = f"http://{request.hostname}:{DOCTOR_PORT}/api/v1/jobs"
+            payload = {'id': priv_flag_id}
+            files = []
+            headers = {}
+
+            resp = requests_with_retries().put(
+                url,
+                headers=headers,
+                data=payload
+            )
+            if resp is None:
+                return Verdict.CORRUPT("corrupt response from doctor")
+
+            resp_json = resp.json()
+            if "data" not in resp_json:
+                return Verdict.CORRUPT("corrupt response from doctor")
+
+        return Verdict.OK_WITH_FLAG_ID(public_flag_id, priv_flag_id)
 
     @staticmethod
     def get(request: GetRequest) -> Verdict:
