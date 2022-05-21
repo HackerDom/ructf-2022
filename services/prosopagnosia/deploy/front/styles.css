@@ -6,12 +6,26 @@ html, body {
 }
 
 body {
-    display: flex; 
+    display: flex;
     flex-direction: row;
     justify-content: center;
     color: #2c3531;
     background-color: #ece5ce;
     font-family: 'Courier New', Courier, monospace;
+}
+
+form {
+    width: 500px;
+}
+
+label {
+    display: inline-block;
+    width: 200px;
+    text-align: right;
+}
+
+input {
+    display: inline-block;
 }
 
 .content {
@@ -45,7 +59,7 @@ body {
     font-size: x-large;
 }
 
-.description {
+.num_enter {
     padding: 10px;
     width: 400px;
     height: 50px;
@@ -55,12 +69,6 @@ body {
     border: #2c3531 1px solid;
     border-radius: 10px;
     outline: none;
-}
-
-.audio {
-    margin: 30px;
-    width: 300px;
-    font-size: large;
 }
 
 .link {

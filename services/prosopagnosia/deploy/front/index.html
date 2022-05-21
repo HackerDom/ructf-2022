@@ -2,21 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Demos list</title>
+    <title>A lil demo scene!</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 
-<div class="block" id="block-list">
-    <div class="block" id="page-enter-block">
-        <textarea class="description" id="page_num" placeholder="Enter a page num"></textarea><br>
-        <textarea class="description" id="page_size" placeholder="Enter a page size"></textarea><br>
-        <span class="button" id="load-list-button">Load list</span>
+<div class="content">
+    <div class="block" id="send-rom">
+        <form>
+            <fieldset>
+                <div>
+                    <label for="rom-name">Rom name:</label><input id="rom-name" type="text" onchange=""/>
+                </div>
+                <div>
+                    <label for="rom-author">Author name:</label><input id="rom-author" type="text" onchange=""/>
+                </div>
+                <div>
+                    <label for="rom-secret">Access secret:</label><input id="rom-secret" type="text" onchange=""/>
+                </div>
+                <div>
+                    <input id="rom-file" type="file" onchange=""/>
+                </div>
+            </fieldset>
+            <button id="send-rom-button" type="button">Upload My Great Rom!</button>
+        </form>
     </div>
 
-    <p class="test-medium">
-        Other users already released their demos:
-    </p>
+    <div class="block" id="block-list" hidden>
+        <p class="test-medium">
+            <b>Other users already released their demos:</b>
+        </p>
+    </div>
 </div>
 
 <script src="/scripts.js"></script>

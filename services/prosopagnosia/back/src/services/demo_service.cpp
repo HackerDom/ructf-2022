@@ -117,7 +117,7 @@ result<std::vector<std::shared_ptr<demo>>> demo_service::list(int page_num, int 
     auto conn = guard.connection->get_connection().get();
 
     auto query = format(
-            hidden_str("select * from demos limit %d offset %d;"),
+            hidden_str("select * from demos order by created_at desc limit %d offset %d;"),
             page_size, page_num * page_size
     );
 
