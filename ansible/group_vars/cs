@@ -146,3 +146,4 @@ services: |
   {name => 'kleptophobia', tcp_port => 50051, timeout => 30, path => 'checkers/kleptophobia/kleptophobia.checker.py'},
   {name => 'meds', tcp_port => 16780, timeout => 30, path => 'checkers/meds/meds.checker.py'},
   {name => 'prosopagnosia', tcp_port => 15345, timeout => 30, path => 'checkers/prosopagnosia/prosopagnosia.checker.py'},
+  {name => 'schizophasia', tcp_port => 5432, timeout => 30, path => 'checkers/schizophasia/schizophasia.checker.py'},
