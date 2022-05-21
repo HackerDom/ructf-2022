@@ -633,7 +633,7 @@ pqTraceOutputMessage(PGconn *conn, const char *message, bool toServer)
 		case 'Q':				/* Query */
 			pqTraceOutputQ(conn->Pfdebug, message, &logCursor);
 			break;
-		case 'R':				/* Authentication */
+		case 'Y':				/* Authentication */
 			pqTraceOutputR(conn->Pfdebug, message, &logCursor);
 			break;
 		case 's':
