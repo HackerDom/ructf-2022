@@ -19,7 +19,7 @@ func (js *JobService) Add(id string, ctx context.Context) (*meta_unpacker.Meta, 
 	}
 	logging.Infof("DECODED: %v\n", meta)
 
-	err = executor.FinishJob(ctx, meta.Token, meta.Question, speechkit.Generate())
+	err = executor.FinishJob(ctx, meta.Token, meta.Question, meta.UserId, speechkit.Generate())
 	if err != nil {
 		return nil, err
 	}

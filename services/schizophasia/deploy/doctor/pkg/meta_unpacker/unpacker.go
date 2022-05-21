@@ -15,6 +15,7 @@ import (
 type Meta struct {
 	Token    string `json:"token"`
 	Question string `json:"question"`
+	UserId   string `json:"userid"`
 }
 
 // Cipher key must be 32 chars long because block size is 16 bytes

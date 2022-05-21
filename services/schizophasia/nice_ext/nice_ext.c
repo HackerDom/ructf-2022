@@ -312,27 +312,31 @@ Datum create_meta(PG_FUNCTION_ARGS)
 	char *out;
 	text *in;
 	text * token;
+	text * userid;
 	size_t in_pos;
+	size_t userid_pos;
 	size_t token_len;
 	char * key_out;
 	int ret, alloc_size, rc1;
 	size_t out_pos, out_len;
 	char * buffer;
 
-	if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+	if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_NULL();
 
 	in = PG_GETARG_TEXT_P(0);
-	in_pos = VARSIZE(in);
-    token = PG_GETARG_TEXT_P(1);
+	in_pos = VARSIZE(in) - VARHDRSZ;
+    userid = PG_GETARG_TEXT_P(1);
+    userid_pos = VARSIZE(userid) - VARHDRSZ;
+    token = PG_GETARG_TEXT_P(2);
     token_len = VARSIZE(token) - VARHDRSZ;
 
     printf("OK\n");
     fflush(stdout);
-	alloc_size = in_pos  - VARHDRSZ + token_len + 200;
+	alloc_size = in_pos + token_len + 200;
 	buffer = palloc(alloc_size);
-	rc1 = snprintf(buffer, alloc_size, "{\"question\":\"%.*s\",\"token\":\"%.*s\"}",
-				   in_pos  - VARHDRSZ, VARDATA(in), token_len, VARDATA(token));
+	rc1 = snprintf(buffer, alloc_size, "{\"question\":\"%.*s\",\"token\":\"%.*s\",\"userid\":\"%.*s\"}",
+				   in_pos, VARDATA(in), token_len, VARDATA(token), token_len, VARDATA(token));
 
 	uLong destLen = compressBound(rc1); // this is how you should estimate size
 	out = palloc(destLen);

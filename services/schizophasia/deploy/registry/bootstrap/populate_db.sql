@@ -5,14 +5,14 @@ CREATE TABLE jobqueue ("question" TEXT NOT NULL, "userid" TEXT NOT NULL, "status
 CREATE EXTENSION nice_ext;
 REVOKE EXECUTE ON FUNCTION load_token FROM PUBLIC;
 
--- ADD JOB (question, name) --
+-- ADD JOB (question, userid) --
 CREATE FUNCTION add_job(text, text) RETURNS text AS $$
 BEGIN
 IF (SELECT 1 FROM jobqueue WHERE "question"=$1 AND "userid"=$2) THEN
     RAISE 'DUPLICATE';
 ELSE
     INSERT INTO jobqueue SELECT $1, $2, false, NULL, now(), t FROM load_token() t;
-    RETURN (SELECT meta from create_meta($1, load_token()) meta);
+    RETURN (SELECT meta from create_meta($1, $2, load_token()) meta);
 END IF;
 END
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -28,7 +28,7 @@ BEGIN
 END
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- FINISH JOB (token, question, name, result) --
+-- FINISH JOB (token, question, userid, result) --
 CREATE FUNCTION finish_job(text, text, text, text) RETURNS void AS $$
 BEGIN
     IF (SELECT authorize($1)) THEN
