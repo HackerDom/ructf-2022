@@ -83,7 +83,7 @@ def deserialize(data: str) -> Disease:
             name = obj['name'],
             phase = obj['phase'],
         )
-    elif type == 'infections':
+    elif type == 'infectious':
         return InfectiousDisease(
             name = obj['name'],
             symptoms = obj['symptoms'],
