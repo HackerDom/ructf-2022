@@ -19,7 +19,7 @@ type server struct {
 }
 
 func (s *server) Register(ctx context.Context, in *models.RegisterReq) (*models.RegisterRsp, error) {
-	if err := s.dbApi.register(in.Person, in.Password); err != nil {
+	if err := s.dbApi.register(in.Username, in.Person, in.Password); err != nil {
 		msg := "can not register user: " + err.Error()
 		return &models.RegisterRsp{
 			Status:  models.RegisterRsp_FAIL,

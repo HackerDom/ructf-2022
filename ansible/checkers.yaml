@@ -4,8 +4,6 @@
     synchronize:
       src: "../checkers"
       dest: "{{ cs_dir }}"
-      rsync_opts:
-        - "--exclude=checkers/example_service"
     tags: sync
 
   - name: checkers owner
@@ -43,3 +41,4 @@
       - prosopagnosia
       - schizophasia
       - ambulance
+      - herpetophobia

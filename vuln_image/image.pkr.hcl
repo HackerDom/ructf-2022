@@ -112,7 +112,7 @@ build {
   }
 
   provisioner "file" {
-    source = "../services/prosopagnosia/"
+    source = "../services/prosopagnosia/deploy/"
     destination = "/home/prosopagnosia/"
   }
 
@@ -122,7 +122,7 @@ build {
   }
 
   provisioner "file" {
-    source = "../services/schizophasia/"
+    source = "../services/schizophasia/deploy/"
     destination = "/home/schizophasia/"
   }
 

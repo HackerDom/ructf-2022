@@ -33,11 +33,15 @@ func (dbapi *DBApi) init(pgConfig *config.PGConfig) {
 	dbapi.db = db
 }
 
-func (dbapi *DBApi) register(person *models.PrivatePerson, password string) error {
+func (dbapi *DBApi) register(username string, person *models.PrivatePerson, password string) error {
+	if err := models.ValidateUsername(username); err != nil {
+		return err
+	}
 	if err := models.ValidatePrivatePerson(person); err != nil {
 		return err
 	}
-	privatePersonRecord, err := models.PrivatePersonToRecord(person, password)
+
+	privatePersonRecord, err := models.PrivatePersonToRecord(username, person, password)
 	if err != nil {
 		return errors.New("can not translate private person to record: " + err.Error())
 	}
@@ -47,7 +51,7 @@ func (dbapi *DBApi) register(person *models.PrivatePerson, password string) erro
 		if pgError := result.Error.(*pgconn.PgError); errors.Is(result.Error, pgError) {
 			switch pgError.Code {
 			case "23505":
-				return errors.New(fmt.Sprintf("username %s is already exists", person.Username))
+				return errors.New(fmt.Sprintf("username %s is already exists", username))
 			}
 			return result.Error
 		}
