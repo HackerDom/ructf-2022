@@ -14,7 +14,7 @@ for team in teams:
     b = team['id'] % 256
 
     network = "10.{a}.{b}.0/24".format(a=a, b=b)
-    host    = "10.{a}.{b}.2".format(a=a, b=b)
+    host    = "10.{a}.{b}.3".format(a=a, b=b)
 
     name = team['name'].replace("'", "\\'")
     flag = pycountry.countries.search_fuzzy(team['country'])[0].flag
