@@ -78,7 +78,6 @@ class PgErrorChecker:
 
 @checker.define_check
 async def check_service(request: CheckRequest) -> Verdict:
-    print("LOH")
     with ErrorChecker() as doctor_ec:
         # check doctor is alive
         url = f"http://{request.hostname}:{DOCTOR_PORT}/api/v1/jobs"
