@@ -27,7 +27,7 @@ jobs:
     - name: Prepare python for checker
       uses: actions/setup-python@v2
     - name: Setup checker libraries
-      run: if [ -f checkers/schizophasia/requirements.txt ]; then (cd ./checkers/schizophasia && python -m pip install -r requirements.txt); fi
+      run: if [ -f checkers/schizophasia/requirements.txt ]; then (cd ./checkers/schizophasia && python3.8 -m pip install -r requirements.txt); fi
     - name: Test checker on service
       run: (cd ./checkers/schizophasia && ./schizophasia.checker.py TEST 127.0.0.1)
   update_schizophasia:
