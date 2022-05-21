@@ -2,7 +2,7 @@ import z3
 from os import urandom
 
 from crypto.cipher import Cipher, P, ROUNDS, BLOCK_SIZE
-from crypto.crypto_utils import pad
+from crypto.crypto_utils import pad, xor
 
 
 def S(x):
@@ -106,7 +106,7 @@ def test():
     pt_block = pad(pt, 16)[-16:]
     print(pt_block)
     ct_block = ct[-16:]
-    found_key = crack(pt_block, ct_block)
+    found_key = crack(xor(pt_block, ct[-32:-16]), ct_block)
     found_key = bytes.fromhex(hex(found_key)[2:].zfill(32))
     print(key.hex())
     print(found_key.hex())

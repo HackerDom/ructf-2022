@@ -36,6 +36,12 @@ class ErrorChecker:
             if exc_value.code() == grpc.StatusCode.UNAVAILABLE:
                 print(exc_value.__dict__['_state'].__dict__)
                 self.verdict = Verdict.DOWN("Service is down")
+            elif exc_value.code() == grpc.StatusCode.INTERNAL:
+                print(exc_value.__dict__['_state'].__dict__)
+                self.verdict = Verdict.MUMBLE("Incorrect parsing format")
+            else:
+                print(exc_value.__dict__['_state'].__dict__)
+                self.verdict = Verdict.MUMBLE("Incorrect grpc status code")
 
         if exc_type:
             print(exc_type)
@@ -170,5 +176,35 @@ class CryptoChecker(VulnChecker):
         return ec.verdict
 
 
+# if __name__ == '__main__':
+#     checker.run()
+
+
+def main():
+    stub = get_stub('localhost')
+
+    username = generators.gen_string(8, 10)
+    first_name = generators.gen_name(7, 7)
+    middle_name = generators.gen_name(16, 16)
+    second_name = generators.gen_name(16, 16)
+    room = generators.gen_int()
+
+    password = generators.gen_string()
+    register_request = pb2.RegisterReq(
+        username=username,
+        password=password,
+        person=pb2.PrivatePerson(
+            first_name=first_name,
+            middle_name=middle_name,
+            second_name=second_name,
+            room=room,
+            diagnosis="request.flag",
+        ),
+    )
+
+    register_response = stub.Register(register_request)
+    print(register_response)
+
+
 if __name__ == '__main__':
-    checker.run()
+    main()

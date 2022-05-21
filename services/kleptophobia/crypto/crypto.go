@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"bytes"
+	"crypto/rand"
 	"errors"
 	"fmt"
 )
@@ -134,18 +135,31 @@ func decryptRound(block [BlockSize]byte, roundKey [BlockSize]byte) [BlockSize]by
 	return substitute(permutate(xorBlocks(block, roundKey), PInv), SInv)
 }
 
+func generateIv() [16]byte {
+	_iv := make([]byte, 16)
+	rand.Read(_iv)
+
+	var iv [16]byte
+	copy(iv[:], _iv)
+	return iv
+}
+
 func (c Cipher) Encrypt(pt []byte) ([]byte, error) {
 	ptBlocks, err := splitToBlocks(pad(pt))
 	if err != nil {
 		return nil, err
 	}
-	ctBlocks := make([][BlockSize]byte, len(ptBlocks))
+	ctBlocks := make([][BlockSize]byte, len(ptBlocks)+1)
+	ctBlocks[0] = generateIv()
+
 	roundKeys := generateRoundKeys(c.key)
-	for i, block := range ptBlocks {
+	for i := 0; i < len(ptBlocks); i++ {
+		block := ptBlocks[i]
+		block = xorBlocks(block, ctBlocks[i])
 		for round := 0; round < len(roundKeys); round++ {
 			block = encryptRound(block, roundKeys[round])
 		}
-		ctBlocks[i] = block
+		ctBlocks[i+1] = block
 	}
 	return joinBlocks(ctBlocks), nil
 }
@@ -155,13 +169,15 @@ func (c Cipher) Decrypt(ct []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	ptBlocks := make([][BlockSize]byte, len(ctBlocks))
+	ptBlocks := make([][BlockSize]byte, len(ctBlocks)-1)
 	roundKeys := generateRoundKeys(c.key)
-	for i, block := range ctBlocks {
+	for i := 1; i < len(ctBlocks); i++ {
+		block := ctBlocks[i]
 		for round := len(roundKeys) - 1; round >= 0; round-- {
 			block = decryptRound(block, roundKeys[round])
 		}
-		ptBlocks[i] = block
+		block = xorBlocks(block, ctBlocks[i-1])
+		ptBlocks[i-1] = block
 	}
 	res, err := unpad(joinBlocks(ptBlocks))
 	if err != nil {

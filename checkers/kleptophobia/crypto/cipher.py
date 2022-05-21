@@ -1,4 +1,5 @@
 import sys
+from os import urandom
 
 from crypto.crypto_utils import expand_key, inverse, pad, permute, substitute, unpad, xor
 
@@ -34,15 +35,32 @@ class Cipher:
     
     def encrypt(self, pt):
         pt = pad(pt, BLOCK_SIZE)
-        blocks = [pt[i : i+BLOCK_SIZE] for i in range(0, len(pt), BLOCK_SIZE)]
-        for round in range(ROUNDS):
-            round_key = self._round_keys[round]
-            blocks = [self._encrypt_block(block, round_key) for block in blocks]
-        return b''.join(blocks)
+        pt_blocks = [pt[i : i+BLOCK_SIZE] for i in range(0, len(pt), BLOCK_SIZE)]
+
+        ct_blocks = [urandom(16)]
+        for i in range(len(pt_blocks)):
+            block = xor(pt_blocks[i], ct_blocks[i])
+            for round_key in self._round_keys:
+                block = self._encrypt_block(block, round_key)
+            ct_blocks.append(block)
+        return b''.join(ct_blocks)
 
     def decrypt(self, ct):
-        blocks = [ct[i : i+BLOCK_SIZE] for i in range(0, len(ct), BLOCK_SIZE)]
-        for round in range(ROUNDS-1, -1, -1):
-            round_key = self._round_keys[round]
-            blocks = [self._decrypt_block(block, round_key) for block in blocks]
-        return unpad(b''.join(blocks))
+        ct_blocks = [ct[i : i+BLOCK_SIZE] for i in range(0, len(ct), BLOCK_SIZE)]
+
+        pt_blocks = []
+        for i in range(1, len(ct_blocks)):
+            block = ct_blocks[i]
+            for round_key in self._round_keys[::-1]:
+                block = self._decrypt_block(block, round_key)
+            pt_blocks.append(xor(block, ct_blocks[i-1]))
+        return unpad(b''.join(pt_blocks))
+
+
+if __name__ == '__main__':
+    key = urandom(16)
+    pt = b'Hello there! How are you?'
+    cipher = Cipher(key)
+    ct = cipher.encrypt(pt)
+    print(ct.hex())
+    print(cipher.decrypt(ct))

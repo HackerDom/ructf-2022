@@ -8,8 +8,8 @@ import generators
 import models.models_pb2 as pb2
 import models.grpc_pb2_grpc as pb2_grpc
 
-from crypto.crypto_utils import pad, unpad
 from crypto.cipher import Cipher, BLOCK_SIZE
+from crypto.crypto_utils import pad, unpad, xor
 
 from crack import crack
 
@@ -81,10 +81,10 @@ def gen_person():
     ), username
 
 
-def hack(ct_block):
+def hack(iv, ct_block):
     for i in range(0x100):
         print(i)
-        pt_block = pad(bytes([i, ord('=')]), BLOCK_SIZE)
+        pt_block = xor(pad(bytes([i, ord('=')]), BLOCK_SIZE), iv)
         yield bytes.fromhex(hex(crack(pt_block, ct_block))[2:].zfill(32))
 
 
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     enc_msg = get_encrypted_full_info(stub, username)
     real_key = md5(password.encode()).digest()
 
-    for maybe_key in hack(enc_msg[-16:]):
+    for maybe_key in hack(enc_msg[-32:-16], enc_msg[-16:]):
         dec_msg = Cipher(maybe_key).decrypt(enc_msg)
         try:
             maybe_person = pb2.PrivatePerson()
