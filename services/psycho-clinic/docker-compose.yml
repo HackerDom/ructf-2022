@@ -1,8 +1,10 @@
-version: '3.3'
+version: '2.2'
 services:
   psycho_clinic:
 
     image: psycho_clinic
+    cpus: 1
+    mem_limit: 3G
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,11 +14,6 @@ services:
       - data:/app/data
 
     restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 3G
           
 volumes:
     data:
