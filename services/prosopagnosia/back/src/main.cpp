@@ -33,6 +33,8 @@ response create_demo(const request &req, demo_service &demo_service) {
 
     crow::multipart::message msg(req);
 
+    CROW_LOG_INFO << msg.parts.size();
+
     if (msg.parts.size() != 1) {
         return response(BAD_REQUEST);
     }

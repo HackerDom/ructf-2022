@@ -54,7 +54,7 @@ services:
       nofile:
         soft: 12000
         hard: 12000
-    cpus: 2.25
+    cpus: 2
     pids_limit: 1000
 
 volumes:
