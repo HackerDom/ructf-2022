@@ -3,9 +3,14 @@ version: '2.2'
 services:
   ambulance:
     build: service
-    cpus: 1
-    pids_limit: 4096
-    mem_limit: 512M
+    cpus: 2
+    pids_limit: 8192
+    mem_limit: 1G
+    memswap_limit: 1G
+    ulimits:
+      nofile:
+        soft: 12000
+        hard: 12000
     restart: unless-stopped
     stop_grace_period: 3s
     volumes:
@@ -17,8 +22,13 @@ services:
   cleaner:
     build: cleaner
     cpus: 1
-    pids_limit: 128
-    mem_limit: 128M
+    pids_limit: 256
+    mem_limit: 256M
+    memswap_limit: 256M
+    ulimits:
+      nofile:
+        soft: 12000
+        hard: 12000
     restart: unless-stopped
     stop_grace_period: 3s
     volumes:

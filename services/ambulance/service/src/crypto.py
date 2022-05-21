@@ -53,7 +53,7 @@ def sign(message: bytes, private_key: str) -> str:
     try:
         d = utils.deserialize_number(private_key)
     except utils.SerializationError as e:
-        raise ValueError(f'invalid private key: {e}')
+        raise CryptoError(f'invalid private key: {e}')
 
     k = utils.generate_random_number(1, SecureCurve.q - 1)
     r = (k * SecureCurve.G).x
@@ -73,7 +73,7 @@ def verify(message: bytes, public_key: str, signature: str) -> bool:
         x, y = utils.deserialize_numbers_sequence(public_key)
         Q = Point(x, y, curve=SecureCurve)
     except utils.SerializationError as e:
-        raise ValueError(f'invalid public key: {e}')
+        raise CryptoError(f'invalid public key: {e}')
 
     h = hash(utils.int_to_bytes(r) + message)
     u = h * Q + s * SecureCurve.G
