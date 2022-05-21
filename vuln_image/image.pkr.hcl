@@ -112,7 +112,7 @@ build {
   }
 
   provisioner "file" {
-    source = "../services/prosopagnosia/"
+    source = "../services/prosopagnosia/deploy/"
     destination = "/home/prosopagnosia/"
   }
 
