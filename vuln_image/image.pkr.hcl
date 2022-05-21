@@ -40,13 +40,10 @@ build {
       "dnf -y install haveged",
 
       # Add users for services
-      "useradd -m -s /bin/bash ambulance",
-      "useradd -m -s /bin/bash herpetophobia",
       "useradd -m -s /bin/bash kleptophobia",
       "useradd -m -s /bin/bash meds",
-      "useradd -m -s /bin/bash prosopagnosia",
-      "useradd -m -s /bin/bash psycho-clinic",
       "useradd -m -s /bin/bash schizophasia",
+      "useradd -m -s /bin/bash schizovm",
     ]
   }
 
@@ -76,16 +73,6 @@ build {
 
   # Copy services
   provisioner "file" {
-    source = "../services/ambulance/"
-    destination = "/home/ambulance/"
-  }
-
-  provisioner "file" {
-    source = "../services/herpetophobia/"
-    destination = "/home/herpetophobia/"
-  }
-
-  provisioner "file" {
     source = "../services/kleptophobia/"
     destination = "/home/kleptophobia/"
   }
@@ -96,36 +83,25 @@ build {
   }
 
   provisioner "file" {
-    source = "../services/prosopagnosia/"
-    destination = "/home/prosopagnosia/"
-  }
-
-  provisioner "file" {
-    source = "../services/psycho-clinic/"
-    destination = "/home/psycho-clinic/"
-  }
-
-  provisioner "file" {
     source = "../services/schizophasia/"
     destination = "/home/schizophasia/"
+  }
+
+  provisioner "file" {
+    source = "../services/schizovm/"
+    destination = "/home/schizovm/"
   }
 
   # Build and run services for the first time
   provisioner "shell" {
     inline = [
-      "cd ~ambulance",
-      "docker-compose up --build -d || true",
-      "cd ~herpetophobia",
-      "docker-compose up --build -d || true",
       "cd ~kleptophobia",
       "docker-compose up --build -d || true",
       "cd ~meds",
       "docker-compose up --build -d || true",
-      "cd ~prosopagnosia",
-      "docker-compose up --build -d || true",
-      "cd ~psycho-clinic",
-      "docker-compose up --build -d || true",
       "cd ~schizophasia",
+      "docker-compose up --build -d || true",
+      "cd ~schizovm",
       "docker-compose up --build -d || true",
     ]
   }
