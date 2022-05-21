@@ -31,7 +31,7 @@ jobs:
     - name: Setup checker libraries
       run: if [ -f checkers/kleptophobia/requirements.txt ]; then python -m pip install -r checkers/kleptophobia/requirements.txt; fi
     - name: Test checker on service
-      run: (cd ./checkers/kleptophobia && ./checker.py TEST 127.0.0.1)
+      run: (cd ./checkers/kleptophobia && ./kleptophobia.checker.py TEST 127.0.0.1)
   update_kleptophobia:
     name: Deploy service using ansible to first teams
     needs: check_kleptophobia

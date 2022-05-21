@@ -1,0 +1,43 @@
+version: '2.2'
+
+services:
+  registry:
+    build:
+      context: .
+      dockerfile: registry/Dockerfile
+    restart: always
+    hostname: registry
+    environment:
+      SVC_USER_NAME: svcuser
+      SVC_USER_PASS: svcpass
+    ports:
+      - "5432:5432"
+    pids_limit: 100
+    mem_limit: 1G
+    memswap_limit: 1G
+    volumes:
+      - pg_data:/var/lib/postgresql
+    ulimits:
+      nofile:
+        soft: 12000
+        hard: 12000
+    stop_grace_period: 10s
+
+  doctor:
+    build:
+      context: .
+      dockerfile: doctor/Dockerfile
+    restart: always
+    ports:
+      - "18181:18181"
+    pids_limit: 100
+    mem_limit: 1G
+    memswap_limit: 1G
+    ulimits:
+      nofile:
+        soft: 12000
+        hard: 12000
+    stop_grace_period: 10s
+
+volumes:
+  pg_data:

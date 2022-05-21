@@ -12,11 +12,13 @@ variable "api_token" {
 }
 
 source "digitalocean" "vuln_image" {
-  api_token    = var.api_token
-  image        = "ubuntu-20-04-x64"
-  region       = "ams3"
-  size         = "s-4vcpu-8gb"
-  ssh_username = "root"
+  droplet_name  = "ructf-2022-{{timestamp}}"
+  snapshot_name = "ructf-2022-{{timestamp}}"
+  api_token     = var.api_token
+  image         = "ubuntu-20-04-x64"
+  region        = "ams3"
+  size          = "s-4vcpu-8gb"
+  ssh_username  = "root"
 }
 
 build {
@@ -28,12 +30,17 @@ build {
       "DEBIAN_FRONTEND=noninteractive",
     ]
     inline = [
+      # Wait apt-get lock
+      "while ps -opid= -C apt-get > /dev/null; do sleep 1; done",
       "apt-get clean",
-      "apt-get update",
+      # apt-get update sometime may fail
+      "for i in `seq 1 3`; do apt-get update && break; sleep 10; done",
 
       # Wait apt-get lock
       "while ps -opid= -C apt-get > /dev/null; do sleep 1; done",
 
+      "apt-get dist-upgrade -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold'",
+      "for i in `seq 1 3`; do apt-get update && break; sleep 10; done",
       "apt-get upgrade -y -q -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold'",
 
       # Install docker and docker-compose
@@ -49,8 +56,13 @@ build {
       "apt-get install -y -q haveged",
 
       # Add users for services
+      "useradd -m -s /bin/bash ambulance",
+      "useradd -m -s /bin/bash herpetophobia",
       "useradd -m -s /bin/bash kleptophobia",
       "useradd -m -s /bin/bash meds",
+      "useradd -m -s /bin/bash prosopagnosia",
+      "useradd -m -s /bin/bash psycho-clinic",
+      "useradd -m -s /bin/bash schizophasia",
     ]
   }
 
@@ -80,22 +92,57 @@ build {
 
   # Copy services
   provisioner "file" {
+    source = "../services/ambulance/"
+    destination = "/home/ambulance/"
+  }
+
+  provisioner "file" {
+    source = "../services/herpetophobia/"
+    destination = "/home/herpetophobia/"
+  }
+
+  provisioner "file" {
     source = "../services/kleptophobia/"
     destination = "/home/kleptophobia/"
   }
 
   provisioner "file" {
-    source = "../services/meds/deploy"
+    source = "../services/meds/deploy/"
     destination = "/home/meds/"
+  }
+
+  provisioner "file" {
+    source = "../services/prosopagnosia/"
+    destination = "/home/prosopagnosia/"
+  }
+
+  provisioner "file" {
+    source = "../services/psycho-clinic/"
+    destination = "/home/psycho-clinic/"
+  }
+
+  provisioner "file" {
+    source = "../services/schizophasia/"
+    destination = "/home/schizophasia/"
   }
 
   # Build and run services for the first time
   provisioner "shell" {
     inline = [
+      "cd ~ambulance",
+      "docker-compose up --build -d || true",
+      "cd ~herpetophobia",
+      "docker-compose up --build -d || true",
       "cd ~kleptophobia",
-      "docker-compose up --build -d",
+      "docker-compose up --build -d || true",
       "cd ~meds",
-      "docker-compose up --build -d",
+      "docker-compose up --build -d || true",
+      "cd ~prosopagnosia",
+      "docker-compose up --build -d || true",
+      "cd ~psycho-clinic",
+      "docker-compose up --build -d || true",
+      "cd ~schizophasia",
+      "docker-compose up --build -d || true",
     ]
   }
 
