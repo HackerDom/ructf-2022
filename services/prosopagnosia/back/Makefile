@@ -13,7 +13,7 @@ INCLUDES=-I$(INC_DIR) -I/usr/include/postgresql/
 COMPILER_FLAGS=
 
 CXXFLAGS=$(WARN_OPTS) $(INCLUDES) $(COMPILER_FLAGS) \
-		-std=c++17 -g -O0
+		-std=c++17 -g -O2
 
 LINK_EXECUTABLE=$(LD) $(LDFLAGS) -o $@ $^
 
