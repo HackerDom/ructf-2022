@@ -56,5 +56,9 @@ namespace svm {
                     std::string(PQgetvalue(result, row, created_at_col))
             );
         }
+
+        std::filesystem::path rel_rom_path() {
+            return "roms" / rom_path.parent_path().filename() / rom_path.filename();
+        }
     };
 }

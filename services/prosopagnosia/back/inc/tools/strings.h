@@ -9,6 +9,8 @@
 
 #include <libpq-fe.h>
 
+#include "tools/result.h"
+
 namespace svm {
     std::string get_env(const char *name, bool req = true);
 
@@ -30,9 +32,11 @@ namespace svm {
 
     std::string str_or_uuid4(std::string s);
 
-    std::string base64_encode(std::string const &s, bool url = false);
+    std::string base64_encode(const std::string &s);
 
-    std::string base64_decode(std::string const &s, bool remove_linebreaks = false);
+    result<std::string> base64_decode(const std::string &s);
+
+    bool is_base64_encoded_string(const std::string &s);
 
     template<typename ... Args>
     std::string format(const char *format, Args ... args) {
