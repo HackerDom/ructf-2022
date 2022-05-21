@@ -21,18 +21,18 @@ def check_service(request: CheckRequest) -> Verdict:
     doc1 = Doctor.gen()
 
     try:
-        # create patient
+        print("checking Patient")
         patient = client.create_patient(patient.patient_id, patient.name, patient.diagnosis)
 
-        # create doctor
+        print("checking Doctor")
         doc1 = client.create_doctor(doc1.doc_id, doc1.name, doc1.proc_desc, doc1.edu_lvl)
         check_get_doctors(client, doc1)
 
-        # contracts
+        print("checking Contract")
         contract = Contract.gen(patient, doc1)
         client.create_contract(contract.contract_id, contract.patient, contract.doctor, contract.expired)
 
-        # procedures
+        print("checking Procedures")
         procedure = Procedure.gen(contract)
         client.prescribe_procedure(procedure.procedure_id, contract, procedure.procedure_type)
         client.perform_procedure(procedure.procedure_id, patient.patient_token)
@@ -49,7 +49,7 @@ def check_service(request: CheckRequest) -> Verdict:
         return e.verdict
     except Exception as e:
         traceback.print_exc()
-        return Verdict.CORRUPT("corrupted")
+        return Verdict.CORRUPT("Corrupted")
 
 
 @checker.define_put(vuln_num=1, vuln_rate=1)
@@ -61,19 +61,25 @@ def put_flag(request: PutRequest) -> Verdict:
     doc_with_flag = Doctor.gen()
 
     try:
+        print("Create doctor")
         doc_with_flag = client.create_doctor(doc_with_flag.doc_id, doc_with_flag.name, flag, doc_with_flag.edu_lvl)
+        print("Create patient")
         patient = client.create_patient(patient.patient_id, patient.name, patient.diagnosis)
 
         contract = Contract.gen(patient, doc_with_flag)
+        print("Create contract")
         client.create_contract(contract.contract_id, contract.patient, contract.doctor, contract.expired)
 
         procedure = Procedure.gen(contract)
+        print("Prescribe procedure")
         client.prescribe_procedure(procedure.procedure_id, contract, procedure.procedure_type)
 
         print("Saved flag " + flag)
         flag_id = {"patient_token": patient.patient_token,
                    "doctor_id": doc_with_flag.doc_id,
                    "procedure_id": procedure.procedure_id}
+
+        print("Saved flag_id " + flag)
 
         return Verdict.OK(json.dumps(flag_id))
     except VerdictHttpException as e:
@@ -97,6 +103,7 @@ def get_flag(request: GetRequest) -> Verdict:
         doctor = Doctor.gen()
         doctor.doc_id = flag_id["doctor_id"]
 
+        print("Performing procedure")
         result = client.perform_procedure(flag_id["procedure_id"], patient.patient_token)
         if result.description == flag:
             return Verdict.OK()
@@ -104,7 +111,7 @@ def get_flag(request: GetRequest) -> Verdict:
         print("Procedure description doesn't contain a correct flag.")
         print(f"expected: '{flag}' but was: '{result.description}'")
 
-        return Verdict.CORRUPT("Flag is missing!")
+        return Verdict.MUMBLE("Flag is missing!")
     except VerdictHttpException as e:
         print(e)
         return e.verdict

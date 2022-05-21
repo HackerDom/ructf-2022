@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using psycho_clinic.AppInfrastructure;
 using psycho_clinic.Configuration;
 using psycho_clinic.Extensions;
+using psycho_clinic.Models;
 using psycho_clinic.Storage;
 using Vostok.Applications.AspNetCore;
 using Vostok.Applications.AspNetCore.Builders;
@@ -66,7 +67,7 @@ namespace psycho_clinic
             if (bytes.Length == 0)
                 return;
 
-            var initialElements = Encoding.UTF8.GetString(bytes).FromJson<T[]>();
+            var initialElements = Encoding.UTF8.GetString(bytes).FromJson<TimedValue<T>[]>();
             storage.Initialize(initialElements);
         }
 

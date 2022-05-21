@@ -50,7 +50,8 @@ async def check_service(request: CheckRequest) -> Verdict:
     prize = get_random_str()
     try:
         game_id, secret, power = create_game(prize, request.hostname)
-    except Exception:
+    except Exception as e:
+        print(e)
         return Verdict.DOWN("could not create game")
     try:
         async with websockets.connect(f"ws://{request.hostname}:5051/play") as ws:
@@ -128,10 +129,13 @@ class GameChecker(VulnChecker):
 
     @staticmethod
     async def get(request: GetRequest) -> Verdict:
-        flag_id = json.loads(request.flag_id)
-        secret = flag_id["secret"]
-        power = flag_id["power"]
-        game_id = flag_id["game_id"]
+        try:
+            flag_id = json.loads(request.flag_id)
+            secret = flag_id["secret"]
+            power = flag_id["power"]
+            game_id = flag_id["game_id"]
+        except Exception:
+            return Verdict.MUMBLE("game was not created")
         try:
             async with websockets.connect(f"ws://{request.hostname}:5051/play") as ws:
                 await ws.send(json.dumps({"id": game_id}))
