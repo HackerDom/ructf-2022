@@ -41,14 +41,10 @@ COPY registry/bootstrap /app/bootstrap
 COPY registry/bootstrap/entrypoint.sh /usr/local/bin/
 COPY registry/bootstrap/postgresql.conf /etc/postgresql/postgresql.conf
 COPY registry/bootstrap/autokill.cron /etc/cron.d/autokill
-COPY registry/nice_ext /app/nice_ext
-
 RUN chmod 0644 /etc/cron.d/autokill && crontab /etc/cron.d/autokill
 
-WORKDIR /app/nice_ext
-
-RUN make -j4 -s && make install
-
+COPY registry/nice_ext /app/nice_ext
+RUN cp /app/nice_ext/nice_ext.so /usr/local/pgsql/lib/nice_ext.so && chown ${user}:${group} /usr/local/pgsql/lib/nice_ext.so
 
 ENTRYPOINT ["entrypoint.sh"]
 EXPOSE $PORT
