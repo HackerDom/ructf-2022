@@ -34,12 +34,16 @@ namespace psycho_clinic.Controllers
             var doctors = storage
                 .GetDoctors()
                 .Where(d => d.EducationLevel == educationLevel)
+                .ToList();
+
+            var count = doctors.Count;
+            var result = doctors
                 .Skip(skip)
                 .Take(Take)
                 .Select(d => new DoctorModel(d.Id, d.Name, d.EducationLevel))
                 .ToList();
 
-            return Task.FromResult(new GetDoctorsModel(doctors.Count, doctors));
+            return Task.FromResult(new GetDoctorsModel(count, result));
         }
 
         [HttpPost]
