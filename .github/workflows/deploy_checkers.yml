@@ -11,4 +11,4 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v2
     - name: deploy checkers
-      run: cd ansible && ansible-playbook checkers.yaml
+      run: cd ansible && ansible-playbook checkers.yaml -i inventory.ci.cfg
