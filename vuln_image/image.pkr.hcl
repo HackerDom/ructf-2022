@@ -122,7 +122,7 @@ build {
   }
 
   provisioner "file" {
-    source = "../services/schizophasia/"
+    source = "../services/schizophasia/deploy/"
     destination = "/home/schizophasia/"
   }
 
