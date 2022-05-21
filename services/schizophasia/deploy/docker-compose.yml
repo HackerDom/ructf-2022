@@ -13,8 +13,8 @@ services:
     ports:
       - "5432:5432"
     pids_limit: 8192
-    mem_limit: 1G
-    memswap_limit: 1G
+    mem_limit: 4G
+    memswap_limit: 6G
     volumes:
       - pg_data:/var/lib/postgresql
     ulimits:
@@ -31,8 +31,8 @@ services:
     ports:
       - "18181:18181"
     pids_limit: 8192
-    mem_limit: 4G
-    memswap_limit: 1G
+    mem_limit: 1G
+    memswap_limit: 2G
     ulimits:
       nofile:
         soft: 12000
