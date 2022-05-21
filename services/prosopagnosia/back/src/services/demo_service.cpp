@@ -82,7 +82,7 @@ result<std::shared_ptr<demo>> demo_service::get(const std::string &name, const s
     auto escaped_key = escape_psql(conn, key);
 
     auto query = format(
-            hidden_str("select * from demos where name='%s and key='%s';"),
+            hidden_str("select * from demos where name=%s and key=%s;"),
             escaped_name.c_str(),
             escaped_key.c_str()
     );
@@ -146,14 +146,10 @@ result<std::vector<std::shared_ptr<demo>>> demo_service::list(int page_num, int 
 
 
 std::string demo_service::get_key(const std::string &name) {
-    CROW_LOG_INFO << "decoding " << name;
-
     auto name_decoded = base64_decode(name);
 
-    CROW_LOG_INFO << "decoded is " << name_decoded;
-
     SHA256 sha;
-    sha.update(name_decoded);
+    sha.update(name_decoded.value);
     sha.update(keys_secret);
 
     auto digest = sha.digest();

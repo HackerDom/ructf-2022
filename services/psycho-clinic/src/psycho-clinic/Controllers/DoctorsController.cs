@@ -27,16 +27,19 @@ namespace psycho_clinic.Controllers
             return Task.FromResult(doctor);
         }
 
+
         [HttpGet]
-        public Task<IEnumerable<DoctorModel>> GetDoctors(int skip = 0)
+        public Task<GetDoctorsModel> GetDoctors(EducationLevel educationLevel, int skip = 0)
         {
             var doctors = storage
                 .GetDoctors()
+                .Where(d => d.EducationLevel == educationLevel)
                 .Skip(skip)
                 .Take(Take)
-                .Select(d => new DoctorModel(d.Id, d.Name, d.EducationLevel));
+                .Select(d => new DoctorModel(d.Id, d.Name, d.EducationLevel))
+                .ToList();
 
-            return Task.FromResult(doctors);
+            return Task.FromResult(new GetDoctorsModel(doctors.Count, doctors));
         }
 
         [HttpPost]

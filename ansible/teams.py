@@ -14,14 +14,18 @@ for team in teams:
     b = team['id'] % 256
 
     network = "10.{a}.{b}.0/24".format(a=a, b=b)
-    host    = "10.{a}.{b}.2".format(a=a, b=b)
+    host    = "10.{a}.{b}.3".format(a=a, b=b)
 
-    name = team['name'].replace("'", "\\'") + " " + \
-        pycountry.countries.search_fuzzy(team['country'])[0].flag
+    name = team['name'].replace("'", "\\'")
+    flag = pycountry.countries.search_fuzzy(team['country'])[0].flag
 
     if not team['logo']:
       logo = "https://ructfe.org/ctf-static/dummy.69777ab438ae.png"
     else:
       logo = "https://ructf.org{}".format(team['logo'])
 
-    print("  {{name => '{name}', network => '{network}', host => '{host}', token => '{token}', country => '{country}', logo => '{logo}'}},".format(name=name, network=network, host=host, token=team['checker_token'], country=team['country'], logo=logo))
+    print("  {{name => '{name}', network => '{network}', host => '{host}', token => '{token}', " \
+          "country => '{country}', tags => ['{flag}'], logo => '{logo}'}},"
+          .format(name=name, network=network, host=host, token=team['checker_token'],
+                  country=team['country'], flag=flag, logo=logo)
+    )

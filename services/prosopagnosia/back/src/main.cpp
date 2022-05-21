@@ -26,11 +26,16 @@ response create_demo(const request &req, demo_service &demo_service) {
     auto author = req.get_header_value(AUTHOR_HEADER);
     auto secret = req.get_header_value(SECRET_HEADER);
 
-    if (name.empty() || secret.empty() || author.empty()) {
+    if (name.empty() || secret.empty() || author.empty()
+        || !is_base64_encoded_string(name) || !is_base64_encoded_string(author) || !is_base64_encoded_string(secret)) {
         return response(BAD_REQUEST);
     }
 
-    auto demo = demo_service.create(name, author, secret, std::vector<uint8_t>());
+    std::vector<uint8_t> body;
+    body.resize(req.body.size());
+    std::copy_n(req.body.begin(), req.body.size(), body.begin());
+
+    auto demo = demo_service.create(name, author, secret, body);
 
     if (!demo.success) {
         return response(CONFLICT);
@@ -47,7 +52,7 @@ response get_demo(const request &req, demo_service &demo_service) {
     auto name = req.get_header_value(NAME_HEADER);
     auto key = req.get_header_value(KEY_HEADER);
 
-    if (name.empty() || key.empty()) {
+    if (name.empty() || key.empty() || !is_base64_encoded_string(name) || !is_base64_encoded_string(key)) {
         return response(BAD_REQUEST);
     }
 
@@ -63,7 +68,7 @@ response get_demo(const request &req, demo_service &demo_service) {
                     {"author",     demo.value->author},
                     {"created_at", demo.value->created_at},
                     {"secret",     demo.value->secret},
-                    {"rom_path",   demo.value->rom_path.c_str()}
+                    {"rom_path",   demo.value->rel_rom_path().c_str()}
             });
 
     return {status::OK, data};
@@ -89,7 +94,8 @@ response list_demos(const request &req, demo_service &demo_service) {
                 {
                         {"name",       demo->name},
                         {"author",     demo->author},
-                        {"created_at", demo->created_at}
+                        {"created_at", demo->created_at},
+                        {"rom_path",   demo->rel_rom_path().c_str()}
                 });
 
         jsoned.push_back(data);
@@ -120,7 +126,8 @@ int main(int argc, char **argv) {
         CROW_LOG_INFO << "storage will be in " << storage_path;
 
         auto fs = std::make_shared<svm::fs>(storage_path);
-        auto demo_service = std::make_shared<svm::demo_service>(pg_pool, fs, str_or_uuid4(get_env("SVM_SECRET", false)));
+        auto demo_service = std::make_shared<svm::demo_service>(pg_pool, fs,
+                                                                str_or_uuid4(get_env("SVM_SECRET", false)));
 
         CROW_ROUTE(app, "/api/demo").methods(HTTPMethod::Post, HTTPMethod::Get)(
                 [&demo_service](const request &req) {

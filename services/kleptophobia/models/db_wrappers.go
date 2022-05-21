@@ -14,12 +14,13 @@ type PersonRecord struct {
 	Username               string `gorm:"primaryKey;type:varchar(30)"`
 	PasswordHash           []byte
 	FirstName              string `gorm:"type:varchar(30)"`
+	MiddleName             string `gorm:"type:varchar(30)"`
 	SecondName             string `gorm:"type:varchar(30)"`
 	Room                   uint32
 	EncryptedPrivatePerson []byte
 }
 
-func PrivatePersonToRecord(person *PrivatePerson, password string) (*PersonRecord, error) {
+func PrivatePersonToRecord(username string, person *PrivatePerson, password string) (*PersonRecord, error) {
 	data, err := proto.Marshal(person)
 	utils.FailOnError(err)
 
@@ -31,9 +32,10 @@ func PrivatePersonToRecord(person *PrivatePerson, password string) (*PersonRecor
 	}
 
 	return &PersonRecord{
-		Username:               person.Username,
+		Username:               username,
 		PasswordHash:           passwordHash,
 		FirstName:              person.FirstName,
+		MiddleName:             person.MiddleName,
 		SecondName:             person.SecondName,
 		Room:                   person.Room,
 		EncryptedPrivatePerson: encryptedPrivatePerson,
@@ -41,10 +43,12 @@ func PrivatePersonToRecord(person *PrivatePerson, password string) (*PersonRecor
 }
 
 func PersonRecordToPublic(person *PersonRecord) *PublicPerson {
+	middleNameRestricted := utils.Restrict(person.MiddleName)
+
 	return &PublicPerson{
-		FirstName:  person.FirstName,
-		SecondName: person.SecondName,
-		Username:   person.Username,
-		Room:       person.Room,
+		FirstName:            person.FirstName,
+		MiddleNameRestricted: middleNameRestricted,
+		SecondName:           person.SecondName,
+		Room:                 person.Room,
 	}
 }

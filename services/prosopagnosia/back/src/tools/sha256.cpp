@@ -1,8 +1,8 @@
-#include "tools/sha256.h"
-
 #include <cstring>
 #include <sstream>
 #include <iomanip>
+
+#include "tools/sha256.h"
 
 SHA256::SHA256() : m_blocklen(0), m_bitlen(0) {
     m_state[0] = 0x6a09e667;
