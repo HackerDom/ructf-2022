@@ -1,12 +1,12 @@
 
-name: Check schizovm
+name: Check prosopagnosia
 on:
   push:
     branches:
       - main
     paths:
-      - 'services/schizovm/**'
-      - 'checkers/schizovm/**'
+      - 'services/prosopagnosia/**'
+      - 'checkers/prosopagnosia/**'
   workflow_dispatch:
     inputs:
       cleanup_before_deploy:
@@ -14,27 +14,27 @@ on:
         required: false
         default: "no"
 jobs:
-  check_schizovm:
-    name: Check schizovm
+  check_prosopagnosia:
+    name: Check prosopagnosia
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
     - name: Run prebuilt hook
-      run: if [ -f services/schizovm/before_image_build.sh ]; then (cd ./services/schizovm && ./before_image_build.sh); fi
-    - name: Setup schizovm
-      run: (cd ./services/schizovm && docker-compose pull && docker-compose build && docker-compose up --build -d)
+      run: if [ -f services/prosopagnosia/before_image_build.sh ]; then (cd ./services/prosopagnosia && ./before_image_build.sh); fi
+    - name: Setup prosopagnosia
+      run: (cd ./services/prosopagnosia && docker-compose pull && docker-compose build && docker-compose up --build -d)
     - name: Prepare python for checker
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
     - name: Setup checker libraries
-      run: if [ -f checkers/schizovm/requirements.txt ]; then python -m pip install -r checkers/schizovm/requirements.txt; fi
+      run: if [ -f checkers/prosopagnosia/requirements.txt ]; then python -m pip install -r checkers/prosopagnosia/requirements.txt; fi
     - name: Test checker on service
-      run: (cd ./checkers/schizovm && ./schizovm.checker.py TEST 127.0.0.1)
-  update_schizovm:
+      run: (cd ./checkers/prosopagnosia && ./prosopagnosia.checker.py TEST 127.0.0.1)
+  update_prosopagnosia:
     name: Deploy service using ansible to first teams
-    needs: check_schizovm
+    needs: check_prosopagnosia
     runs-on: deployer
     if: ${{ false }} # disable on game just in case
     steps:
@@ -45,8 +45,8 @@ jobs:
     - name: change permission for ssh key
       run: chmod 0600 ./teams/for_devs.ssh_key
     - name: Run prebuilt hook
-      run: if [ -f services/schizovm/before_image_build.sh ]; then (cd ./services/schizovm && sudo ./before_image_build.sh); fi
+      run: if [ -f services/prosopagnosia/before_image_build.sh ]; then (cd ./services/prosopagnosia && sudo ./before_image_build.sh); fi
     - name: update checkers
       run: cd ./ansible && ansible-playbook cs-checkers.yml
-    - name: deploy schizovm
-      run: cd ./ansible && ansible-playbook --extra-vars cleanup_service=${{ github.event.inputs.cleanup_before_deploy }} -t schizovm -l schizovm deploy-services.yml
+    - name: deploy prosopagnosia
+      run: cd ./ansible && ansible-playbook --extra-vars cleanup_service=${{ github.event.inputs.cleanup_before_deploy }} -t prosopagnosia -l prosopagnosia deploy-services.yml
