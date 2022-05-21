@@ -30,12 +30,17 @@ build {
       "DEBIAN_FRONTEND=noninteractive",
     ]
     inline = [
+      # Wait apt-get lock
+      "while ps -opid= -C apt-get > /dev/null; do sleep 1; done",
       "apt-get clean",
-      "apt-get update",
+      # apt-get update sometime may fail
+      "for i in `seq 1 3`; do apt-get update && break; sleep 10; done",
 
       # Wait apt-get lock
       "while ps -opid= -C apt-get > /dev/null; do sleep 1; done",
 
+      "apt-get dist-upgrade -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold'",
+      "for i in `seq 1 3`; do apt-get update && break; sleep 10; done",
       "apt-get upgrade -y -q -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold'",
 
       # Install docker and docker-compose
