@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:20.04
 
 COPY registry/db /app/db
 WORKDIR /app/db
