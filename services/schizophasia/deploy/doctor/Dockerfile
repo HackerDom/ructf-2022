@@ -98,6 +98,22 @@ RUN apk update && apk add --no-cache git libc6-compat build-base
 COPY doctor /go/src/ructf.org/doctor
 WORKDIR /go/src/ructf.org/doctor
 
+ARG USER=appuser
+ARG GROUP=appgroup
+ARG UID=1337
+ARG GID=1337
+RUN addgroup --gid ${GID} ${GROUP} && adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "$(pwd)" \
+    --ingroup ${GROUP} \
+    --no-create-home \
+    --uid ${UID} \
+    ${USER} && \
+    chown -R ${USER}:${GROUP} /go
+
+USER ${UID}:${GID}
+
 RUN go get ./... && go build -v .
 
 EXPOSE $PORT
