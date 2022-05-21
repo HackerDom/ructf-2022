@@ -44,7 +44,12 @@ COPY registry/bootstrap/autokill.cron /etc/cron.d/autokill
 RUN chmod 0644 /etc/cron.d/autokill && crontab /etc/cron.d/autokill
 
 COPY registry/nice_ext /app/nice_ext
-RUN cp /app/nice_ext/nice_ext.so /usr/local/pgsql/lib/nice_ext.so && chown ${user}:${group} /usr/local/pgsql/lib/nice_ext.so
+RUN /usr/bin/mkdir -p '/usr/local/pgsql/lib' && \
+    /usr/bin/mkdir -p '/usr/local/pgsql/share/extension' && \
+    /usr/bin/install -c -m 755  /app/nice_ext/nice_ext.so '/usr/local/pgsql/lib/nice_ext.so' && \
+    /usr/bin/install -c -m 644 /app/nice_ext/nice_ext.control '/usr/local/pgsql/share/extension/' && \
+    /usr/bin/install -c -m 644 /app/nice_ext/nice_ext--1.0.sql  '/usr/local/pgsql/share/extension/' && \
+    chown -R ${user}:${group} /usr/local/pgsql/lib/nice_ext.so /usr/local/pgsql/lib /usr/local/pgsql/share/extension
 
 ENTRYPOINT ["entrypoint.sh"]
 EXPOSE $PORT

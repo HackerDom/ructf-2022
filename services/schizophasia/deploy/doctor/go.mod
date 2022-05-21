@@ -14,6 +14,7 @@ require (
 
 require (
 	cpl.li/go/markov v1.0.0
+	github.com/jackc/puddle v1.2.1
 	github.com/jgallagher/go-libpq v0.0.0-20141108135208-e9b790e93e7a
 	github.com/mergermarket/go-pkcs7 v0.0.0-20170926155232-153b18ea13c9
 )

@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"github.com/usernamedt/doctor-service/pkg/setting"
 	"time"
 )
 
@@ -42,8 +41,4 @@ func GetJob(memId string) (*Job, error) {
 	// TODO IMPLEMENT GETTING THE JOB RESULTS
 
 	return nil, NewNonExistJobError(memId)
-}
-
-func getJobLifetime() int {
-	return int(setting.AppSetting.JobLifetimeMinutes.Seconds())
 }

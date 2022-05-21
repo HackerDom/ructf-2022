@@ -9,6 +9,7 @@ from requests.exceptions import Timeout
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
+from gornilo.http_clients import requests_with_retries
 
 checker = NewChecker()
 PG_PORT = 5432
@@ -16,25 +17,6 @@ PG_CONN_STRING = "host=%s port=%d user=svcuser dbname=postgres password=svcpass"
 DOCTOR_PORT = 18181
 GET_RETRIES_COUNT = 15
 GET_RETRY_DELAY = 2
-
-
-def requests_with_retry(
-    retries=3,
-    backoff_factor=0.3,
-    status_forcelist=(400, 404, 500, 502),
-    session=None,
-):
-    session = session or requests.Session()
-    retry = Retry(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff_factor,
-        status_forcelist=status_forcelist,
-    )
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount('http://', adapter)
-    return session
 
 
 class ErrorChecker:
@@ -86,7 +68,7 @@ async def check_service(request: CheckRequest) -> Verdict:
         files = []
         headers = {}
 
-        resp = requests_with_retry().put(
+        resp = requests_with_retries().put(
             url,
             headers=headers,
             data=payload

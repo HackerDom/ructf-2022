@@ -3,6 +3,7 @@ package logging
 import (
 	"fmt"
 	"github.com/usernamedt/doctor-service/pkg/file"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -99,4 +100,14 @@ func setPrefix(level Level) {
 	}
 
 	logger.SetPrefix(logPrefix)
+}
+
+func LoggedClose(c io.Closer, errmsg string) {
+	err := c.Close()
+	if errmsg == "" {
+		errmsg = "Problem with closing object"
+	}
+	if err != nil {
+		Errorf("%s: %v", errmsg, err)
+	}
 }

@@ -17,12 +17,7 @@ type App struct {
 	LogFileExt  string
 	TimeFormat  string
 
-	JobLifetimeMinutes time.Duration
-	WorkersCount       int
-
-	QueueStatInterval   time.Duration
-	RequestStatInterval time.Duration
-	DockerfilePath      string
+	ConnPoolSize int
 }
 
 var AppSetting = &App{}
@@ -49,7 +44,6 @@ func Setup() {
 	mapTo("app", AppSetting)
 	mapTo("server", ServerSetting)
 
-	AppSetting.JobLifetimeMinutes = AppSetting.JobLifetimeMinutes * time.Minute
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
 	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second
 }

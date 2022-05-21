@@ -2,7 +2,6 @@ package speechkit
 
 import (
 	"cpl.li/go/markov"
-	"fmt"
 	"strings"
 )
 
@@ -11,11 +10,11 @@ const maxWords = 100 // max words to generate (default 100)
 const pairSize = 2   // size of a word pair (default 2)
 var chain *markov.Chain
 
-func Generate() {
+func Generate() string {
 	b := chain.NewBuilder(nil) // create builder on top of chain
 
 	b.Generate(maxWords - pairSize) // generate new words
-	fmt.Println(b.String())         // print end product
+	return b.String()
 }
 
 func init() {

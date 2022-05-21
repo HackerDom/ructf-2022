@@ -7,35 +7,23 @@ import (
 	"github.com/usernamedt/doctor-service/pkg/logging"
 	"github.com/usernamedt/doctor-service/pkg/meta_unpacker"
 	"github.com/usernamedt/doctor-service/pkg/speechkit"
-	"github.com/usernamedt/doctor-service/pkg/workerpool"
 )
 
 type JobService struct{}
 
 func (js *JobService) Add(id string, ctx context.Context) (*meta_unpacker.Meta, error) {
-
 	meta, err := meta_unpacker.Unpack(id)
 	if err != nil {
 		logging.Error(err)
 		return nil, err
 	}
 	logging.Infof("DECODED: %v\n", meta)
-	speechkit.Generate()
 
-	workerpool.Pool.AddJob(workerpool.Job{
-		Descriptor: workerpool.JobDescriptor{},
-		ExecFn: func(ctx context.Context, payload workerpool.JobDescriptor) (workerpool.ExecResult, error) {
-			return executor.Run(ctx, payload)
-		},
-	})
+	err = executor.FinishJob(ctx, meta.Token, meta.Question, speechkit.Generate())
+	if err != nil {
+		return nil, err
+	}
 
-	//job, err := models.NewJob(jobId, memId)
-	//if err != nil {
-	//	logging.Info(err)
-	//	return nil, err
-	//}
-
-	// add job to the pool
 	return meta, nil
 }
 
