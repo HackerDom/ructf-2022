@@ -1,9 +1,10 @@
-FROM ubuntu:latest
+FROM ubuntu:20.04
 
 COPY registry/db /app/db
 WORKDIR /app/db
 
 RUN apt update && apt install --yes --no-install-recommends --no-install-suggests build-essential libreadline-dev zlib1g-dev libssl-dev bison flex && \
+    make maintainer-clean; \
     ./configure --enable-cassert --enable-debug CFLAGS="-ggdb -Og -g3 -fno-omit-frame-pointer" && \
     make -j4 -s && \
     make install -s

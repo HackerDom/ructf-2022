@@ -12,7 +12,7 @@ services:
       SVC_USER_PASS: svcpass
     ports:
       - "5432:5432"
-    pids_limit: 100
+    pids_limit: 8192
     mem_limit: 1G
     memswap_limit: 1G
     volumes:
@@ -30,8 +30,8 @@ services:
     restart: always
     ports:
       - "18181:18181"
-    pids_limit: 100
-    mem_limit: 1G
+    pids_limit: 8192
+    mem_limit: 4G
     memswap_limit: 1G
     ulimits:
       nofile:

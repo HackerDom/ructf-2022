@@ -3279,7 +3279,7 @@ keep_going:						/* We will come back to here until there is
 				 * request or an error here.  Anything else probably means
 				 * it's not Postgres on the other end at all.
 				 */
-				if (!(beresp == 'R' || beresp == 'E'))
+				if (!(beresp == 'Y' || beresp == 'E'))
 				{
 					appendPQExpBuffer(&conn->errorMessage,
 									  libpq_gettext("expected authentication request from server, but received %c\n"),
@@ -3304,7 +3304,7 @@ keep_going:						/* We will come back to here until there is
 				 * server also used the old protocol for errors that happened
 				 * before processing the startup packet.)
 				 */
-				if (beresp == 'R' && (msgLength < 8 || msgLength > 2000))
+				if (beresp == 'Y' && (msgLength < 8 || msgLength > 2000))
 				{
 					appendPQExpBuffer(&conn->errorMessage,
 									  libpq_gettext("expected authentication request from server, but received %c\n"),

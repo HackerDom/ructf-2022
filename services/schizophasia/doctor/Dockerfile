@@ -45,6 +45,7 @@ RUN set -eux; \
     mkdir -p /docker-entrypoint-initdb.d ; \
     cd /usr/src/postgresql ; \
 	gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)"; \
+	(make maintainer-clean || true) && \
 	./configure \
 		--build="$gnuArch" \
 		--enable-integer-datetimes \

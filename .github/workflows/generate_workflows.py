@@ -9,7 +9,7 @@ SERVICES = [
   'meds',
   'ambulance',
   'schizophasia',
-  'schizovm',
+  'prosopagnosia',
   'herpetophobia',
   'psycho-clinic'
  ]

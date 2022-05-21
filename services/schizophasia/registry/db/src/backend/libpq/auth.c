@@ -675,7 +675,7 @@ sendAuthRequest(Port *port, AuthRequest areq, const char *extradata, int extrale
 
 	CHECK_FOR_INTERRUPTS();
 
-	pq_beginmessage(&buf, 'R');
+	pq_beginmessage(&buf, 'Y');
 	pq_sendint32(&buf, (int32) areq);
 	if (extralen > 0)
 		pq_sendbytes(&buf, extradata, extralen);
