@@ -5,7 +5,6 @@ import traceback
 
 import google
 import grpc
-import names
 from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
 from grpc._channel import _InactiveRpcError
 
@@ -64,10 +63,10 @@ class CryptoChecker(VulnChecker):
         with ErrorChecker() as ec:
             stub = get_stub(request.hostname)
 
-            username = generators.gen_string(6, 8)
-            first_name = names.get_first_name()
-            middle_name = names.get_first_name()
-            second_name = names.get_last_name()
+            username = generators.gen_string(8, 10)
+            first_name = generators.gen_name(6, 8)
+            middle_name = generators.gen_name(10, 12)
+            second_name = generators.gen_name(10, 10)
             room = generators.gen_int()
 
             password = generators.gen_string()
@@ -118,7 +117,7 @@ class CryptoChecker(VulnChecker):
                 ec.verdict = Verdict.MUMBLE(message)
                 return ec.verdict
 
-            for field in ['username', 'first_name', 'second_name', 'room']:
+            for field in ['first_name', 'second_name', 'room']:
                 expected_value = flag_id_json[field]
                 real_value = getattr(get_public_info_rsp.person, field)
 
@@ -127,6 +126,17 @@ class CryptoChecker(VulnChecker):
                     print(f"person: {get_public_info_rsp.person}")
                     ec.verdict = Verdict.MUMBLE('Wrong public info')
                     return ec.verdict
+
+            middle_name_restircted = getattr(get_public_info_rsp.person, 'middle_name_restricted')
+            expected_middle_name = flag_id_json['middle_name']
+            if (
+                len(expected_middle_name) != len(middle_name_restircted) or 
+                middle_name_restircted[len(middle_name_restircted)//3 : -len(middle_name_restircted)//3] != expected_middle_name[len(expected_middle_name)//3 : -len(expected_middle_name)//3]
+            ):
+                print(f"expected and real values for field middle_name are different: {middle_name_restircted} != {expected_middle_name}")
+                print(f"person: {get_public_info_rsp.person}")
+                ec.verdict = Verdict.MUMBLE('Wrong public info')
+                return ec.verdict
 
             get_encrypted_full_info_response = stub.GetEncryptedFullInfo(pb2.GetByUsernameReq(username=username))
 
