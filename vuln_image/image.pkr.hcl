@@ -15,7 +15,7 @@ source "digitalocean" "vuln_image" {
   droplet_name  = "ructf-2022-{{timestamp}}"
   snapshot_name = "ructf-2022-{{timestamp}}"
   api_token     = var.api_token
-  image         = "fedora-36-x64"
+  image         = "ubuntu-20-04-x64"
   region        = "ams3"
   size          = "s-4vcpu-8gb"
   ssh_username  = "root"
@@ -26,18 +26,29 @@ build {
 
   provisioner "shell" {
     inline_shebang = "/bin/sh -ex"
+    environment_vars = [
+      "DEBIAN_FRONTEND=noninteractive",
+    ]
     inline = [
-      "dnf -y update",
+      "apt-get clean",
+      "apt-get update",
+
+      # Wait apt-get lock
+      "while ps -opid= -C apt-get > /dev/null; do sleep 1; done",
+
+      "apt-get upgrade -y -q -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold'",
 
       # Install docker and docker-compose
-      "dnf -y install dnf-plugins-core",
-      "dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo",
-      "dnf -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin",
-      "systemctl start docker",
-      "systemctl enable docker",
+      "apt-get install -y -q apt-transport-https ca-certificates nfs-common",
+      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -",
+      "add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\"",
+      "apt-get update",
+      "apt-get install -y -q docker-ce",
+      "curl -L \"https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose",
+      "chmod +x /usr/local/bin/docker-compose",
       
       # Install haveged, otherwise docker-compose may hang: https://stackoverflow.com/a/68172225/1494610
-      "dnf -y install haveged",
+      "apt-get install -y -q haveged",
 
       # Add users for services
       "useradd -m -s /bin/bash ambulance",
