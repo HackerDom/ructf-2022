@@ -7,5 +7,6 @@ namespace psycho_clinic.Storage
     {
         List<Contract> GetPatientContracts(PatientId patientId);
         bool AddContract(PatientId patientId, Contract contract);
+        void Remove(PatientId patientId);
     }
 }
