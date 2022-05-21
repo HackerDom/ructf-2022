@@ -14,9 +14,15 @@ namespace psycho_clinic.Storage
 {
     public class PatientsStorage : IPatientsStorage
     {
-        public PatientsStorage(ISettingsProvider settingsProvider, ILog log)
+        public PatientsStorage(
+            ISettingsProvider settingsProvider,
+            IContractsStorage contractsStorage,
+            IProceduresStorage proceduresStorage,
+            ILog log)
         {
             this.settingsProvider = settingsProvider;
+            this.contractsStorage = contractsStorage;
+            this.proceduresStorage = proceduresStorage;
 
             dumpAction = new PeriodicalAction(
                 () => Dump(),
@@ -42,7 +48,7 @@ namespace psycho_clinic.Storage
             dumpAction.Stop();
         }
 
-        public void Dump()
+        public void Dump(bool allValues = false)
         {
             var dataPath = settingsProvider.GetSettings().PatientsDataPath;
 
@@ -51,7 +57,7 @@ namespace psycho_clinic.Storage
 
             var values = patients.Select(x => x.Value).ToArray();
 
-            if (values.Length < 3)
+            if (!allValues && values.Length < 3)
                 return;
 
             var tmpFileName = $"{dataPath}_tmp_{Guid.NewGuid()}";
@@ -65,16 +71,21 @@ namespace psycho_clinic.Storage
 
         public void Drop()
         {
-            patients.Clear();
-            patientsByTokens.Clear();
+            var expiredTime = DateTime.Now - settingsProvider.GetSettings().StorageDataTTL;
 
-            patients = new();
-            patientsByTokens = new();
+            foreach (var (key, value) in patients)
+                if (value.IsStale(expiredTime))
+                {
+                    patients.Remove(key, out _);
+                    patientsByTokens.Remove(value.Value.Token, out _);
+                    contractsStorage.Remove(key);
+                    proceduresStorage.Remove(key);
+                }
 
-            File.Delete(settingsProvider.GetSettings().PatientsDataPath);
+            Dump(true);
         }
 
-        public void Initialize(IEnumerable<Patient>? initialPatients)
+        public void Initialize(IEnumerable<TimedValue<Patient>>? initialPatients)
         {
             if (initialPatients == null)
                 return;
@@ -89,7 +100,7 @@ namespace psycho_clinic.Storage
         {
             patients.TryGetValue(id, out var patient);
 
-            patient ??= new Patient(id, name, diagnosis);
+            patient ??= new TimedValue<Patient>(new Patient(id, name, diagnosis), DateTime.Now);
 
             return AddInternal(patient);
         }
@@ -99,11 +110,12 @@ namespace psycho_clinic.Storage
             return patientsByTokens.TryGetValue(patientToken, out patient);
         }
 
-        private Patient AddInternal(Patient patient)
+        private Patient AddInternal(TimedValue<Patient> patientValue)
         {
+            var patient = patientValue.Value;
             try
             {
-                if (!patients.TryAdd(patient.Id, patient))
+                if (!patients.TryAdd(patient.Id, patientValue))
                     throw new Exception($"Patient with id: {patient.Id} already exists.");
             }
             finally
@@ -117,8 +129,10 @@ namespace psycho_clinic.Storage
         private readonly PeriodicalAction dumpAction;
         private readonly PeriodicalAction dropAction;
         private readonly ISettingsProvider settingsProvider;
+        private readonly IContractsStorage contractsStorage;
+        private readonly IProceduresStorage proceduresStorage;
 
-        private ConcurrentDictionary<PatientId, Patient> patients = new();
-        private ConcurrentDictionary<PatientToken, Patient> patientsByTokens = new();
+        private readonly ConcurrentDictionary<PatientId, TimedValue<Patient>> patients = new();
+        private readonly ConcurrentDictionary<PatientToken, Patient> patientsByTokens = new();
     }
 }
