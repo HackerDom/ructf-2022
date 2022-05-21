@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import requests
 import uuid
-import logging
 import random
 import string
 import base64
@@ -10,20 +8,8 @@ import os
 
 from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, VulnChecker, NewChecker
 from gornilo.http_clients import requests_with_retries
-from http.client import HTTPConnection
-
-from gornilo.models.verdict.verdict_codes import *
 
 from logging import getLogger
-
-HTTPConnection.debuglevel = 1
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logging.getLogger().setLevel(logging.DEBUG)
-log = logging.getLogger("requests.packages.urllib3")
-log.setLevel(logging.DEBUG)
-log.propagate = True
 
 PORT = 15345
 NAME_HEADER = 'X-Svm-Name'
@@ -67,7 +53,7 @@ async def check_service(request: CheckRequest) -> Verdict:
         return Verdict.OK()
 
     except Exception as e:
-        log.error(e)
+        print(e)
         return Verdict.MUMBLE('service down')
 
 
@@ -122,7 +108,7 @@ class Base64Vuln(VulnChecker):
 
             return Verdict.OK_WITH_FLAG_ID(name, key)
         except Exception as e:
-            log.error(e)
+            print(e)
             return Verdict.MUMBLE('service down')
 
     @staticmethod
@@ -138,12 +124,13 @@ class Base64Vuln(VulnChecker):
 
                 j = r.json()
 
-                if j['secret'] != req.flag or j['name'] != name:
+                if j['secret'] != base64.b64encode(req.flag.encode()).decode() or j['name'] != name:
+                    print(f'differs: {j["secret"]} {base64.b64encode(req.flag.encode()).decode()} {req.flag}')
                     return Verdict.CORRUPT('wrong flag')
 
             return Verdict.OK()
         except Exception as e:
-            log.error(e)
+            print(e)
             return Verdict.MUMBLE('service error')
 
 
