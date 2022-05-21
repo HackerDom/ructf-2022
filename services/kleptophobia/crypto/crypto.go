@@ -21,6 +21,9 @@ func pad(data []byte) []byte {
 }
 
 func unpad(data []byte) ([]byte, error) {
+	if data[len(data)-1] >= 16 {
+		return nil, errors.New("wrong padding")
+	}
 	padding := int(data[len(data)-1])
 	paddingBound := len(data) - padding
 	if paddingBound >= len(data) || paddingBound < 0 {
