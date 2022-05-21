@@ -71,8 +71,8 @@ class CryptoChecker(VulnChecker):
 
             username = generators.gen_string(8, 10)
             first_name = generators.gen_name(7, 7)
-            middle_name = generators.gen_name(16, 16)
-            second_name = generators.gen_name(16, 16)
+            middle_name = generators.gen_name(26, 26)
+            second_name = generators.gen_name(6, 7)
             room = generators.gen_int()
 
             password = generators.gen_string()
