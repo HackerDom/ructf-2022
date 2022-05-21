@@ -27,8 +27,6 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - psql_data:/var/lib/postgresql/data
     mem_limit: 3G
-    ports:
-      - "5432:5432"
     ulimits:
       nofile:
         soft: 12000
