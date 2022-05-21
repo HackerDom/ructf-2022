@@ -15,6 +15,7 @@ const MaxSteps = 256
 const FoodCount = 8
 const LevelWidth, LevelHeight = 16, 16
 const FoodTTL = 2
+const FoodNum = 1
 
 var InitialSnakeBody = []game.Coordinate{
 	{X: 0, Y: 1},
@@ -80,6 +81,7 @@ func GenerateLevel(seed []byte) (level *game.Level, err error) {
 		Snake:    snake,
 		MaxSteps: MaxSteps,
 		FoodTTl:  FoodTTL,
+		FoodNum:  FoodNum,
 	}
 
 	level.FoodSteps = level.MaxSteps / FoodCount

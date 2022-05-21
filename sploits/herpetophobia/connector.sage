@@ -1,8 +1,8 @@
 import requests
-import websocket
+import websockets
 import json
 import random
-import time
+import asyncio
 from math import gcd
 
 URL = "0.0.0.0:8080"
@@ -45,14 +45,16 @@ def create_game():
     power = random.randint(1, order - 1)
     while gcd(order, power) != 1:
         power = random.randint(1, order - 1)
+    secret = str(random.randint(1000, 893329668))
+    print(secret)
     body = {
-        "secret": str(random.randint(1000, 893329668)),
+        "secret": secret,
         "init": exponentiation(init_perm, power),
         "flag": "FLAGGG" + str(random.randint(1, 10000))
     }
 
     res = requests.post(f"http://{URL}/create", json=body)
-    games = res.json()["id"]
+    return res.json()["id"]
 
 def list_games():
     body = {
@@ -62,18 +64,12 @@ def list_games():
     res = requests.post(f"http://{URL}/gameList", json=body)
     return res.json()["ids"]
 
-game = None
-counter = 0
-fields_counter = 0
-
-counters_fields = []
 
 def print_map(game_map):
     for el in game_map:
         print(" ".join(el))
 
 def on_message(ws, message):
-    global counters_fields
     global fields_counter
     data = json.loads(message)
     print(data)
@@ -114,17 +110,39 @@ def on_open(ws):
     counter += 1    
 
 
-def sploit():   
-    global counters_fields
-    # for i in list_games():
+async def sploit(id):
     counters_fields = []
-    ws = websocket.WebSocketApp(f"ws://{URL}/play",
-                                    on_message=on_message,
-                                    on_error=on_error,
-                                    on_close=on_close,
-                                    on_open=on_open)
-    ws.run_forever()
+    async with websockets.connect(f"ws://{URL}/play") as ws:
+        for i in range(30):
+            await ws.send(str(json.dumps({"id": id})))
+            resp = await ws.recv()
+            resp = json.loads(resp)
+            while not resp.get("gameResult"):
+                await ws.send(str(json.dumps({"direction": "w",
+                    "closeGame": False,
+                    "newGame": False})))
+                resp = await ws.recv()
+                resp = json.loads(resp)
+            counters_fields.append(resp["counter"], resp["permitation"])
+            if i != 29:
+                await ws.send(str(json.dumps({
+                    "direction": "w",
+                    "closeGame": False,
+                    "newGame": True
+                })))
+                resp = await ws.recv()
+                resp = json.loads(resp)
+        await ws.send(str(json.dumps({"id": id})))
+        resp = await ws.recv()
+        resp = json.loads(resp)
+        res = sploit.exploit(counters_fields, resp["counter"])
+        print(res)
+    
+        
+
+            
+    
     print(counters_fields)
 
 # websocket.enableTrace(True)
-sploit()
+asyncio.get_event_loop().run_until_complete(sploit(create_game()))

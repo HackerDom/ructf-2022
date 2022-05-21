@@ -1,0 +1,24 @@
+version: "2.2"
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    mem_limit: 1G
+    pids_limit: 100
+    volumes:
+      - db_volume:/data/db
+    env_file:
+      - .env
+  srv:
+    build: ./
+    restart: always
+    mem_limit: 1G
+    pids_limit: 100
+    ports:
+      - "5051:8080"
+    env_file: .env
+    depends_on:
+      - mongo
+volumes:
+  db_volume:

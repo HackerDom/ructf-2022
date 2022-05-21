@@ -13,6 +13,7 @@ type GameConn struct {
 	gameId  string
 	perm    []int
 	counter int
+	prize   string
 }
 
 type MoveMsg struct {
@@ -89,6 +90,7 @@ func (gameConn *GameConn) setupGame() error {
 	dao.IncCounter(gameConn.gameId)
 	_map := dao.GetMap(gameConn.gameId)
 	gameConn.counter = _map.Counter
+	gameConn.prize = _map.Flag
 	seed, err := generators.GenerateSeed(_map.Init[:], []byte(_map.Secret), uint64(_map.Counter))
 	perm := make([]int, 256)
 	for i, el := range seed {
@@ -110,9 +112,10 @@ func (gameConn *GameConn) setupGame() error {
 func (gameConn GameConn) handleEndGame() {
 	strStatus := "win"
 	if gameConn.level.Status() == game.STATUS_LOSE {
+		gameConn.prize = ""
 		strStatus = "lose"
 	}
-	_ = gameConn.conn.WriteJSON(EndGameAnsw{Permutation: gameConn.perm, Counter: gameConn.counter, GameResult: strStatus})
+	_ = gameConn.conn.WriteJSON(EndGameAnsw{Permutation: gameConn.perm, Counter: gameConn.counter, GameResult: strStatus, Prize: gameConn.prize})
 }
 
 func (gameConn *GameConn) handleGame(msg MoveMsg) MoveAnsw {
