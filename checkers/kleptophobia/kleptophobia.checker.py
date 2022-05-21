@@ -176,35 +176,5 @@ class CryptoChecker(VulnChecker):
         return ec.verdict
 
 
-# if __name__ == '__main__':
-#     checker.run()
-
-
-def main():
-    stub = get_stub('localhost')
-
-    username = generators.gen_string(8, 10)
-    first_name = generators.gen_name(7, 7)
-    middle_name = generators.gen_name(16, 16)
-    second_name = generators.gen_name(16, 16)
-    room = generators.gen_int()
-
-    password = generators.gen_string()
-    register_request = pb2.RegisterReq(
-        username=username,
-        password=password,
-        person=pb2.PrivatePerson(
-            first_name=first_name,
-            middle_name=middle_name,
-            second_name=second_name,
-            room=room,
-            diagnosis="request.flag",
-        ),
-    )
-
-    register_response = stub.Register(register_request)
-    print(register_response)
-
-
 if __name__ == '__main__':
-    main()
+    checker.run()
