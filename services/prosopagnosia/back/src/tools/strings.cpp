@@ -109,133 +109,144 @@ std::string svm::str_or_uuid4(std::string s) {
     return generate_uuid_v4();
 }
 
-static const char *base64_chars[2] = {
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz"
-        "0123456789"
-        "+/",
+static const char *base64_alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static thread_local char *triples_map = nullptr;
 
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz"
-        "0123456789"
-        "-_"};
+static void init_triples_map() {
+    if (triples_map != nullptr) {
+        return;
+    }
 
-static unsigned int pos_of_char(const unsigned char chr) {
-    if (chr >= 'A' && chr <= 'Z') return chr - 'A';
-    else if (chr >= 'a' && chr <= 'z') return chr - 'a' + ('Z' - 'A') + 1;
-    else if (chr >= '0' && chr <= '9') return chr - '0' + ('Z' - 'A') + ('z' - 'a') + 2;
-    else if (chr == '+' || chr == '-')
+    // no need to deallocate - its static
+    triples_map = new char[0xffffff * 4];
+
+    for (int i = 0; i < 0xffffff; ++i) {
+        auto base = i * 4;
+
+        triples_map[base + 0] = base64_alpha[(i & 0xfc0000) >> 18];
+        triples_map[base + 1] = base64_alpha[(i & 0x03f000) >> 12];
+        triples_map[base + 2] = base64_alpha[(i & 0x000fc0) >> 6];
+        triples_map[base + 3] = base64_alpha[(i & 0x00003f)];
+    }
+}
+
+static const char *get_triplet_chars(uint32_t triplet) {
+    init_triples_map();
+
+    return triples_map + triplet * 4;
+}
+
+static int pos_of_char(const unsigned char chr) {
+    if (chr >= 'A' && chr <= 'Z') {
+        return chr - 'A';
+    } else if (chr >= 'a' && chr <= 'z') {
+        return chr - 'a' + ('Z' - 'A') + 1;
+    } else if (chr >= '0' && chr <= '9') {
+        return chr - '0' + ('Z' - 'A') + ('z' - 'a') + 2;
+    } else if (chr == '+') {
         return 62;
-    else if (chr == '/' || chr == '_') return 63;
-    else
-        throw std::runtime_error("Input is not valid base64-encoded data.");
+    } else if (chr == '/') {
+        return 63;
+    }
+
+    return -1;
 }
 
-std::string base64_encode(unsigned char const *bytes_to_encode, size_t in_len, bool url) {
+std::string svm::base64_encode(const std::string &val) {
+    std::string result;
 
-    size_t len_encoded = (in_len + 2) / 3 * 4;
+    result.reserve((val.size() + 2) / 3 * 4 + 10);
 
-    unsigned char trailing_char = url ? '.' : '=';
+    auto len = val.size();
+    auto wl = len - len % 3;
+    const char *end = &val[0] + wl;
+    const char *curr = &val[0];
 
-    const char *base64_chars_ = base64_chars[url];
+    while (curr < end) {
+        auto triple = *(reinterpret_cast<const uint32_t *>(curr));
+        triple = ((triple & 0xff) << 16) | (triple & 0xff00) | ((triple & 0xff0000) >> 16);
 
-    std::string ret;
-    ret.reserve(len_encoded);
+        auto chars = get_triplet_chars(triple);
 
-    unsigned int pos = 0;
+        result.push_back(chars[0]);
+        result.push_back(chars[1]);
+        result.push_back(chars[2]);
+        result.push_back(chars[3]);
 
-    while (pos < in_len) {
-        ret.push_back(base64_chars_[(bytes_to_encode[pos + 0] & 0xfc) >> 2]);
+        curr += 3;
+    }
 
-        if (pos + 1 < in_len) {
-            ret.push_back(
-                    base64_chars_[((bytes_to_encode[pos + 0] & 0x03) << 4) + ((bytes_to_encode[pos + 1] & 0xf0) >> 4)]);
+    if (wl + 1 == len) {
+        auto last = val[len - 1];
+        result.push_back(base64_alpha[(last & 0xfc) >> 2]);
+        result.push_back(base64_alpha[(last & 0x3) << 4]);
+        result.push_back('=');
+        result.push_back('=');
+    }
 
-            if (pos + 2 < in_len) {
-                ret.push_back(base64_chars_[((bytes_to_encode[pos + 1] & 0x0f) << 2) +
-                                            ((bytes_to_encode[pos + 2] & 0xc0) >> 6)]);
-                ret.push_back(base64_chars_[bytes_to_encode[pos + 2] & 0x3f]);
-            } else {
-                ret.push_back(base64_chars_[(bytes_to_encode[pos + 1] & 0x0f) << 2]);
-                ret.push_back(trailing_char);
+    if (wl + 2 == len) {
+        auto last = val[len - 1];
+        auto penultimate = val[len - 2];
+        result.push_back(base64_alpha[(penultimate & 0xfc) >> 2]);
+        result.push_back(base64_alpha[((penultimate & 0x3) << 4) | ((last & 0xf0) >> 4)]);
+        result.push_back(base64_alpha[((last & 0xf) << 2)]);
+        result.push_back('=');
+    }
+
+    return result;
+}
+
+result<std::string> svm::base64_decode(const std::string &val) {
+    if (val.size() % 4 != 0 || std::count(val.begin(), val.end(), '=') > 2) {
+        return result<std::string>::of_error("input is not valid base64-encoded data");
+    }
+
+    auto len = val.size();
+
+    std::string decoded;
+    decoded.reserve(len / 4 * 3);
+
+    std::size_t i = 0;
+
+    while (i < len) {
+        auto c0 = val[i + 0];
+        auto c1 = val[i + 1];
+        auto c2 = val[i + 2];
+        auto c3 = val[i + 3];
+
+        auto p0 = pos_of_char(c0);
+        auto p1 = pos_of_char(c1);
+
+        decoded.push_back(static_cast<char>((p0 << 2) | (p1 & 0x30) >> 4));
+
+        if (c2 != '=' && c3 != '=') {
+            auto p2 = pos_of_char(c2);
+            auto p3 = pos_of_char(c3);
+
+            if (p0 == -1 || p1 == -1 || p2 == -1 || p3 == -1) {
+                return result<std::string>::of_error("input is not valid base64-encoded data");
             }
+
+            decoded.push_back(static_cast<char>(((p1 & 0x0f) << 4) | ((p2 & 0x3c) >> 2)));
+            decoded.push_back(static_cast<char>((p2 & 0x03) << 6 | p3));
         } else {
+            if (c2 == '=' && c3 != '=') {
+                return result<std::string>::of_error("input is not valid base64-encoded data");
+            }
 
-            ret.push_back(base64_chars_[(bytes_to_encode[pos + 0] & 0x03) << 4]);
-            ret.push_back(trailing_char);
-            ret.push_back(trailing_char);
-        }
+            if (c2 != '=') {
+                auto p2 = pos_of_char(c2);
 
-        pos += 3;
-    }
-
-
-    return ret;
-}
-
-
-template<typename String, unsigned int line_length>
-static std::string encode_with_line_breaks(String s) {
-    return insert_linebreaks(base64_encode(s, false), line_length);
-}
-
-template<typename String>
-static std::string encode(String s, bool url) {
-    return base64_encode(reinterpret_cast<const unsigned char *>(s.data()), s.length(), url);
-}
-
-template<typename String>
-static std::string decode(String encoded_string, bool remove_linebreaks) {
-    if (encoded_string.empty()) return {};
-
-    if (remove_linebreaks) {
-
-        std::string copy(encoded_string);
-
-        copy.erase(std::remove(copy.begin(), copy.end(), '\n'), copy.end());
-
-        return base64_decode(copy, false);
-    }
-
-    size_t length_of_string = encoded_string.length();
-    size_t pos = 0;
-
-    size_t approx_length_of_decoded_string = length_of_string / 4 * 3;
-    std::string ret;
-    ret.reserve(approx_length_of_decoded_string);
-
-    while (pos < length_of_string) {
-        size_t pos_of_char_1 = pos_of_char(encoded_string[pos + 1]);
-
-        ret.push_back(static_cast<std::string::value_type>(((pos_of_char(encoded_string[pos + 0])) << 2) +
-                                                           ((pos_of_char_1 & 0x30) >> 4)));
-
-        if ((pos + 2 < length_of_string) &&
-            encoded_string[pos + 2] != '=' &&
-            encoded_string[pos + 2] != '.'
-                ) {
-            unsigned int pos_of_char_2 = pos_of_char(encoded_string[pos + 2]);
-            ret.push_back(static_cast<std::string::value_type>(((pos_of_char_1 & 0x0f) << 4) +
-                                                               ((pos_of_char_2 & 0x3c) >> 2)));
-
-            if ((pos + 3 < length_of_string) &&
-                encoded_string[pos + 3] != '=' &&
-                encoded_string[pos + 3] != '.') {
-                ret.push_back(static_cast<std::string::value_type>(((pos_of_char_2 & 0x03) << 6) +
-                                                                   pos_of_char(encoded_string[pos + 3])));
+                decoded.push_back(static_cast<char>(((p1 & 0x0f) << 4) | ((p2 & 0x3c) >> 2)));
             }
         }
 
-        pos += 4;
+        i += 4;
     }
 
-    return ret;
+    return result<std::string>::of_success(decoded);
 }
 
-std::string svm::base64_decode(std::string const &s, bool remove_linebreaks) {
-    return decode(s, remove_linebreaks);
-}
-
-std::string svm::base64_encode(std::string const &s, bool url) {
-    return encode(s, url);
+bool svm::is_base64_encoded_string(const std::string &s) {
+    return base64_decode(s).success;
 }

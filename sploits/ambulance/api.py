@@ -23,8 +23,8 @@ class Ambulance:
         self._reader = reader
         self._writer = writer
 
-    @contextlib.asynccontextmanager
     @staticmethod
+    @contextlib.asynccontextmanager
     async def connect(host: str, port: int) -> AsyncGenerator['Ambulance', None]:
         reader, writer = await asyncio.open_connection(host, port)
 
