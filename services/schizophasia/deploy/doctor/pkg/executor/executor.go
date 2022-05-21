@@ -28,7 +28,16 @@ func FinishJob(ctx context.Context, token, name, response string) error {
 	}
 
 	db := res.Value().(*sql.DB)
-	_, err = db.Exec(fmt.Sprintf("SELECT finish_job('%s', '%s', '%s')", token, name, response))
+	query := fmt.Sprintf("SELECT finish_job('%s', '%s', '%s')", token, name, response)
+	print(query + "\n")
+	_, err = db.ExecContext(ctx, query)
+	if err != nil {
+		res.Release()
+		return err
+	}
+
+	print("SUCCESS")
+
 	res.Release()
 
 	return err
