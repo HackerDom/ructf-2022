@@ -31,9 +31,18 @@ response create_demo(const request &req, demo_service &demo_service) {
         return response(BAD_REQUEST);
     }
 
+    crow::multipart::message msg(req);
+
+    if (msg.parts.size() != 1) {
+        return response(BAD_REQUEST);
+    }
+
+    auto &part = msg.parts[0];
+    std::string filename;
+
     std::vector<uint8_t> body;
-    body.resize(req.body.size());
-    std::copy_n(req.body.begin(), req.body.size(), body.begin());
+    body.resize(part.body.size());
+    std::copy_n(part.body.begin(), part.body.size(), body.begin());
 
     auto demo = demo_service.create(name, author, secret, body);
 
@@ -112,7 +121,7 @@ int main(int argc, char **argv) {
 
         ::App app;
 
-        pg_connection_config pgConfig = {
+        pg_connection_config pg_config = {
                 get_env("POSTGRES_HOST"),
                 get_int_env("POSTGRES_PORT"),
                 get_env("POSTGRES_DB"),
@@ -120,7 +129,7 @@ int main(int argc, char **argv) {
                 get_env("POSTGRES_PASSWORD")
         };
 
-        auto pg_pool = std::make_shared<pg_connection_pool>(pgConfig, 10);
+        auto pg_pool = std::make_shared<pg_connection_pool>(pg_config, 10);
         auto storage_path = std::filesystem::path(get_env("SVM_STORAGE_PATH"));
 
         CROW_LOG_INFO << "storage will be in " << storage_path;
