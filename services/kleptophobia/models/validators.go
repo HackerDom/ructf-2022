@@ -22,8 +22,12 @@ func ValidatePrivatePerson(person *PrivatePerson) error {
 	if !DiagnosisRegex.MatchString(person.Diagnosis) {
 		return errors.New("incorrect diagnosis: " + person.Diagnosis)
 	}
-	if !UsernameRegex.MatchString(person.Username) {
-		return errors.New("incorrect username: " + person.Username)
+	return nil
+}
+
+func ValidateUsername(username string) error {
+	if !UsernameRegex.MatchString(username) {
+		return errors.New("incorrect username: " + username)
 	}
 	return nil
 }

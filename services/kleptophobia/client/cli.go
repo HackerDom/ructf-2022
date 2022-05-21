@@ -32,10 +32,10 @@ func (cliClient *CliClient) init(config *config.ClientConfig) utils.Closable {
 }
 
 func buildRegisterReq() *models.RegisterReq {
+	username := utils.ReadValueWithValidation("Username: ", models.UsernameRegex)
 	firstName := utils.ReadValueWithValidation("First name: ", models.NameRegex)
 	middleName := utils.ReadValueWithValidation("Middle name: ", models.NameRegex)
 	secondName := utils.ReadValueWithValidation("Second name: ", models.NameRegex)
-	username := utils.ReadValueWithValidation("Username: ", models.UsernameRegex)
 	room := utils.ReadUIntValue("Room: ")
 	diagnosis := utils.ReadValueWithValidation("Diagnosis: ", models.DiagnosisRegex)
 
@@ -43,7 +43,6 @@ func buildRegisterReq() *models.RegisterReq {
 		FirstName:  firstName,
 		MiddleName: middleName,
 		SecondName: secondName,
-		Username:   username,
 		Room:       room,
 		Diagnosis:  diagnosis,
 	}
@@ -51,6 +50,7 @@ func buildRegisterReq() *models.RegisterReq {
 	password := utils.ReadHiddenValue("Password: ")
 
 	return &models.RegisterReq{
+		Username: username,
 		Person:   &privatePerson,
 		Password: password,
 	}

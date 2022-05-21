@@ -71,12 +71,12 @@ class CryptoChecker(VulnChecker):
 
             password = generators.gen_string()
             register_request = pb2.RegisterReq(
+                username=username,
                 password=password,
                 person=pb2.PrivatePerson(
                     first_name=first_name,
                     middle_name=middle_name,
                     second_name=second_name,
-                    username=username,
                     room=room,
                     diagnosis=request.flag,
                 ),

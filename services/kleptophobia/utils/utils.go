@@ -91,3 +91,13 @@ func RandString(ln int) string {
 	}
 	return string(res)
 }
+
+func Restrict(s string) string {
+	sb := strings.Builder{}
+	restrictionLength := len(s) / 3
+	dots := strings.Repeat("*", restrictionLength)
+	sb.WriteString(dots)
+	sb.WriteString(s[restrictionLength : len(s)-restrictionLength])
+	sb.WriteString(dots)
+	return sb.String()
+}

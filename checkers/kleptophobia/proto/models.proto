@@ -34,8 +34,9 @@ message GetEncryptedFullInfoRsp {
 
 
 message RegisterReq {
-  PrivatePerson person = 1;
+  string username = 1;
   string password = 2;
+  PrivatePerson person = 3;
 }
 
 message RegisterRsp {
@@ -51,14 +52,13 @@ message PrivatePerson {
   string first_name = 1;
   string middle_name = 2;
   string second_name = 3;
-  string username = 4;
-  uint32 room = 5;
-  string diagnosis = 6;
+  uint32 room = 4;
+  string diagnosis = 5;
 }
 
 message PublicPerson {
   string first_name = 1;
-  string second_name = 2;
-  string username = 3;
+  string middle_name_restricted = 2;
+  string second_name = 3;
   uint32 room = 4;
 }
