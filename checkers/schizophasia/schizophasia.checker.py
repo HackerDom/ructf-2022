@@ -180,10 +180,10 @@ async def check_service(request: CheckRequest) -> Verdict:
         cursor.execute("SELECT 1")
 
         if not functions_defs_unchanged(cursor):
-            return Verdict.CORRUPT("registry service: SQL function definitions changed")
+            return Verdict.MUMBLE("registry service: SQL function definitions changed")
 
         if not check_cant_read_old(cursor, request.hostname):
-            return Verdict.CORRUPT("Can read old data (older than %s minutes)" % LOOK_BACK_WINDOW_MINUTES)
+            return Verdict.MUMBLE("Can read old data (older than %s minutes)" % LOOK_BACK_WINDOW_MINUTES)
 
     return registry_ec.verdict
 
