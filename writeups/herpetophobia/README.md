@@ -20,4 +20,4 @@ Thorough explanation of the vulnerability and exploitation is [here](./predict.i
 After we figured out, what level field will go next, we must complete this level.
 Here you can use any algorythm to find the best way.
 
-Complete sploit is [here](./sploit.sage) 
+Complete sploit is [here](../../sploits/herpetophobia/sploit.sage) 
