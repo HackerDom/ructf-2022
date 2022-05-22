@@ -36,7 +36,7 @@ Prosopagnosia service compares for base64 string of name for collision checking,
 ```
 
 The sploit for getting base64 collisions can be:
-```
+```python
 import requests
 import base64
 import string
