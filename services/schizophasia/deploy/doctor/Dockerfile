@@ -1,14 +1,8 @@
 FROM alpine:latest
 
-ARG PG_MAJOR="13.0"
-ARG PG_VERSION="13.0"
-ARG GOSU_VERSION="1.12"
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
-
-ENV PATH /usr/lib/postgresql/${PG_MAJOR}/bin:$PATH
-ENV PGDATA /var/lib/postgresql/data
 
 ENV LANG en_US.utf8
 RUN set -eux; \
@@ -58,8 +52,8 @@ RUN set -eux; \
 		--with-includes=/usr/local/include \
 		--with-libraries=/usr/local/lib \
 		;\
-	make -j4 -s;\
-	make install -j4 -s \
+	make -j8 -s;\
+	make install -j8 -s \
 	; \
 	runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local \
