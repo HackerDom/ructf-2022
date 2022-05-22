@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/usernamedt/doctor-service/pkg/libpq"
+	"github.com/usernamedt/doctor-service/pkg/logging"
 	"github.com/usernamedt/doctor-service/pkg/workerpool"
 	"time"
 )
@@ -32,7 +33,8 @@ func FinishJob(ctx context.Context, token, question, name, response string) erro
 	print(query + "\n")
 	_, err = db.ExecContext(ctx, query)
 	if err != nil {
-		res.Release()
+		logging.Errorf("failed to ExecContext: %v", err)
+		res.Destroy()
 		return err
 	}
 

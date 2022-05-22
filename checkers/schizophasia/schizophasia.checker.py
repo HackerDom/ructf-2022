@@ -150,7 +150,7 @@ class OracleChecker(VulnChecker):
             print("Q: %s, U: %s, S: %s, R: %s\n" % (question, user, status, response))
 
             if question != request.flag or user != request.public_flag_id or status != True or len(response) == 0:
-                return Verdict.MUMBLE("unexpected registry service response contents")
+                return Verdict.MUMBLE("registry service response contents mismatch")
 
             cursor.close()
             return Verdict.OK()
