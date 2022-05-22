@@ -90,6 +90,12 @@ build {
     ]
   }
 
+  ## Onboot docker-compose run service
+  provisioner "file" {
+    source = "service-boot/ructf-service@.service"
+    destination = "/etc/systemd/system/ructf-service@.service"
+  }
+
   # Copy services
   provisioner "file" {
     source = "../services/ambulance/"
@@ -130,19 +136,27 @@ build {
   provisioner "shell" {
     inline = [
       "cd ~ambulance",
-      "docker-compose up --build -d",
+      "docker-compose build",
       "cd ~herpetophobia",
-      "docker-compose up --build -d",
+      "docker-compose build",
       "cd ~kleptophobia",
-      "docker-compose up --build -d",
+      "docker-compose build",
       "cd ~meds",
-      "docker-compose up --build -d",
+      "docker-compose build",
       "cd ~prosopagnosia",
-      "docker-compose up --build -d",
+      "docker-compose build",
       "cd ~psycho-clinic",
-      "docker-compose up --build -d",
+      "docker-compose build",
       "cd ~schizophasia",
-      "docker-compose up --build -d",
+      "docker-compose build",
+
+      "systemctl enable ructf-service@ambulance",
+      "systemctl enable ructf-service@herpetophobia",
+      "systemctl enable ructf-service@kleptophobia",
+      "systemctl enable ructf-service@meds",
+      "systemctl enable ructf-service@prosopagnosia",
+      "systemctl enable ructf-service@psycho-clinic",
+      "systemctl enable ructf-service@schizophasia",
     ]
   }
 
