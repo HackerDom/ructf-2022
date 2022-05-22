@@ -130,19 +130,19 @@ build {
   provisioner "shell" {
     inline = [
       "cd ~ambulance",
-      "docker-compose up --build -d || true",
+      "docker-compose up --build -d",
       "cd ~herpetophobia",
-      "docker-compose up --build -d || true",
+      "docker-compose up --build -d",
       "cd ~kleptophobia",
-      "docker-compose up --build -d || true",
+      "docker-compose up --build -d",
       "cd ~meds",
-      "docker-compose up --build -d || true",
+      "docker-compose up --build -d",
       "cd ~prosopagnosia",
-      "docker-compose up --build -d || true",
+      "docker-compose up --build -d",
       "cd ~psycho-clinic",
-      "docker-compose up --build -d || true",
+      "docker-compose up --build -d",
       "cd ~schizophasia",
-      "docker-compose up --build -d || true",
+      "docker-compose up --build -d",
     ]
   }
 
