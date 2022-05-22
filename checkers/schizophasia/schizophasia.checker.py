@@ -55,8 +55,11 @@ class PgErrorChecker:
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        # if exc_type in {InterfaceError, DatabaseError, DataError, OperationalError, IntegrityError, InternalError, ProgrammingError, NotSupportedError}:
-        #     self.verdict = Verdict.DOWN("psycopg2 error")
+        if exc_type in {pg8000.ProgrammingError}:
+            self.verdict = Verdict.DOWN("postgres request failure")
+            print(exc_type)
+            print(exc_value)
+            traceback.print_tb(exc_traceback, file=sys.stdout)
 
         if exc_type:
             print(exc_type)
@@ -98,7 +101,7 @@ def check_cant_read_old(cursor):
         cursor.close()
 
     except Exception as e:
-        print("[OK] can't read old data: %s", e)
+        print("[OK] can't read old data: %s" % e)
         # we want exception on reading an old data
         return True
 
@@ -279,7 +282,7 @@ class OracleChecker(VulnChecker):
             print("Q: %s, U: %s, S: %s, R: %s\n" % (question, user, status, response))
 
             if question != request.flag or user != request.public_flag_id or status != True or len(response) == 0:
-                return Verdict.MUMBLE("registry service response contents mismatch")
+                return Verdict.CORRUPT("registry service response contents mismatch")
 
             cursor.close()
             try:

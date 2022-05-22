@@ -38,10 +38,10 @@ class ErrorChecker:
                 self.verdict = Verdict.DOWN("Service is down")
             elif exc_value.code() == grpc.StatusCode.INTERNAL:
                 print(exc_value.__dict__['_state'].__dict__)
-                self.verdict = Verdict.CORRUPT("Incorrect parsing format")
+                self.verdict = Verdict.MUMBLE("Incorrect parsing format")
             else:
                 print(exc_value.__dict__['_state'].__dict__)
-                self.verdict = Verdict.CORRUPT("Incorrect grpc status code")
+                self.verdict = Verdict.MUMBLE("Incorrect grpc status code")
 
         if exc_type:
             print(exc_type)
