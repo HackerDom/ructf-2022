@@ -91,6 +91,7 @@ def put_flag(request: PutRequest) -> Verdict:
         return Verdict.MUMBLE("Couldn't put flag!")
 
 
+@checker.define_get(vuln_num=1)
 def get_flag(request: GetRequest) -> Verdict:
     client = Client(request.hostname)
     flag = request.flag
