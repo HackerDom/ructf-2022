@@ -49,7 +49,7 @@ def check_service(request: CheckRequest) -> Verdict:
         return e.verdict
     except Exception as e:
         traceback.print_exc()
-        return Verdict.CORRUPT("Corrupted")
+        return Verdict.MUMBLE("Smth went wrong during CHECK")
 
 
 @checker.define_put(vuln_num=1, vuln_rate=1)
@@ -83,6 +83,9 @@ def put_flag(request: PutRequest) -> Verdict:
         print("Saved flag_id " + flag_id)
 
         return Verdict.OK(flag_id)
+    except VerdictDataException as e:
+        print(e)
+        return e.verdict
     except VerdictHttpException as e:
         print(e)
         return e.verdict
@@ -112,7 +115,10 @@ def get_flag(request: GetRequest) -> Verdict:
         print("Procedure description doesn't contain a correct flag.")
         print(f"expected: '{flag}' but was: '{result.description}'")
 
-        return Verdict.MUMBLE("Flag is missing!")
+        return Verdict.CORRUPT("Flag is missing!")
+    except VerdictDataException as e:
+        print(e)
+        return e.verdict
     except VerdictHttpException as e:
         print(e)
         return e.verdict
@@ -124,12 +130,11 @@ def get_flag(request: GetRequest) -> Verdict:
 def check_get_doctors(client, doctor_to_find: Doctor):
     skip = 0
     take = 10
-    
+
     response = client.send_get_doctors(doctor_to_find.edu_lvl, skip, take)
 
     count, doctors = response["count"], response["doctors"]
     print(f"{count} doctors was found")
-
 
     while len(doctors) > 0:
         ids = [x["id"]["id"] for x in doctors]
