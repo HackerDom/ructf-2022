@@ -19,3 +19,5 @@ Renderer.Render($"{value.ToString()}"); // -> "{value.ToString()}"
 
 # Defense
 Downgrade to .NET5.0 or remove ```.ToString()``` from rendering ```Contract```'s identity.
+
+You can find sploit [here](../../sploits/psycho-clinic/sploit.py)
