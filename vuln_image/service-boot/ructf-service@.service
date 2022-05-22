@@ -2,6 +2,8 @@
 Description=RuCTF '%I' service
 Requires=docker.service
 After=docker.service
+Requires=network-online.target
+After=network-online.target
 
 [Service]
 Type=oneshot
