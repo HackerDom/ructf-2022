@@ -3,7 +3,7 @@
 You are an owner and at the same time a patient in clinic for the mentally ill. You can register new patients and clinic staff. Every patient can enter into contracts with doctors. Also they may ask for procedures. But procedure can be performed only when patient has active contract with doctor.
 
 # Vuln
-Flag is located in ```Doctor```'s description. Every time ```Doctor``` performs ```Procedure```, he writes it to report. Your aim is to prescribe to yourself a ```Procedure``` with needed ```doctorId```. But there is a bug in interpolated string rendering:
+Flag is located in ```Doctor```'s description. Every time ```Doctor``` performs ```Procedure```, he writes it to report. Your aim is to prescribe to yourself a ```Procedure``` from needed ```Doctor```. It is expected that you can't create a ```Contract``` with an arbitrary ```Doctor``` because you do not know ```Signature```. Therefore, you can't prescribe a procedure from this doctor. But ```Contract```'s comparasion uses identity rendering. And there is a bug in interpolated string rendering:
 ```C#
 var value = 42;
 Renderer.Render($"{value}"); // -> "{42}"
