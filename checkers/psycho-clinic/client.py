@@ -1,7 +1,5 @@
-import traceback
-
 from gornilo import Verdict
-from requests import post, get
+from gornilo.http_clients import requests_with_retries
 
 from models import Patient, Doctor, ProcedurePerformResult
 from request_models import *
@@ -25,59 +23,64 @@ class Client:
 
         if response.status_code != 200:
             message = f"Invalid status code: {response.status_code} for {url}."
-            private_msg = f"resp: {response.text}. was send: {json_data}"
+            private_msg = f"resp: {response.text}. was send: json={json_data};headers={headers};params={params}"
             raise VerdictHttpException(Verdict.MUMBLE(message), private_msg)
 
         return response
 
     def send_create_doctor(self, doc_id: str, name: str, proc_d: str, edu_level: str):
         url = "doctors/create"
-        return self._send_request(url, post, json_data=CreateDoctorReq(doc_id, name, proc_d, edu_level).to_json())
+        return self._send_request(url,
+                                  requests_with_retries().post,
+                                  json_data=CreateDoctorReq(doc_id, name, proc_d, edu_level).to_json())
 
     def send_get_doctor(self, doc_id: str):
         url = "doctors/"
-        return self._send_request(url, post, json_data=GetDoctorReq(doc_id).to_json()).json()
+        return self._send_request(url, requests_with_retries().post, json_data=GetDoctorReq(doc_id).to_json()).json()
 
     def send_get_doctors(self, edu_lvl: str, skip: int = 0, take: int = 10):
         url = "doctors/"
         params = {"educationLevel": edu_lvl, "skip": str(skip), "take": str(take)}
-        return self._send_request(url, get, params=params).json()
+        return self._send_request(url, requests_with_retries().get, params=params).json()
 
     def send_create_patient(self, patient_id: str, name: str, diagnosis: str):
         url = "patient/create"
-        return self._send_request(url, post, json_data=CreatePatientReq(patient_id, name, diagnosis).to_json())
+        return self._send_request(url, requests_with_retries().post,
+                                  json_data=CreatePatientReq(patient_id, name, diagnosis).to_json())
 
     def send_get_patient(self, patient_token: str):
         url = "patient/card"
-        return self._send_request(url, get, api_key=patient_token).json()
+        return self._send_request(url, requests_with_retries().get, api_key=patient_token).json()
 
     def send_create_contract(self, contract_id: str, patient: Patient, doctor: Doctor, expired: str):
         url = "contracts/create"
 
         req = CreateContractReq(contract_id, doctor.doc_id, doctor.signature, expired)
 
-        return self._send_request(url, post, json_data=req.to_json(), api_key=patient.patient_token)
+        return self._send_request(url, requests_with_retries().post, json_data=req.to_json(),
+                                  api_key=patient.patient_token)
 
     def send_get_contracts(self, patient: Patient) -> list:
         url = "contracts/all"
-        return self._send_request(url, get, api_key=patient.patient_token).json()
+        return self._send_request(url, requests_with_retries().get, api_key=patient.patient_token).json()
 
     def send_prescribe_procedure(self, procedure_id: str, contract: Contract, procedure_type: str):
         url = "procedures/prescribe"
 
         req = PrescribeProcedureReq(procedure_id, contract, procedure_type)
 
-        return self._send_request(url, post, json_data=req.to_json(), api_key=contract.patient.patient_token)
+        return self._send_request(url, requests_with_retries().post, json_data=req.to_json(),
+                                  api_key=contract.patient.patient_token)
 
     def send_get_procedures(self, patient: Patient):
         url = "procedures/all"
-        return self._send_request(url, get, api_key=patient.patient_token).json()
+        return self._send_request(url, requests_with_retries().get, api_key=patient.patient_token).json()
 
     def send_perform_procedure(self, procedure_id: str, patient_token: str):
         url = "procedures/perform"
 
         resp = self._send_request(url,
-                                  post,
+                                  requests_with_retries().post,
                                   json_data=PerformProcedureReq(procedure_id).to_json(),
                                   api_key=patient_token)
 
