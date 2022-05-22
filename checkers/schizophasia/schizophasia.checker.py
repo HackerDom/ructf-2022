@@ -55,7 +55,7 @@ class PgErrorChecker:
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        if exc_type in {pg8000.ProgrammingError}:
+        if exc_type in {pg8000.ProgrammingError, pg8000.InterfaceError}:
             self.verdict = Verdict.DOWN("postgres request failure")
             print(exc_type)
             print(exc_value)
