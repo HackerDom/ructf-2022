@@ -156,7 +156,7 @@ build {
       "systemctl enable ructf-service@kleptophobia",
       "systemctl enable ructf-service@meds",
       "systemctl enable ructf-service@prosopagnosia",
-      "systemctl enable ructf-service@psycho-clinic",
+      "systemctl enable ructf-service@psycho\\x2dclinic",
       "systemctl enable ructf-service@schizophasia",
     ]
   }
