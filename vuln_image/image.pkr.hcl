@@ -61,7 +61,7 @@ build {
       "useradd -m -s /bin/bash kleptophobia",
       "useradd -m -s /bin/bash meds",
       "useradd -m -s /bin/bash prosopagnosia",
-      "useradd -m -s /bin/bash psycho-clinic",
+      "useradd -m -s /bin/bash psycho_clinic",
       "useradd -m -s /bin/bash schizophasia",
     ]
   }
