@@ -38,9 +38,9 @@ PG_MODULE_MAGIC;
 #define BUFSZ 16384
 #define DEFAULT_MEM_LEVEL 8
 
-#define SECRETS_COUNT 30
+#define SECRETS_COUNT 15
 //#define SECRET_LIFETIME 3.0
-#define SECRET_LIFETIME 60.0
+#define SECRET_LIFETIME 900.0
 #define SECRET_LEN 10
 
 void _PG_init(void);
@@ -85,7 +85,7 @@ bool is_invalid(secret_token * token) {
 
 		printf("token: %.*s, issue time: %.*s, diff: %f\n", token->data_len, token->data, len, buffer, difftime(curr_time, token->issue_time));
 		fflush(stdout);
-		return difftime(curr_time, token->issue_time) > (SECRET_LIFETIME * SECRETS_COUNT);
+		return difftime(curr_time, token->issue_time) > (SECRET_LIFETIME * 2);
 	}
 }
 
