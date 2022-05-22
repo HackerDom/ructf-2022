@@ -13,7 +13,7 @@ Renderer.Render($"{value.ToString()}"); // -> "{value.ToString()}"
 # Attack 
 * Fetch needed ```doctorId``` from ```doctors/```
 * Create stub ```Contract``` with some ```Doctor```. Save the ```contractId``` and ```expired```.
-* Construct fake ```Contract``` using ```contractId, expired``` and needed ```doctorId```.
+* Construct fake ```Contract``` using ```contractId```, ```expired``` and needed ```doctorId```.
 * Use fake ```Contract``` to prescribe some ```Procedure``` from ```Doctor``` with ```doctorId```.
 * Perform this ```Procedure``` to get a flag :)
 
