@@ -150,6 +150,7 @@ build {
       "cd ~schizophasia",
       "docker-compose build",
 
+      "systemctl daemon-reload",
       "systemctl enable ructf-service@ambulance",
       "systemctl enable ructf-service@herpetophobia",
       "systemctl enable ructf-service@kleptophobia",
