@@ -40,6 +40,7 @@ PG_MODULE_MAGIC;
 
 #define SECRETS_COUNT 15
 #define SECRET_LIFETIME 60000
+#define SECRET_LEN 10
 
 void _PG_init(void);
 void _PG_fini(void);
@@ -54,8 +55,10 @@ typedef struct secret_token {
 void init_token(secret_token * token) {
 	token->issue_time = time (NULL);
 	printf("OK\n");
-	struct tm *t = localtime(&token->issue_time);
-	token->data_len = strftime(token->data, 200, "%d%m%Y%H%M%S", t);
+    srand (time(NULL));
+    for (int i = 0; i < SECRET_LEN; i++)
+        token->data[i] = rand() % 26 + 65;
+    token->data_len = SECRET_LEN;
 	printf("new val: %s\n", token->data);
 	fflush(stdout);
 	token->valid = true;
@@ -336,7 +339,7 @@ Datum create_meta(PG_FUNCTION_ARGS)
 	alloc_size = in_pos + token_len + 200;
 	buffer = palloc(alloc_size);
 	rc1 = snprintf(buffer, alloc_size, "{\"question\":\"%.*s\",\"token\":\"%.*s\",\"userid\":\"%.*s\"}",
-				   in_pos, VARDATA(in), token_len, VARDATA(token), token_len, VARDATA(token));
+				   in_pos, VARDATA(in), token_len, VARDATA(token), userid_pos, VARDATA(userid));
 
 	uLong destLen = compressBound(rc1); // this is how you should estimate size
 	out = palloc(destLen);

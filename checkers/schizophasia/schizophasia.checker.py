@@ -91,27 +91,29 @@ async def check_service(request: CheckRequest) -> Verdict:
 class OracleChecker(VulnChecker):
     @staticmethod
     def put(request: PutRequest) -> Verdict:
-        priv_flag_id = None
+        meta = None
         public_flag_id = "user_" + str(uuid.uuid4())
         with PgErrorChecker() as registry_ec, PgConn(request.hostname) as pgc:
             cursor = pgc.conn.cursor()
-            cursor.execute("SELECT add_job('%s', '%s')" % (public_flag_id, request.flag))
+            cursor.execute("SELECT add_job('%s', '%s')" % (request.flag, public_flag_id))
             pgc.conn.commit()
             rows = cursor.fetchall()
 
             if not rows or len(rows) != 1 or len(rows[0]) != 1:
                 return Verdict.MUMBLE("unexpected registry service response")
 
-            priv_flag_id = rows[0][0]
+            meta = rows[0][0]
             cursor.close()
 
         if registry_ec.verdict._code != OK:
             return registry_ec.verdict
 
-        print("public flag id:%s, priv flag id:%s\n" % (public_flag_id, priv_flag_id))
+        priv_flag_id = None
+
+        print("public flag id:%s, meta:%s\n" % (public_flag_id, meta))
         with ErrorChecker() as doctor_ec:
             url = f"http://{request.hostname}:{DOCTOR_PORT}/api/v1/jobs"
-            payload = {'id': priv_flag_id}
+            payload = {'id': meta}
             files = []
             headers = {}
 
@@ -124,14 +126,36 @@ class OracleChecker(VulnChecker):
                 return Verdict.CORRUPT("corrupt response from doctor")
 
             resp_json = resp.json()
-            if "data" not in resp_json:
+            if "data" not in resp_json or not resp_json["data"]:
                 return Verdict.CORRUPT("corrupt response from doctor")
+
+            print("hash: %s\n" % resp_json["data"])
+            priv_flag_id = resp_json["data"]
 
         return Verdict.OK_WITH_FLAG_ID(public_flag_id, priv_flag_id)
 
     @staticmethod
     def get(request: GetRequest) -> Verdict:
-        return Verdict.OK()
+        with PgErrorChecker() as registry_ec, PgConn(request.hostname) as pgc:
+            cursor = pgc.conn.cursor()
+            print("SELECT * FROM medical_history('%s', '%s')\n" % (request.public_flag_id, request.flag_id))
+            cursor.execute("SELECT * FROM medical_history('%s', '%s')" % (request.public_flag_id, request.flag_id))
+            pgc.conn.commit()
+            rows = cursor.fetchall()
+
+            if not rows or len(rows) != 1 or len(rows[0]) != 4:
+                return Verdict.MUMBLE("unexpected registry service response format")
+
+            question, user, status, response = rows[0]
+            print("Q: %s, U: %s, S: %s, R: %s\n" % (question, user, status, response))
+
+            if question != request.flag or user != request.public_flag_id or status != True or len(response) == 0:
+                return Verdict.MUMBLE("unexpected registry service response contents")
+
+            cursor.close()
+            return Verdict.OK()
+
+        return registry_ec.verdict
 
 
 if __name__ == '__main__':
