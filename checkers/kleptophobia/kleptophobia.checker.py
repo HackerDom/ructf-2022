@@ -38,10 +38,10 @@ class ErrorChecker:
                 self.verdict = Verdict.DOWN("Service is down")
             elif exc_value.code() == grpc.StatusCode.INTERNAL:
                 print(exc_value.__dict__['_state'].__dict__)
-                self.verdict = Verdict.MUMBLE("Incorrect parsing format")
+                self.verdict = Verdict.CORRUPT("Incorrect parsing format")
             else:
                 print(exc_value.__dict__['_state'].__dict__)
-                self.verdict = Verdict.MUMBLE("Incorrect grpc status code")
+                self.verdict = Verdict.CORRUPT("Incorrect grpc status code")
 
         if exc_type:
             print(exc_type)
@@ -92,7 +92,7 @@ class CryptoChecker(VulnChecker):
             if register_response.status != pb2.RegisterRsp.Status.OK:
                 message = f"Not OK response status: {register_response.message}"
                 print(message)
-                return Verdict.MUMBLE(message)
+                return Verdict.CORRUPT(message)
 
             flag_id = json.dumps({
                 'username': username,
@@ -120,7 +120,7 @@ class CryptoChecker(VulnChecker):
             if get_public_info_rsp.status != pb2.GetPublicInfoRsp.Status.OK:
                 message = f"Not OK response status: {get_public_info_rsp.message}"
                 print(message)
-                ec.verdict = Verdict.MUMBLE(message)
+                ec.verdict = Verdict.CORRUPT(message)
                 return ec.verdict
 
             for field in ['first_name', 'second_name', 'room']:
@@ -149,7 +149,7 @@ class CryptoChecker(VulnChecker):
             if get_encrypted_full_info_response.status != pb2.GetEncryptedFullInfoRsp.Status.OK:
                 message = f"Not OK response status: {get_encrypted_full_info_response.message}"
                 print(message)
-                ec.verdict = Verdict.MUMBLE(message)
+                ec.verdict = Verdict.CORRUPT(message)
                 return ec.verdict
 
             password_hash = get_hash(password.encode())
