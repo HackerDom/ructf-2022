@@ -13,8 +13,4 @@ WORKDIR /app
 
 COPY --from=0 /app ./
 
-RUN adduser --system --home /app --shell /usr/sbin/nologin --no-create-home --disabled-password deployer
-
-USER deployer
-
 CMD ["dotnet", "publish/psycho-clinic.dll"]

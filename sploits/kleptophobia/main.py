@@ -1,5 +1,5 @@
 from itertools import product
-from string import ascii_letters, digits
+from string import ascii_uppercase, digits
 from hashlib import md5
 from sys import argv
 
@@ -18,7 +18,7 @@ from crack import crack, key_from_solver, get_solver
 
 PORT = 50051
 HOST = argv[1]
-ALPHA = (ascii_letters + digits).encode()
+ALPHA = (ascii_uppercase + digits).encode()
 
 
 def get_stub():
@@ -80,7 +80,7 @@ def gen_person():
         middle_name=middle_name,
         second_name=second_name,
         room=room,
-        diagnosis=flag
+        diagnosis=flag.upper()
     ), username
 
 
@@ -101,9 +101,12 @@ if __name__ == '__main__':
     stub = get_stub()
     ping(stub)
 
-    password = generators.gen_string()
-    private_person, username = gen_person()
-    register(stub, username, password, private_person)
+    if len(argv) == 4:
+        username = argv
+    else:
+        password = generators.gen_string()
+        private_person, username = gen_person()
+        register(stub, username, password, private_person)
 
     public_person = get_public_info(stub, username)
     fake_public_person = public_to_private_person(public_person)
@@ -113,7 +116,7 @@ if __name__ == '__main__':
 
     enc_msg = get_encrypted_full_info(stub, username)
 
-    print('HACKING')
+    print(f'HACKING: {test_len}')
     for maybe_key in hack(test_len-1, enc_msg[-32:-16], enc_msg[-16:]):
         try:
             dec_msg = Cipher(maybe_key).decrypt(enc_msg)
@@ -122,7 +125,11 @@ if __name__ == '__main__':
         try:
             maybe_person = pb2.PrivatePerson()
             maybe_person.ParseFromString(dec_msg)
-            if maybe_person.diagnosis.endswith('='):
-                print('FLAG?', maybe_person.diagnosis, maybe_person.diagnosis == private_person.diagnosis)
+            if (
+                maybe_person.first_name == public_person.first_name and
+                maybe_person.second_name == public_person.second_name
+            ):
+                print('FLAG?', maybe_person.diagnosis)
+                break
         except DecodeError:
             continue
