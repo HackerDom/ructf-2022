@@ -76,7 +76,7 @@ namespace psycho_clinic.Controllers
 
         private bool HasContractWithDoctor(Patient patient, Contract contract)
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
 
             var patientContracts = contractsStorage.GetPatientContracts(patient.Id);
 

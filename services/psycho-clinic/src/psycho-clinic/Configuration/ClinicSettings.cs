@@ -17,5 +17,7 @@ namespace psycho_clinic.Configuration
 
         public static readonly string AppPrefix = Path.Combine(Environment.CurrentDirectory, "data");
         public static readonly string StorageDataPrefix = Path.Combine(AppPrefix, "storage");
+
+        public static bool CleanerEnabled = false;
     }
 }

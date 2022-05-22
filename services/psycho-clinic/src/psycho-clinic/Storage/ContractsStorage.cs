@@ -17,6 +17,7 @@ namespace psycho_clinic.Storage
         public ContractsStorage(ISettingsProvider settingsProvider, ILog log)
         {
             this.settingsProvider = settingsProvider;
+            this.log = log.ForContext<ContractsStorage>();
 
             dumpAction = new PeriodicalAction(
                 () => Dump(),
@@ -67,13 +68,18 @@ namespace psycho_clinic.Storage
 
         public void Drop()
         {
-            var expiredTime = DateTime.Now - settingsProvider.GetSettings().StorageDataTTL;
+            if (!ClinicSettings.CleanerEnabled)
+                return;
+
+            log.Info("Starting to drop stale data");
+            var expiredTime = DateTime.UtcNow - settingsProvider.GetSettings().StorageDataTTL;
 
             foreach (var (_, value) in contractsByPatient)
             foreach (var (contractId, timedValue) in value)
                 if (timedValue.IsStale(expiredTime))
                 {
                     value.Remove(contractId, out _);
+                    log.Info($"Removed {contractId.Id}: {timedValue.TimeStamp}");
                 }
 
             Dump(true);
@@ -102,7 +108,7 @@ namespace psycho_clinic.Storage
             var userContracts = contractsByPatient.GetOrAdd(patientId,
                 _ => new ConcurrentDictionary<ContractId, TimedValue<Contract>>());
 
-            var contractValue = new TimedValue<Contract>(contract, DateTime.Now);
+            var contractValue = new TimedValue<Contract>(contract, DateTime.UtcNow);
             if (!userContracts.TryAdd(contract.Id, contractValue))
                 throw new Exception($"Contract with id: {contract.Id} already exists");
 
@@ -117,6 +123,7 @@ namespace psycho_clinic.Storage
         private readonly PeriodicalAction dumpAction;
         private readonly PeriodicalAction dropAction;
         private readonly ISettingsProvider settingsProvider;
+        private readonly ILog log;
 
         private readonly ConcurrentDictionary<PatientId, ConcurrentDictionary<ContractId, TimedValue<Contract>>>
             contractsByPatient = new();

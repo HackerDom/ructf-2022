@@ -23,6 +23,7 @@ namespace psycho_clinic.Storage
             this.settingsProvider = settingsProvider;
             this.contractsStorage = contractsStorage;
             this.proceduresStorage = proceduresStorage;
+            this.log = log.ForContext<PatientsStorage>();
 
             dumpAction = new PeriodicalAction(
                 () => Dump(),
@@ -71,7 +72,11 @@ namespace psycho_clinic.Storage
 
         public void Drop()
         {
-            var expiredTime = DateTime.Now - settingsProvider.GetSettings().StorageDataTTL;
+            if (!ClinicSettings.CleanerEnabled)
+                return;
+
+            log.Info("Starting to drop stale data");
+            var expiredTime = DateTime.UtcNow - settingsProvider.GetSettings().StorageDataTTL;
 
             foreach (var (key, value) in patients)
                 if (value.IsStale(expiredTime))
@@ -80,6 +85,7 @@ namespace psycho_clinic.Storage
                     patientsByTokens.Remove(value.Value.Token, out _);
                     contractsStorage.Remove(key);
                     proceduresStorage.Remove(key);
+                    log.Info($"Removed {key.Id}: {value.TimeStamp}");
                 }
 
             Dump(true);
@@ -131,6 +137,7 @@ namespace psycho_clinic.Storage
         private readonly ISettingsProvider settingsProvider;
         private readonly IContractsStorage contractsStorage;
         private readonly IProceduresStorage proceduresStorage;
+        private readonly ILog log;
 
         private readonly ConcurrentDictionary<PatientId, TimedValue<Patient>> patients = new();
         private readonly ConcurrentDictionary<PatientToken, Patient> patientsByTokens = new();
