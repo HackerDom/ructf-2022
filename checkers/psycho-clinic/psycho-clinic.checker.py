@@ -61,27 +61,28 @@ def put_flag(request: PutRequest) -> Verdict:
     doc_with_flag = Doctor.gen()
 
     try:
-        print("Create doctor")
+        print(f"Create doctor {doc_with_flag.doc_id}{doc_with_flag.edu_lvl}")
         doc_with_flag = client.create_doctor(doc_with_flag.doc_id, doc_with_flag.name, flag, doc_with_flag.edu_lvl)
-        print("Create patient")
+
+        print(f"Create patient {patient.patient_id}{patient.diagnosis}")
         patient = client.create_patient(patient.patient_id, patient.name, patient.diagnosis)
 
         contract = Contract.gen(patient, doc_with_flag)
-        print("Create contract")
+        print(f"Create contract {contract.contract_id}")
         client.create_contract(contract.contract_id, contract.patient, contract.doctor, contract.expired)
 
         procedure = Procedure.gen(contract)
-        print("Prescribe procedure")
+        print(f"Prescribe procedure {procedure.procedure_id}")
         client.prescribe_procedure(procedure.procedure_id, contract, procedure.procedure_type)
 
         print("Saved flag " + flag)
-        flag_id = {"patient_token": patient.patient_token,
-                   "doctor_id": doc_with_flag.doc_id,
-                   "procedure_id": procedure.procedure_id}
+        flag_id = json.dumps({"patient_token": patient.patient_token,
+                              "doctor_id": doc_with_flag.doc_id,
+                              "procedure_id": procedure.procedure_id})
 
-        print("Saved flag_id " + flag)
+        print("Saved flag_id " + flag_id)
 
-        return Verdict.OK(json.dumps(flag_id))
+        return Verdict.OK(flag_id)
     except VerdictHttpException as e:
         print(e)
         return e.verdict
@@ -90,7 +91,6 @@ def put_flag(request: PutRequest) -> Verdict:
         return Verdict.MUMBLE("Couldn't put flag!")
 
 
-@checker.define_get(vuln_num=1)
 def get_flag(request: GetRequest) -> Verdict:
     client = Client(request.hostname)
     flag = request.flag
@@ -103,7 +103,7 @@ def get_flag(request: GetRequest) -> Verdict:
         doctor = Doctor.gen()
         doctor.doc_id = flag_id["doctor_id"]
 
-        print("Performing procedure")
+        print(f'Performing procedure {flag_id["procedure_id"]} for {patient.patient_token}')
         result = client.perform_procedure(flag_id["procedure_id"], patient.patient_token)
         if result.description == flag:
             return Verdict.OK()
@@ -124,6 +124,7 @@ def check_get_doctors(client, doctor_to_find: Doctor):
     response = client.send_get_doctors(doctor_to_find.edu_lvl)
 
     count, doctors = response["count"], response["doctors"]
+    print(f"{count} doctors was found")
     take = len(doctors)
     skip = 0
 

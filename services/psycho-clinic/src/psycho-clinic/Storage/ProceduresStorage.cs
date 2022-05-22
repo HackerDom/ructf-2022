@@ -17,7 +17,7 @@ namespace psycho_clinic.Storage
         public ProceduresStorage(ISettingsProvider settingsProvider, ILog log)
         {
             this.settingsProvider = settingsProvider;
-            dumpAction = new PeriodicalAction(() => Dump(), e => log.Error(e), () => 2.Seconds());
+            this.log = log.ForContext<ProceduresStorage>();
 
             dumpAction = new PeriodicalAction(
                 () => Dump(),
@@ -68,13 +68,18 @@ namespace psycho_clinic.Storage
 
         public void Drop()
         {
-            var expiredTime = DateTime.Now - settingsProvider.GetSettings().StorageDataTTL;
+            if (!ClinicSettings.CleanerEnabled)
+                return;
+
+            log.Info("Starting to drop stale data");
+            var expiredTime = DateTime.UtcNow - settingsProvider.GetSettings().StorageDataTTL;
 
             foreach (var (_, value) in proceduresByPatient)
             foreach (var (procedureId, timedValue) in value)
                 if (timedValue.IsStale(expiredTime))
                 {
                     value.Remove(procedureId, out _);
+                    log.Info($"Removed {procedureId.Id}: {timedValue.TimeStamp}");
                 }
 
             Dump(true);
@@ -121,7 +126,7 @@ namespace psycho_clinic.Storage
             var userProcedures = proceduresByPatient.GetOrAdd(patientId,
                 _ => new ConcurrentDictionary<TreatmentProcedureId, TimedValue<TreatmentProcedure>>());
 
-            var procedureValue = new TimedValue<TreatmentProcedure>(procedure, DateTime.Now);
+            var procedureValue = new TimedValue<TreatmentProcedure>(procedure, DateTime.UtcNow);
             if (!userProcedures.TryAdd(procedure.Id, procedureValue))
                 throw new Exception($"Procedure with id: {procedure.Id} already exists");
 
@@ -136,6 +141,7 @@ namespace psycho_clinic.Storage
         private readonly PeriodicalAction dumpAction;
         private readonly PeriodicalAction dropAction;
         private readonly ISettingsProvider settingsProvider;
+        private readonly ILog log;
 
         private readonly ConcurrentDictionary<PatientId,
                 ConcurrentDictionary<TreatmentProcedureId, TimedValue<TreatmentProcedure>>>
