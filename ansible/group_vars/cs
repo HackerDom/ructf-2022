@@ -29,7 +29,7 @@ cs_nginx_workers: 4
 cs_nginx_listen: 10.10.10.10:80
 cs_static_path: /home/cs/ctf-scoreboard-client/scoreboard/build
 
-cs_base_url: http://10.10.10.10
+cs_base_url: https://monitor.ructf.org
 cs_admin_auth: root:chaij4vohP
 cs_ctf_name: RuCTF 2022
 cs_flags_secret: ga3enguVae
@@ -42,10 +42,10 @@ cs_scoring: |
   cooling_down => 1/2,
   heating_flags_limit => 20 * 100,
   cooling_submissions_limit => 500 * 100,
-  dying_rounds => 480,
-  dying_flag_price => 3
+  dying_rounds => 540,
+  dying_flag_price => 1
 
-cs_time: "['2021-11-24 06:30:00', '2022-11-24 14:30:00']"
+cs_time: "['2022-05-22 16:00:00', '2022-05-23 00:00:00']"
 
 teams: |
   {name => 'Hash', network => '10.60.5.0/24', host => '10.60.5.3', token => 'CLOUD_5_a762d46755ea6f0f107446c09b9aa439', country => 'Canada', tags => ['🇨🇦'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
@@ -142,6 +142,53 @@ teams: |
   {name => 'Bushwhackers', network => '10.60.97.0/24', host => '10.60.97.3', token => 'CLOUD_97_dd7339220b6a82fb219911dcf3978f6c', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructf.org/new-ctf-media/uploads/2022/teams_logo/bushwhackers'},
   {name => 'Nope', network => '10.60.98.0/24', host => '10.60.98.3', token => 'CLOUD_98_2504203c002558235f6221ee61b90af6', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
   {name => 'gumbo', network => '10.60.99.0/24', host => '10.60.99.3', token => 'CLOUD_99_e0c3ffc06111c21d1c3c193ddaf67831', country => 'United States of America', tags => ['🇺🇸'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'alexius', network => '10.60.100.0/24', host => '10.60.100.3', token => 'CLOUD_100_5231794574b12ff3d717e42385eaea87', country => 'Tanzania', tags => ['🇹🇿'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Kochan', network => '10.60.101.0/24', host => '10.60.101.3', token => 'CLOUD_101_75989d2dc9c817c96c69946bdfcbcf89', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructf.org/new-ctf-media/uploads/2022/teams_logo/kochan'},
+  {name => 'Unicorn CTF', network => '10.60.102.0/24', host => '10.60.102.3', token => 'CLOUD_102_52635efaf740b845d1bb6c63574d3e27', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructf.org/new-ctf-media/uploads/2022/teams_logo/unicorn-ctf'},
+  {name => 'sendiriansaya', network => '10.60.103.0/24', host => '10.60.103.3', token => 'CLOUD_103_60952b91f4a54215013b085af7a7a218', country => 'Indonesia', tags => ['🇮🇩'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'InfoSecIITR', network => '10.60.104.0/24', host => '10.60.104.3', token => 'CLOUD_104_814c738fd844fa9ec38ab5399c00d138', country => 'India', tags => ['🇮🇳'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Buckeye Bureau of BOF', network => '10.60.105.0/24', host => '10.60.105.3', token => 'CLOUD_105_85c22f6e6125499580246a211b4510c5', country => 'United States of America', tags => ['🇺🇸'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'xruby0', network => '10.60.106.0/24', host => '10.60.106.3', token => 'CLOUD_106_140c6c80a4018b957daa9fef55b0c2b3', country => 'India', tags => ['🇮🇳'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Bulba Hackers', network => '10.60.107.0/24', host => '10.60.107.3', token => 'CLOUD_107_e7be4a60375e2e5c25e88a73cf1d9afc', country => 'Belarus', tags => ['🇧🇾'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'balihackers', network => '10.60.108.0/24', host => '10.60.108.3', token => 'CLOUD_108_f1de238a3187af8a592aa108a4568085', country => 'Indonesia', tags => ['🇮🇩'], logo => 'https://ructf.org/new-ctf-media/uploads/2022/teams_logo/balihackers'},
+  {name => 'ETYB', network => '10.60.109.0/24', host => '10.60.109.3', token => 'CLOUD_109_984166458db477399f835901a5928d81', country => 'United States of America', tags => ['🇺🇸'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'zxc', network => '10.60.110.0/24', host => '10.60.110.3', token => 'CLOUD_110_450212d229fb0ea14b84687a0b3d600f', country => 'Iran', tags => ['🇮🇷'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'in milk with nuts', network => '10.60.111.0/24', host => '10.60.111.3', token => 'CLOUD_111_121b39ec15a4f8e1e1b9afe97a06209f', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => '0xlivin', network => '10.60.112.0/24', host => '10.60.112.3', token => 'CLOUD_112_1f524fd5061629fb00bd4e96ac867998', country => 'India', tags => ['🇮🇳'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Darkside', network => '10.60.113.0/24', host => '10.60.113.3', token => 'CLOUD_113_34b1708bc3d9a65b1856ed4046b99109', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'N0CT7N0L1F3', network => '10.60.114.0/24', host => '10.60.114.3', token => 'CLOUD_114_3f3bd7224a3d4051d0ba47553e8c1fe1', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'AntiFavorites', network => '10.60.115.0/24', host => '10.60.115.3', token => 'CLOUD_115_e0596b651ed1e8ce08c6dd5f6a2b9269', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'organizers', network => '10.60.116.0/24', host => '10.60.116.3', token => 'CLOUD_116_c4b64df05997e173f082030c2c4121da', country => 'Switzerland', tags => ['🇨🇭'], logo => 'https://ructf.org/new-ctf-media/uploads/2022/teams_logo/organizers'},
+  {name => 'Hollow_Knight', network => '10.60.117.0/24', host => '10.60.117.3', token => 'CLOUD_117_11ab3ed1232f661d3a39f081a4a8d8fa', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructf.org/new-ctf-media/uploads/2022/teams_logo/hollow_knight'},
+  {name => '8t9g', network => '10.60.118.0/24', host => '10.60.118.3', token => 'CLOUD_118_12b41ed1a89cc0791336b4de21b4adc2', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Vinogradov', network => '10.60.119.0/24', host => '10.60.119.3', token => 'CLOUD_119_89ca176f9788c61c09cddc29122c5879', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'SUSlo.PAS', network => '10.60.120.0/24', host => '10.60.120.3', token => 'CLOUD_120_38423d492193312b5306ba70c11991f4', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Hack-x-family', network => '10.60.121.0/24', host => '10.60.121.3', token => 'CLOUD_121_70b7f81f720211bb1fadb84d422d3ead', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'SPhackUsi', network => '10.60.122.0/24', host => '10.60.122.3', token => 'CLOUD_122_c0c60c5f58ba4f69da103a9b8a975031', country => 'Italy', tags => ['🇮🇹'], logo => 'https://ructf.org/new-ctf-media/uploads/2022/teams_logo/sphackusi'},
+  {name => 'Red Horse Army', network => '10.60.123.0/24', host => '10.60.123.3', token => 'CLOUD_123_fc330cbc53873a4b219cf51f900c95e3', country => 'United States of America', tags => ['🇺🇸'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'RoH', network => '10.60.124.0/24', host => '10.60.124.3', token => 'CLOUD_124_c4efc7050636348569cd028fb8a6cfcd', country => 'Algeria', tags => ['🇩🇿'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'WiB newbie attempt', network => '10.60.125.0/24', host => '10.60.125.3', token => 'CLOUD_125_5a31ed995ec0eda24f97b33e80e0d100', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Breakthecode', network => '10.60.126.0/24', host => '10.60.126.3', token => 'CLOUD_126_ebf5a3eb397553edaf4a6c685f4c3d82', country => 'India', tags => ['🇮🇳'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'acdwas', network => '10.60.127.0/24', host => '10.60.127.3', token => 'CLOUD_127_e8e27106babe2702450805b1360a52f9', country => 'Poland', tags => ['🇵🇱'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Hacker101', network => '10.60.128.0/24', host => '10.60.128.3', token => 'CLOUD_128_c556aa96781bfb6067c57f1668fb9df6', country => 'India', tags => ['🇮🇳'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'WebStone', network => '10.60.129.0/24', host => '10.60.129.3', token => 'CLOUD_129_188009e873bf133d0e3159d1df947c37', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'ClanZX', network => '10.60.130.0/24', host => '10.60.130.3', token => 'CLOUD_130_ad59ef070b92f0b4a32a2517c21b2118', country => 'India', tags => ['🇮🇳'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'nyI0p', network => '10.60.131.0/24', host => '10.60.131.3', token => 'CLOUD_131_26f5056ac1ccf0abad420b8a902ba1de', country => 'Belize', tags => ['🇧🇿'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'KXTI_shegiin', network => '10.60.132.0/24', host => '10.60.132.3', token => 'CLOUD_132_c8eb69c453762b2d7992ae9f6427179f', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'codeTalk', network => '10.60.133.0/24', host => '10.60.133.3', token => 'CLOUD_133_a787f7955edb11b6878db3477692a616', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'YummyTacos', network => '10.60.142.0/24', host => '10.60.142.3', token => 'CLOUD_142_a0f20faa029c46567c2db6d22361567a', country => 'Russia', tags => ['🇷🇺'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'elder_wand', network => '10.60.138.0/24', host => '10.60.138.3', token => 'CLOUD_138_2c073f680fbfea65a94adbd90161dcd9', country => 'India', tags => ['🇮🇳'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'peaky_bhayandar', network => '10.60.91.0/24', host => '10.60.91.3', token => 'CLOUD_91_a3ca29e423bbaf3cc030fd602830aa76', country => 'Afghanistan', tags => ['🇦🇫'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'n0tsma', network => '10.60.89.0/24', host => '10.60.89.3', token => 'CLOUD_89_e8738ae03af24cb3be6e12f28d05076b', country => 'Saudi Arabia', tags => ['🇸🇦'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'The Ku Klux Klan', network => '10.60.64.0/24', host => '10.60.64.3', token => 'CLOUD_64_7e2123306d862f712ef9d65b0182a0f8', country => 'United States of America', tags => ['🇺🇸'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'qasw', network => '10.60.134.0/24', host => '10.60.134.3', token => 'CLOUD_134_11ca07eec181bebe6c0ae4838e28f432', country => 'South Korea', tags => ['🇰🇷'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'ECSC-GR', network => '10.60.135.0/24', host => '10.60.135.3', token => 'CLOUD_135_7d78412b23b73dd7f536ad9622144fc2', country => 'Greece', tags => ['🇬🇷'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'algeria', network => '10.60.79.0/24', host => '10.60.79.3', token => 'CLOUD_79_3e18aac4cf7df03d92bc7dbc5390ea9f', country => 'Algeria', tags => ['🇩🇿'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Khalid', network => '10.60.139.0/24', host => '10.60.139.3', token => 'CLOUD_139_dd09f0011b65365cead6ea1a03fa0696', country => 'Saudi Arabia', tags => ['🇸🇦'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'CYberMouflons', network => '10.60.141.0/24', host => '10.60.141.3', token => 'CLOUD_141_b74ffb824b6afa6458817bfc537be8bc', country => 'Cyprus', tags => ['🇨🇾'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'Nub_heckers', network => '10.60.140.0/24', host => '10.60.140.3', token => 'CLOUD_140_1e6fba8c1eb9a82724758eeba6bddf43', country => 'Nepal', tags => ['🇳🇵'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'localho3t', network => '10.60.137.0/24', host => '10.60.137.3', token => 'CLOUD_137_be32cc3b737a9c5f37bc8a014e6d3367', country => 'Iran', tags => ['🇮🇷'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
+  {name => 'xruby', network => '10.60.136.0/24', host => '10.60.136.3', token => 'CLOUD_136_426ee815883c99b4362a77e8961678b1', country => 'India', tags => ['🇮🇳'], logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png'},
 
 services: |
   {name => 'kleptophobia', tcp_port => 50051, timeout => 30, path => 'checkers/kleptophobia/kleptophobia.checker.py'},

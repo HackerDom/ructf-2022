@@ -57,7 +57,7 @@ async def check_service(request: CheckRequest) -> Verdict:
         return Verdict.MUMBLE('service down')
 
 
-@checker.define_vuln('base64 corruption')
+@checker.define_vuln('flags container')
 class Base64Vuln(VulnChecker):
     @staticmethod
     def put(req: PutRequest) -> Verdict:
@@ -119,6 +119,9 @@ class Base64Vuln(VulnChecker):
 
             with requests_with_retries().get(f'http://{req.hostname}:{PORT}/api/demo',
                                              headers={KEY_HEADER: key, NAME_HEADER: name}) as r:
+                if r.status_code == 401:
+                    return Verdict.CORRUPT('wrong flag')
+
                 if r.status_code != 200:
                     return Verdict.MUMBLE('wrong http code')
 
