@@ -263,6 +263,8 @@ class OracleChecker(VulnChecker):
 
             print("hash: %s\n" % resp_json["data"])
             priv_flag_id = resp_json["data"]
+            if priv_flag_id is None:
+                return Verdict.CORRUPT("doctor service: empty data response")
 
         return Verdict.OK_WITH_FLAG_ID(public_flag_id, priv_flag_id)
 
