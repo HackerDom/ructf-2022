@@ -149,5 +149,5 @@ services: |
   {name => 'prosopagnosia', tcp_port => 15345, timeout => 30, path => 'checkers/prosopagnosia/prosopagnosia.checker.py'},
   {name => 'schizophasia', tcp_port => 18181, timeout => 30, path => 'checkers/schizophasia/schizophasia.checker.py'},
   {name => 'ambulance', tcp_port => 17171, timeout => 30, path => 'checkers/ambulance/ambulance.checker.py'},
-  {name => 'herpetophobia', tcp_port => 5051, timeout => 30, path => 'checkers/herpetophobia/herpetophobia.checker.py'},
+  {name => 'herpetophobia', tcp_port => 5051, timeout => 50, path => 'checkers/herpetophobia/herpetophobia.checker.py'},
   {name => 'psycho-clinic', tcp_port => 18323, timeout => 30, path => 'checkers/psycho-clinic/psycho-clinic.checker.py'},
