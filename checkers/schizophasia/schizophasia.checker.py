@@ -93,7 +93,7 @@ def check_cant_read_old(cursor):
 
     sample = next((entry for entry in state if entry['ts'] < int(time()) - (LOOK_BACK_WINDOW_MINUTES * 60)), None)
     if sample is None:
-        print("no good entries found\n")
+        print("Old data wipe check: no good entries found, skipping...\n")
         return True
 
     try:
@@ -101,7 +101,7 @@ def check_cant_read_old(cursor):
         cursor.close()
 
     except Exception as e:
-        print("[OK] can't read old data: %s" % e)
+        print("[OK] Old data wipe check: can't read old data: %s" % e)
         # we want exception on reading an old data
         return True
 
@@ -154,7 +154,6 @@ $function$""",
 
     for func_name, func_def in check_funcs.items():
         if not check_func(cursor, func_name, func_def):
-            print("fail")
             return False
 
     return True
@@ -165,7 +164,8 @@ def check_func(cursor, func_name, expected_def):
     rows = cursor.fetchall()
 
     if not rows or len(rows) != 1 or len(rows[0]) != 1:
-        return Verdict.CORRUPT("unexpected registry service add_job func definition")
+        print("func:%s expected: %s, received unexpected rows response: %s\n" % (func_name, expected_def, rows))
+        return False
 
     actual_def = rows[0][0].strip()
 
@@ -182,10 +182,10 @@ async def check_service(request: CheckRequest) -> Verdict:
         cursor.execute("SELECT 1")
 
         if not functions_defs_unchanged(cursor):
-            return Verdict.CORRUPT("Function definitions changed")
+            return Verdict.CORRUPT("registry service: SQL function definitions changed")
 
         if not check_cant_read_old(cursor):
-            return Verdict.CORRUPT("Can read old data")
+            return Verdict.CORRUPT("Can read old data (older than %s minutes)" % LOOK_BACK_WINDOW_MINUTES)
 
     return registry_ec.verdict
 
@@ -201,8 +201,8 @@ def read_state():
             json_data = json.load(sf)
             return json_data
 
-    except Exception:
-        print("warning: failed to read check state file")
+    except Exception as e:
+        print("warning: failed to read check state file: %s\n" % e)
         return None
 
 
@@ -214,8 +214,8 @@ def write_state(data):
         with open(state_path, 'w+') as sf:
             json.dump(data, sf)
 
-    except Exception:
-        print("warning: failed to write check state file")
+    except Exception as e:
+        print("warning: failed to write check state file: %s\n" % e)
         return None
 
 
@@ -232,7 +232,7 @@ class OracleChecker(VulnChecker):
             rows = cursor.fetchall()
 
             if not rows or len(rows) != 1 or len(rows[0]) != 1:
-                return Verdict.MUMBLE("unexpected registry service response")
+                return Verdict.MUMBLE("registry service: unexpected response on job add")
 
             meta = rows[0][0]
             cursor.close()
@@ -255,11 +255,11 @@ class OracleChecker(VulnChecker):
                 data=payload
             )
             if resp is None:
-                return Verdict.CORRUPT("corrupt response from doctor")
+                return Verdict.CORRUPT("doctor service: empty response")
 
             resp_json = resp.json()
             if "data" not in resp_json or not resp_json["data"]:
-                return Verdict.CORRUPT("corrupt response from doctor")
+                return Verdict.CORRUPT("doctor service: corrupt response")
 
             print("hash: %s\n" % resp_json["data"])
             priv_flag_id = resp_json["data"]
@@ -276,13 +276,13 @@ class OracleChecker(VulnChecker):
             rows = cursor.fetchall()
 
             if not rows or len(rows) != 1 or len(rows[0]) != 4:
-                return Verdict.MUMBLE("unexpected registry service response format")
+                return Verdict.MUMBLE("registry service: unexpected medical history format")
 
             question, user, status, response = rows[0]
             print("Q: %s, U: %s, S: %s, R: %s\n" % (question, user, status, response))
 
             if question != request.flag or user != request.public_flag_id or status != True or len(response) == 0:
-                return Verdict.CORRUPT("registry service response contents mismatch")
+                return Verdict.CORRUPT("registry service: medical history contents mismatch")
 
             cursor.close()
             try:
@@ -296,7 +296,7 @@ class OracleChecker(VulnChecker):
                         {'ts': int(time()), 'public_flag_id': request.public_flag_id, 'flag_id': request.flag_id})
                     write_state(state)
             except Exception as e:
-                print("state update failed: %s\n", e)
+                print("Old data wipe check: state update failed: %s\n" % e)
 
             return Verdict.OK()
 
