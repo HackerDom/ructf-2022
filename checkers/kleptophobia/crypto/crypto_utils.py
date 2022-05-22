@@ -28,6 +28,8 @@ def pad(text, block_size):
 
 def unpad(text):
     padding = text[-1]
+    if padding > 16:
+        raise DecodingError("wrong padding")
     if set(text[-padding:-1]) != set(text[-1:]):
         raise DecodingError("wrong padding")
     return text[:-padding]
