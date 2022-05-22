@@ -17,7 +17,7 @@ namespace psycho_clinic.Storage
         public ProceduresStorage(ISettingsProvider settingsProvider, ILog log)
         {
             this.settingsProvider = settingsProvider;
-            dumpAction = new PeriodicalAction(() => Dump(), e => log.Error(e), () => 2.Seconds());
+            this.log = log.ForContext<ProceduresStorage>();
 
             dumpAction = new PeriodicalAction(
                 () => Dump(),
@@ -43,7 +43,7 @@ namespace psycho_clinic.Storage
             dropAction.Stop();
         }
 
-        public void Dump()
+        public void Dump(bool allValues = false)
         {
             var dataPath = settingsProvider.GetSettings().ProceduresDataPath;
 
@@ -54,7 +54,7 @@ namespace psycho_clinic.Storage
                 .SelectMany(x => x.Value.Values)
                 .ToArray();
 
-            if (values.Length < 3)
+            if (!allValues && values.Length < 3)
                 return;
 
             var tmpFileName = $"{dataPath}_tmp_{Guid.NewGuid()}";
@@ -68,19 +68,30 @@ namespace psycho_clinic.Storage
 
         public void Drop()
         {
-            proceduresByPatient.Clear();
-            proceduresByPatient = new();
+            if (!ClinicSettings.CleanerEnabled)
+                return;
 
-            File.Delete(settingsProvider.GetSettings().ProceduresDataPath);
+            log.Info("Starting to drop stale data");
+            var expiredTime = DateTime.UtcNow - settingsProvider.GetSettings().StorageDataTTL;
+
+            foreach (var (_, value) in proceduresByPatient)
+            foreach (var (procedureId, timedValue) in value)
+                if (timedValue.IsStale(expiredTime))
+                {
+                    value.Remove(procedureId, out _);
+                    log.Info($"Removed {procedureId.Id}: {timedValue.TimeStamp}");
+                }
+
+            Dump(true);
         }
 
-        public void Initialize(IEnumerable<TreatmentProcedure>? initialProcedures)
+        public void Initialize(IEnumerable<TimedValue<TreatmentProcedure>>? initialProcedures)
         {
             if (initialProcedures == null)
                 return;
 
-            foreach (var procedure in initialProcedures)
-                AddProcedure(procedure.PatientId, procedure);
+            foreach (var timedValue in initialProcedures)
+                AddProcedure(timedValue.Value.PatientId, timedValue.Value);
         }
 
         #endregion
@@ -88,7 +99,7 @@ namespace psycho_clinic.Storage
         public List<TreatmentProcedure> GetPatientProcedures(PatientId patientId)
         {
             return proceduresByPatient.TryGetValue(patientId, out var procedures)
-                ? procedures.Values.ToList()
+                ? procedures.Values.Select(x => x.Value).ToList()
                 : new List<TreatmentProcedure>();
         }
 
@@ -100,26 +111,40 @@ namespace psycho_clinic.Storage
         {
             procedure = null;
 
-            return proceduresByPatient.TryGetValue(patientId, out var procedures) &&
-                   procedures.TryGetValue(procedureId, out procedure);
+            if (!proceduresByPatient.TryGetValue(patientId, out var procedures))
+                return false;
+
+            if (!procedures.TryGetValue(procedureId, out var timedValue))
+                return false;
+
+            procedure = timedValue.Value;
+            return true;
         }
 
         public bool AddProcedure(PatientId patientId, TreatmentProcedure procedure)
         {
             var userProcedures = proceduresByPatient.GetOrAdd(patientId,
-                _ => new ConcurrentDictionary<TreatmentProcedureId, TreatmentProcedure>());
+                _ => new ConcurrentDictionary<TreatmentProcedureId, TimedValue<TreatmentProcedure>>());
 
-            if (!userProcedures.TryAdd(procedure.Id, procedure))
+            var procedureValue = new TimedValue<TreatmentProcedure>(procedure, DateTime.UtcNow);
+            if (!userProcedures.TryAdd(procedure.Id, procedureValue))
                 throw new Exception($"Procedure with id: {procedure.Id} already exists");
 
             return true;
         }
 
+        public void Remove(PatientId patientId)
+        {
+            proceduresByPatient.Remove(patientId, out _);
+        }
+
         private readonly PeriodicalAction dumpAction;
         private readonly PeriodicalAction dropAction;
         private readonly ISettingsProvider settingsProvider;
+        private readonly ILog log;
 
-        private ConcurrentDictionary<PatientId, ConcurrentDictionary<TreatmentProcedureId, TreatmentProcedure>>
+        private readonly ConcurrentDictionary<PatientId,
+                ConcurrentDictionary<TreatmentProcedureId, TimedValue<TreatmentProcedure>>>
             proceduresByPatient = new();
     }
 }

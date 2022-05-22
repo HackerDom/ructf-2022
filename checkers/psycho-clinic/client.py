@@ -38,9 +38,9 @@ class Client:
         url = "doctors/"
         return self._send_request(url, post, json_data=GetDoctorReq(doc_id).to_json()).json()
 
-    def send_get_doctors(self, edu_lvl: str, skip: int = 0):
+    def send_get_doctors(self, edu_lvl: str, skip: int = 0, take: int = 10):
         url = "doctors/"
-        params = {"educationLevel": edu_lvl, "skip": str(skip)}
+        params = {"educationLevel": edu_lvl, "skip": str(skip), "take": str(take)}
         return self._send_request(url, get, params=params).json()
 
     def send_create_patient(self, patient_id: str, name: str, diagnosis: str):

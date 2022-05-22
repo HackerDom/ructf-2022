@@ -17,6 +17,7 @@ namespace psycho_clinic.Storage
         public ContractsStorage(ISettingsProvider settingsProvider, ILog log)
         {
             this.settingsProvider = settingsProvider;
+            this.log = log.ForContext<ContractsStorage>();
 
             dumpAction = new PeriodicalAction(
                 () => Dump(),
@@ -42,7 +43,7 @@ namespace psycho_clinic.Storage
             dropAction.Stop();
         }
 
-        public void Dump()
+        public void Dump(bool allValues = false)
         {
             var dataPath = settingsProvider.GetSettings().ContractsDataPath;
 
@@ -53,7 +54,7 @@ namespace psycho_clinic.Storage
                 .SelectMany(x => x.Value.Values)
                 .ToArray();
 
-            if (values.Length < 3)
+            if (!allValues && values.Length < 3)
                 return;
 
             var tmpFileName = $"{dataPath}_tmp_{Guid.NewGuid()}";
@@ -67,19 +68,30 @@ namespace psycho_clinic.Storage
 
         public void Drop()
         {
-            contractsByPatient.Clear();
-            contractsByPatient = new();
+            if (!ClinicSettings.CleanerEnabled)
+                return;
 
-            File.Delete(settingsProvider.GetSettings().ContractsDataPath);
+            log.Info("Starting to drop stale data");
+            var expiredTime = DateTime.UtcNow - settingsProvider.GetSettings().StorageDataTTL;
+
+            foreach (var (_, value) in contractsByPatient)
+            foreach (var (contractId, timedValue) in value)
+                if (timedValue.IsStale(expiredTime))
+                {
+                    value.Remove(contractId, out _);
+                    log.Info($"Removed {contractId.Id}: {timedValue.TimeStamp}");
+                }
+
+            Dump(true);
         }
 
-        public void Initialize(IEnumerable<Contract>? initialContracts)
+        public void Initialize(IEnumerable<TimedValue<Contract>>? initialContracts)
         {
             if (initialContracts == null)
                 return;
 
-            foreach (var contract in initialContracts)
-                AddContract(contract.Info.PatientId, contract);
+            foreach (var timedValue in initialContracts)
+                AddContract(timedValue.Value.Info.PatientId, timedValue.Value);
         }
 
         #endregion
@@ -87,26 +99,33 @@ namespace psycho_clinic.Storage
         public List<Contract> GetPatientContracts(PatientId patientId)
         {
             return contractsByPatient.TryGetValue(patientId, out var contracts)
-                ? contracts.Select(x => x.Value).ToList()
+                ? contracts.Select(x => x.Value.Value).ToList()
                 : new List<Contract>();
         }
 
         public bool AddContract(PatientId patientId, Contract contract)
         {
             var userContracts = contractsByPatient.GetOrAdd(patientId,
-                _ => new ConcurrentDictionary<ContractId, Contract>());
+                _ => new ConcurrentDictionary<ContractId, TimedValue<Contract>>());
 
-            if (!userContracts.TryAdd(contract.Id, contract))
+            var contractValue = new TimedValue<Contract>(contract, DateTime.UtcNow);
+            if (!userContracts.TryAdd(contract.Id, contractValue))
                 throw new Exception($"Contract with id: {contract.Id} already exists");
 
             return true;
         }
 
+        public void Remove(PatientId patientId)
+        {
+            contractsByPatient.Remove(patientId, out _);
+        }
+
         private readonly PeriodicalAction dumpAction;
         private readonly PeriodicalAction dropAction;
         private readonly ISettingsProvider settingsProvider;
+        private readonly ILog log;
 
-        private ConcurrentDictionary<PatientId, ConcurrentDictionary<ContractId, Contract>>
+        private readonly ConcurrentDictionary<PatientId, ConcurrentDictionary<ContractId, TimedValue<Contract>>>
             contractsByPatient = new();
     }
 }

@@ -5,6 +5,8 @@ services:
     image: psycho_clinic
     cpus: 1
     mem_limit: 3G
+    memswap_limit: 3G
+    pids_limit: 8192
     build:
       context: .
       dockerfile: Dockerfile

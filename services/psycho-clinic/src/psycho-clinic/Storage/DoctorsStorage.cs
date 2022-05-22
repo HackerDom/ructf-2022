@@ -17,6 +17,7 @@ namespace psycho_clinic.Storage
         public DoctorsStorage(ISettingsProvider settingsProvider, ILog log)
         {
             this.settingsProvider = settingsProvider;
+            this.log = log.ForContext<DoctorsStorage>();
 
             dumpAction = new PeriodicalAction(
                 () => Dump(),
@@ -42,7 +43,7 @@ namespace psycho_clinic.Storage
             dropAction.Stop();
         }
 
-        public void Dump()
+        public void Dump(bool allValues = false)
         {
             var dataPath = settingsProvider.GetSettings().DoctorsDataPath;
 
@@ -51,7 +52,7 @@ namespace psycho_clinic.Storage
 
             var values = doctors.Select(x => x.Value).ToArray();
 
-            if (values.Length < 3)
+            if (!allValues && values.Length < 3)
                 return;
 
             var tmpFileName = $"{dataPath}_tmp_{Guid.NewGuid()}";
@@ -65,13 +66,23 @@ namespace psycho_clinic.Storage
 
         public void Drop()
         {
-            doctors.Clear();
-            doctors = new();
+            if (!ClinicSettings.CleanerEnabled)
+                return;
 
-            File.Delete(settingsProvider.GetSettings().DoctorsDataPath);
+            log.Info("Starting to drop stale data");
+            var expiredTime = DateTime.UtcNow - settingsProvider.GetSettings().StorageDataTTL;
+
+            foreach (var (key, value) in doctors)
+                if (value.IsStale(expiredTime))
+                {
+                    doctors.Remove(key, out _);
+                    log.Info($"Removed {key.Id}: {value.TimeStamp}");
+                }
+
+            Dump(true);
         }
 
-        public void Initialize(IEnumerable<Doctor>? initialDoctors)
+        public void Initialize(IEnumerable<TimedValue<Doctor>>? initialDoctors)
         {
             if (initialDoctors == null)
                 return;
@@ -86,24 +97,34 @@ namespace psycho_clinic.Storage
         {
             doctors.TryGetValue(doctorId, out var doctor);
 
-            doctor ??= new Doctor(doctorId, name, procedureDescription, educationLevel);
+            doctor ??= new TimedValue<Doctor>(
+                new Doctor(doctorId, name, procedureDescription, educationLevel),
+                DateTime.UtcNow);
 
             return AddInternal(doctor);
         }
 
         public IEnumerable<Doctor> GetDoctors()
         {
-            return doctors.Select(x => x.Value);
+            return doctors.Select(x => x.Value.Value);
         }
 
         public bool TryGet(DoctorId doctorId, out Doctor doctor)
         {
-            return doctors.TryGetValue(doctorId, out doctor);
+            doctor = null;
+
+            if (!doctors.TryGetValue(doctorId, out var doc))
+                return false;
+
+            doctor = doc.Value;
+            return true;
         }
 
-        private Doctor AddInternal(Doctor doctor)
+        private Doctor AddInternal(TimedValue<Doctor> doctorValue)
         {
-            if (!doctors.TryAdd(doctor.Id, doctor))
+            var doctor = doctorValue.Value;
+
+            if (!doctors.TryAdd(doctor.Id, doctorValue))
                 throw new Exception($"Doctor with id: {doctor.Id} already exists.");
 
             return doctor;
@@ -112,7 +133,8 @@ namespace psycho_clinic.Storage
         private readonly PeriodicalAction dumpAction;
         private readonly PeriodicalAction dropAction;
         private readonly ISettingsProvider settingsProvider;
+        private readonly ILog log;
 
-        private ConcurrentDictionary<DoctorId, Doctor> doctors = new();
+        private readonly ConcurrentDictionary<DoctorId, TimedValue<Doctor>> doctors = new();
     }
 }
