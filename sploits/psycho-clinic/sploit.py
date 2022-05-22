@@ -45,4 +45,4 @@ def iterative_main():
 
 
 if __name__ == '__main__':
-    iterative_main()
+    main()
