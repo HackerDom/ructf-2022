@@ -26,6 +26,7 @@ GET_RETRY_DELAY = 2
 
 LOOK_BACK_WINDOW_MINUTES = 31
 
+
 class ErrorChecker:
     def __init__(self):
         self.verdict = Verdict.OK()
@@ -82,12 +83,8 @@ class PgConn:
             self.conn.close()
 
 
-def get_pg_conn(hostname):
-    return
-
-
-def check_cant_read_old(cursor):
-    state = read_state()
+def check_cant_read_old(cursor, hostname):
+    state = read_state(hostname)
     if state is None or len(state) == 0:
         cursor.close()
         return True
@@ -185,16 +182,16 @@ async def check_service(request: CheckRequest) -> Verdict:
         if not functions_defs_unchanged(cursor):
             return Verdict.CORRUPT("registry service: SQL function definitions changed")
 
-        if not check_cant_read_old(cursor):
+        if not check_cant_read_old(cursor, request.hostname):
             return Verdict.CORRUPT("Can read old data (older than %s minutes)" % LOOK_BACK_WINDOW_MINUTES)
 
     return registry_ec.verdict
 
 
-def read_state():
+def read_state(hostname):
     try:
         dir = os.path.dirname(os.path.realpath(__file__))
-        state_path = os.path.join(dir, 'state.json')
+        state_path = os.path.join(dir, f'{hostname}-state.json')
         if not exists(state_path):
             return None
 
@@ -207,10 +204,10 @@ def read_state():
         return None
 
 
-def write_state(data):
+def write_state(data, hostname):
     try:
         dir = os.path.dirname(os.path.realpath(__file__))
-        state_path = os.path.join(dir, 'state.json')
+        state_path = os.path.join(dir, f'{hostname}-state.json')
 
         with open(state_path, 'w+') as sf:
             json.dump(data, sf)
@@ -291,13 +288,13 @@ class OracleChecker(VulnChecker):
             try:
                 if registry_ec.verdict._code == OK:
                     print("saving state...")
-                    state = read_state()
+                    state = read_state(request.hostname)
                     if state is None or len(state) > 120:
                         state = []
 
                     state.append(
                         {'ts': int(time()), 'public_flag_id': request.public_flag_id, 'flag_id': request.flag_id})
-                    write_state(state)
+                    write_state(state, request.hostname)
             except Exception as e:
                 print("Old data wipe check: state update failed: %s\n" % e)
 
