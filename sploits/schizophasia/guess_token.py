@@ -61,50 +61,49 @@ def get_len(hostname, payload):
         return rc
 
 def first_iter(hostname):
-    freqs = []
+    lenghts = []
     for letter in ascii_uppercase:
         length = get_len(hostname, letter)
-        freqs.append((length, letter))
-        print("curr: %s, len: %d\n" % (letter, length))
+        lenghts.append((length, letter))
+        print("current letter: %s, len: %d" % (letter, length))
 
-    f_min = min(freqs)[0]
+    f_min = min(lenghts)[0]
 
-    f_freqs = [freq for freq in freqs if freq[0] == f_min]
-    print("INITIAL FREQS: %v", f_freqs)
-
+    f_lenghts = [freq for freq in lenghts if freq[0] == f_min]
+    print("INITIAL LENGTHS: %s" % f_lenghts)
     res = []
 
-    for f in f_freqs:
-        next_f = find_freqs(f[1], f_min, hostname, 1)
+    for f in f_lenghts:
+        next_f = find_lenghts(f[1], f_min, hostname, 1)
         res.append(next_f)
 
     return res
 
-def find_freqs(curr_str, curr_len, hostname, i):
+def find_lenghts(curr_str, curr_len, hostname, i):
     if i == 10:
         return (curr_str, curr_len)
-    freqs = []
+    lenghts = []
     for letter in ascii_uppercase:
         length = get_len(hostname, curr_str+letter)
         if length > curr_len:
             continue
 
-        freqs.append((length, letter))
-        print("curr: %s, len: %d\n" % (curr_str + letter, length))
+        lenghts.append((length, letter))
+        print("current guess: %s, len: %d" % (curr_str + letter, length))
 
-    if len(freqs) == 0:
+    if len(lenghts) == 0:
         return ("failed", 9999999999999)
 
-    f_min = min(freqs)[0]
+    f_min = min(lenghts)[0]
 
-    f_freqs = [freq for freq in freqs if freq[0] == f_min]
+    f_lenghts = [freq for freq in lenghts if freq[0] == f_min]
 
-    next_freqs = []
-    for f in f_freqs:
-        next_f = find_freqs(curr_str+f[1], f[0], hostname, i + 1)
-        next_freqs.append(next_f)
+    next_lenghts = []
+    for f in f_lenghts:
+        next_f = find_lenghts(curr_str+f[1], f[0], hostname, i + 1)
+        next_lenghts.append(next_f)
 
-    return next_freqs
+    return next_lenghts
 
 
 def main(hostname):

