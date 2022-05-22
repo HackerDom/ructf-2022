@@ -4,7 +4,7 @@ A little srvice to practize in rewriting of AD-services :)
 
 Backend has 3 routes: create rom, get rom, list roms, first of two accept arguments (rom name especially) as base64 encoded string.
 Every rom has an access key generated as:
-```
+```cpp
 std::string demo_service::get_key(const std::string &name) {
     auto name_decoded = base64_decode(name);
 
