@@ -61,7 +61,7 @@ build {
       "useradd -m -s /bin/bash kleptophobia",
       "useradd -m -s /bin/bash meds",
       "useradd -m -s /bin/bash prosopagnosia",
-      "useradd -m -s /bin/bash psycho-clinic",
+      "useradd -m -s /bin/bash psycho_clinic",
       "useradd -m -s /bin/bash schizophasia",
     ]
   }
@@ -88,6 +88,12 @@ build {
     inline = [
       "chmod +x /etc/update-motd.d/*",
     ]
+  }
+
+  ## Onboot docker-compose run service
+  provisioner "file" {
+    source = "service-boot/ructf-service@.service"
+    destination = "/etc/systemd/system/ructf-service@.service"
   }
 
   # Copy services
@@ -118,7 +124,7 @@ build {
 
   provisioner "file" {
     source = "../services/psycho-clinic/"
-    destination = "/home/psycho-clinic/"
+    destination = "/home/psycho_clinic/"
   }
 
   provisioner "file" {
@@ -130,19 +136,28 @@ build {
   provisioner "shell" {
     inline = [
       "cd ~ambulance",
-      "docker-compose up --build -d || true",
+      "docker-compose build",
       "cd ~herpetophobia",
-      "docker-compose up --build -d || true",
+      "docker-compose build",
       "cd ~kleptophobia",
-      "docker-compose up --build -d || true",
+      "docker-compose build",
       "cd ~meds",
-      "docker-compose up --build -d || true",
+      "docker-compose build",
       "cd ~prosopagnosia",
-      "docker-compose up --build -d || true",
-      "cd ~psycho-clinic",
-      "docker-compose up --build -d || true",
+      "docker-compose build",
+      "cd ~psycho_clinic",
+      "docker-compose build",
       "cd ~schizophasia",
-      "docker-compose up --build -d || true",
+      "docker-compose build",
+
+      "systemctl daemon-reload",
+      "systemctl enable ructf-service@ambulance",
+      "systemctl enable ructf-service@herpetophobia",
+      "systemctl enable ructf-service@kleptophobia",
+      "systemctl enable ructf-service@meds",
+      "systemctl enable ructf-service@prosopagnosia",
+      "systemctl enable ructf-service@psycho_clinic",
+      "systemctl enable ructf-service@schizophasia",
     ]
   }
 

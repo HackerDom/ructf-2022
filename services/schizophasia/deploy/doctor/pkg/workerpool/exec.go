@@ -13,6 +13,7 @@ var Pool *puddle.Pool
 func Setup() {
 	constructor := func(ctx context.Context) (res interface{}, err error) {
 		db, err := sql.Open("libpq", "host=registry port=5432 user=svcuser dbname=postgres password=svcpass")
+		logging.Errorf("failed to construct a libpq connection: %v", err)
 		if err != nil {
 			return nil, err
 		}

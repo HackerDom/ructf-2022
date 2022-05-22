@@ -91,6 +91,7 @@ def put_flag(request: PutRequest) -> Verdict:
         return Verdict.MUMBLE("Couldn't put flag!")
 
 
+@checker.define_get(vuln_num=1)
 def get_flag(request: GetRequest) -> Verdict:
     client = Client(request.hostname)
     flag = request.flag
@@ -121,14 +122,16 @@ def get_flag(request: GetRequest) -> Verdict:
 
 
 def check_get_doctors(client, doctor_to_find: Doctor):
-    response = client.send_get_doctors(doctor_to_find.edu_lvl)
+    skip = 0
+    take = 10
+    
+    response = client.send_get_doctors(doctor_to_find.edu_lvl, skip, take)
 
     count, doctors = response["count"], response["doctors"]
     print(f"{count} doctors was found")
-    take = len(doctors)
-    skip = 0
 
-    while skip < count:
+
+    while len(doctors) > 0:
         ids = [x["id"]["id"] for x in doctors]
         if doctor_to_find.doc_id in ids:
             return
@@ -136,7 +139,7 @@ def check_get_doctors(client, doctor_to_find: Doctor):
         time.sleep(1.5)
 
         skip += take
-        doctors = client.send_get_doctors(doctor_to_find.edu_lvl)["doctors"]
+        doctors = client.send_get_doctors(doctor_to_find.edu_lvl, skip, take)["doctors"]
 
     raise_not_found_exc("Doctor", doctor_to_find.doc_id)
 

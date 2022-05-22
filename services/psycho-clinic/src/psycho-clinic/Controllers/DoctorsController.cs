@@ -29,7 +29,7 @@ namespace psycho_clinic.Controllers
 
 
         [HttpGet]
-        public Task<GetDoctorsModel> GetDoctors(EducationLevel educationLevel, int skip = 0)
+        public Task<GetDoctorsModel> GetDoctors(EducationLevel educationLevel, int skip = 0, int take = 10)
         {
             var doctors = storage
                 .GetDoctors()
@@ -39,7 +39,7 @@ namespace psycho_clinic.Controllers
             var count = doctors.Count;
             var result = doctors
                 .Skip(skip)
-                .Take(Take)
+                .Take(take)
                 .Select(d => new DoctorModel(d.Id, d.Name, d.EducationLevel))
                 .ToList();
 
@@ -55,7 +55,6 @@ namespace psycho_clinic.Controllers
             return Task.FromResult(new DoctorModel(doctor.Id, doctor.Name, doctor.EducationLevel));
         }
 
-        private const int Take = 10;
         private readonly IDoctorsStorage storage;
     }
 }

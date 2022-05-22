@@ -6,7 +6,7 @@ WORKDIR /app/db
 RUN apt update && apt install --yes --no-install-recommends --no-install-suggests build-essential libreadline-dev zlib1g-dev libssl-dev bison flex && \
     make maintainer-clean; \
     ./configure --enable-cassert --enable-debug CFLAGS="-ggdb -Og -g3 -fno-omit-frame-pointer" && \
-    make -j4 -s && \
+    make -j8 -s && \
     make install -s
 
 # make the "en_US.UTF-8" locale so postgres will be utf-8 enabled by default

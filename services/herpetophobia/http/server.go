@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"snake/dao"
 	"snake/objects"
+	"strings"
+	"text/template"
 	"time"
 )
 
@@ -20,8 +22,15 @@ func getUuid() string {
 	return uuid.NewString()
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-	_, _ = w.Write([]byte("Hello"))
+func playContent(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		id := strings.TrimPrefix(r.URL.Path, "/playGame/")
+		if id == "" {
+			errorResp(w, 400, errors.New("Parameter 'id' is missing in url."))
+		}
+		tmpl, _ := template.ParseFiles("./static/websock.html")
+		tmpl.Execute(w, id)
+	}
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +109,10 @@ func errorResp(w http.ResponseWriter, code int, err error) {
 }
 
 func StartServ() {
-	http.HandleFunc("/", home)
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/", fs)
+	http.HandleFunc("/playGame/", playContent)
+
 	http.HandleFunc("/create", create)
 	http.HandleFunc("/gameList", gameList)
 	http.HandleFunc("/play", play)
