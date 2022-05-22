@@ -238,7 +238,7 @@ It has `b = 0`, therefore the curve contains `(0, 0)` point. The attacker could 
 7. Create a fake object with deallocator function and rewrite some list pointers using _chunk_
 8. Destroy this object and drop shell
 
-Example sploit.py
+[Example sploit.py](/sploits/ambulance/sploit.py)
 
 ## Fix
 
