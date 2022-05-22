@@ -20,14 +20,14 @@ def get_rnd_future_date() -> datetime:
 
 
 def raise_data_exc(obj, actual):
-    raise VerdictDataException(Verdict.MUMBLE(
+    raise VerdictDataException(Verdict.CORRUPT(
         f"Received incorrect {obj}"),
         f"Actual was: {actual}")
 
 
 def raise_not_found_exc(obj, actual):
-    raise VerdictNotFoundException(Verdict.MUMBLE(
-        f"Could not find recently added {obj} in list"),
+    raise VerdictNotFoundException(Verdict.CORRUPT(
+        f"Could not find recently added {obj}"),
         f"Actual was: {actual}")
 
 

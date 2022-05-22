@@ -22,8 +22,13 @@ class Client:
             raise VerdictHttpException(Verdict.DOWN("HTTP error."))
 
         if response.status_code != 200:
+            text = response.text
             message = f"Invalid status code: {response.status_code} for {url}."
-            private_msg = f"resp: {response.text}. was send: json={json_data};headers={headers};params={params}"
+            private_msg = f"resp: {text}. was send: json={json_data};headers={headers};params={params}"
+
+            if "AuthenticationException" in text:
+                raise_not_found_exc("User", api_key)
+
             raise VerdictHttpException(Verdict.MUMBLE(message), private_msg)
 
         return response
