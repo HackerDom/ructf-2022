@@ -122,12 +122,14 @@ def get_flag(request: GetRequest) -> Verdict:
 
 
 def check_get_doctors(client, doctor_to_find: Doctor):
-    response = client.send_get_doctors(doctor_to_find.edu_lvl)
+    skip = 0
+    take = 10
+    
+    response = client.send_get_doctors(doctor_to_find.edu_lvl, skip, take)
 
     count, doctors = response["count"], response["doctors"]
     print(f"{count} doctors was found")
-    skip = 0
-    take = 10
+
 
     while len(doctors) > 0:
         ids = [x["id"]["id"] for x in doctors]
