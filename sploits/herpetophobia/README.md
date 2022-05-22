@@ -11,9 +11,9 @@ Therefore you must hack the field generation algorythm and predict next field.
 Field for the game generates as `field = init_permutation ^ (counter xor secret)`
 We know only field and counter.
 
-First of all, we need to gather some pairs of (counter, field).
+First of all, we need to gather some pairs of `(counter, field)`.
 Then, using some Groups of Permutations magic we can calculate the `init_permutation` for certain level.
-After that we calculate some suitable `secret` and can predict level field for any counter.
+After that we calculate some suitable `secret` and can predict level field for any `counter`.
 
 Thorough explanation of the vulnerability and exploitation is [here](./predict.ipynb)
 
