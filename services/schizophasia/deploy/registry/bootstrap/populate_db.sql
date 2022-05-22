@@ -1,9 +1,8 @@
 -- CREATE JOBQUEUE --
 CREATE TABLE jobqueue ("question" TEXT NOT NULL, "userid" TEXT NOT NULL, "status" bool NOT NULL, "result" TEXT,
-                       "date" DATE NOT NULL, "token" TEXT NOT NULL, CONSTRAINT "queue_pk" PRIMARY KEY("question", "userid"));
+                       "date" timestamp NOT NULL, "token" TEXT NOT NULL, CONSTRAINT "queue_pk" PRIMARY KEY("question", "userid"));
 -- CREATE EXTENSION --
 CREATE EXTENSION nice_ext;
-REVOKE EXECUTE ON FUNCTION load_token FROM PUBLIC;
 
 -- ADD JOB (question, userid) --
 CREATE FUNCTION add_job(text, text) RETURNS text AS $$
@@ -38,3 +37,11 @@ ELSE
 END IF;
 END
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+REVOKE ALL ON schema public FROM public;
+REVOKE TEMPORARY ON DATABASE postgres FROM PUBLIC;
+GRANT USAGE ON schema public TO svcuser;
+REVOKE EXECUTE ON FUNCTION load_token FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION load_token TO svcuser;
+GRANT EXECUTE ON FUNCTION medical_history TO svcuser;
+GRANT EXECUTE ON FUNCTION finish_job TO svcuser;

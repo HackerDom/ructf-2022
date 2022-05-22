@@ -39,6 +39,7 @@ RUN mkdir /docker-entrypoint-initdb.d
 
 COPY registry/bootstrap /app/bootstrap
 COPY registry/bootstrap/entrypoint.sh /usr/local/bin/
+COPY registry/bootstrap/autokill.sh /usr/local/bin/
 COPY registry/bootstrap/postgresql.conf /etc/postgresql/postgresql.conf
 COPY registry/bootstrap/autokill.cron /etc/cron.d/autokill
 RUN chmod 0644 /etc/cron.d/autokill && crontab /etc/cron.d/autokill
