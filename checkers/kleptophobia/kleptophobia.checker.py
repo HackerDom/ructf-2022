@@ -55,7 +55,7 @@ async def check_service(request: CheckRequest) -> Verdict:
     with ErrorChecker() as ec:
         stub = get_stub(request.hostname)
         message = generators.gen_string()
-        resp = stub.Ping(pb2.PingBody(message=message))
+        resp = stub.Ping(pb2.PingBody(message=message), timeout=5)
         if resp.message != message:
             print(f"Different ping message: {message} != {resp.message}")
             return Verdict.MUMBLE("Different ping message")
@@ -88,7 +88,7 @@ class CryptoChecker(VulnChecker):
                 ),
             )
 
-            register_response = stub.Register(register_request)
+            register_response = stub.Register(register_request, timeout=5)
             if register_response.status != pb2.RegisterRsp.Status.OK:
                 message = f"Not OK response status: {register_response.message}"
                 print(message)
@@ -116,7 +116,7 @@ class CryptoChecker(VulnChecker):
 
             stub = get_stub(request.hostname)
 
-            get_public_info_rsp = stub.GetPublicInfo(pb2.GetByUsernameReq(username=username))
+            get_public_info_rsp = stub.GetPublicInfo(pb2.GetByUsernameReq(username=username), timeout=5)
             if get_public_info_rsp.status != pb2.GetPublicInfoRsp.Status.OK:
                 message = f"Not OK response status: {get_public_info_rsp.message}"
                 print(message)
@@ -144,7 +144,7 @@ class CryptoChecker(VulnChecker):
                 ec.verdict = Verdict.MUMBLE('Wrong public info')
                 return ec.verdict
 
-            get_encrypted_full_info_response = stub.GetEncryptedFullInfo(pb2.GetByUsernameReq(username=username))
+            get_encrypted_full_info_response = stub.GetEncryptedFullInfo(pb2.GetByUsernameReq(username=username), timeout=5)
 
             if get_encrypted_full_info_response.status != pb2.GetEncryptedFullInfoRsp.Status.OK:
                 message = f"Not OK response status: {get_encrypted_full_info_response.message}"
