@@ -61,7 +61,7 @@ build {
       "useradd -m -s /bin/bash kleptophobia",
       "useradd -m -s /bin/bash meds",
       "useradd -m -s /bin/bash prosopagnosia",
-      "useradd -m -s /bin/bash psycho-clinic",
+      "useradd -m -s /bin/bash psycho_clinic",
       "useradd -m -s /bin/bash schizophasia",
     ]
   }
@@ -124,7 +124,7 @@ build {
 
   provisioner "file" {
     source = "../services/psycho-clinic/"
-    destination = "/home/psycho-clinic/"
+    destination = "/home/psycho_clinic/"
   }
 
   provisioner "file" {
@@ -145,7 +145,7 @@ build {
       "docker-compose build",
       "cd ~prosopagnosia",
       "docker-compose build",
-      "cd ~psycho-clinic",
+      "cd ~psycho_clinic",
       "docker-compose build",
       "cd ~schizophasia",
       "docker-compose build",
@@ -156,7 +156,7 @@ build {
       "systemctl enable ructf-service@kleptophobia",
       "systemctl enable ructf-service@meds",
       "systemctl enable ructf-service@prosopagnosia",
-      "systemctl enable ructf-service@psycho\\x2dclinic",
+      "systemctl enable ructf-service@psycho_clinic",
       "systemctl enable ructf-service@schizophasia",
     ]
   }

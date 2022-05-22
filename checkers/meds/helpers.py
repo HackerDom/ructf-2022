@@ -1,5 +1,5 @@
 import random
-import string
+import hashlib
 
 drugs = [
 	"agomelatine",
@@ -73,12 +73,12 @@ drugs = [
 	"zuclopenthixol"
 ]
 
-def get_prescription(s):
-	h = 0;
-	for c in s:
-		if c in string.ascii_letters or c in string.digits:
-			h = ((h * 1677) & 0xffffffff) ^ ord(c);
-	return drugs[h % len(drugs)]
+def get_prescription(diag):
+	xored = bytes(ord(char) ^ 1 for char in diag)
+	digest = hashlib.sha3_384(xored).digest()
+	index = int.from_bytes(digest[:8], 'little')
+
+	return drugs[index % len(drugs)]
 
 disorders = [
 	"Absence seizure",

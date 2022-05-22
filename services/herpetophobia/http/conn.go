@@ -120,16 +120,20 @@ func (gameConn GameConn) handleEndGame() {
 
 func (gameConn *GameConn) handleGame(msg MoveMsg) MoveAnsw {
 	direction := gameConn.level.Snake.Direction()
-	switch msg.Direction {
-	case UP:
-		direction = game.DIRECTION_UP
-	case DOWN:
-		direction = game.DIRECTION_DOWN
-	case LEFT:
-		direction = game.DIRECTION_LEFT
-	case RIGHT:
-		direction = game.DIRECTION_RIGHT
+	for _, sym := range msg.Direction {
+		if sym == 'w' {
+			direction = game.DIRECTION_UP
+		}
+		if sym == 's' {
+			direction = game.DIRECTION_DOWN
+		}
+		if sym == 'a' {
+			direction = game.DIRECTION_LEFT
+		}
+		if sym == 'd' {
+			direction = game.DIRECTION_RIGHT
+		}
+		_ = gameConn.level.Step(direction)
 	}
-	_ = gameConn.level.Step(direction)
 	return MoveAnsw{GameMap: gameConn.level.Map(), Steps: gameConn.level.Steps(), Counter: gameConn.counter}
 }
