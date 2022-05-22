@@ -31,7 +31,7 @@ Prosopagnosia service compares for base64 string of name for collision checking,
 ```
 1) get list of demos names
 2) find some base64 that represents that names but not equals to first used base64
-3) give the key that is equal to the key of the victim
+3) take key that is equal to the key of the victim
 4) GET /api/demo
 ```
 
