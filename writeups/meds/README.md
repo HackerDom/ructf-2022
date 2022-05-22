@@ -46,7 +46,7 @@ First of all, the tree is pre-filled. On initialization step all levels from roo
 N/8  3N/8  5N/8  7N/8
 ```
 
-Suppose we already have created the long branch, then our out-of-bounds node falls into the next `tree_items` array. We are interested in several functions of storage.c:
+Suppose we already have created the long branch, then our out-of-bounds node falls into the next `tree_items` array. We are interested in several functions of [storage.c](https://github.com/HackerDom/ructf-2022/blob/main/services/meds/storage.c):
 
 1. `load_item()` is the part of storage interface
 
@@ -115,4 +115,4 @@ We can select `target_index` in `data.tree` which we want to download and do the
 3. Overwrite `data.tree[controlled_index]` with `target_index`, using oob-write
 4. Read `data.tree[controlled_index]`, which will contain value of `target_index`
 
-Example sploit.py
+[Example sploit.py](/sploits/meds/sploit.py)
