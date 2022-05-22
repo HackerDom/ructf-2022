@@ -84,6 +84,9 @@ class Base64Vuln(VulnChecker):
 
             with requests_with_retries().get(f'http://{req.hostname}:{PORT}/api/demo',
                                              headers={KEY_HEADER: key, NAME_HEADER: name}) as r:
+                if r.status_code == 404:
+                    return Verdict.CORRUPT('wrong flag')
+
                 if r.status_code != 200:
                     return Verdict.MUMBLE('wrong http code')
 
@@ -99,7 +102,7 @@ class Base64Vuln(VulnChecker):
 
             with requests_with_retries().get(f'http://{req.hostname}:{PORT}/{rom_path}') as r:
                 if r.status_code != 200:
-                    return Verdict.MUMBLE('wrong http code')
+                    return Verdict.CORRUPT('wrong http code')
 
                 if r.content != demo:
                     print(demo)
@@ -109,7 +112,7 @@ class Base64Vuln(VulnChecker):
             return Verdict.OK_WITH_FLAG_ID(name, key)
         except Exception as e:
             print(e)
-            return Verdict.MUMBLE('service down')
+            return Verdict.MUMBLE('service error')
 
     @staticmethod
     def get(req: GetRequest) -> Verdict:
