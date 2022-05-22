@@ -89,6 +89,9 @@ def hack(unknown_len, iv, ct_block):
     states, key_bits, pt_bits = crack(unknown_len*8, pt_block[unknown_len:], ct_block)
 
     solver = get_solver()
+    if unknown_len == 0:
+        yield key_from_solver(key_bits, states, solver)
+        return
     for x in product(ALPHA, repeat=unknown_len):
         x = xor(bytes(x), iv[:unknown_len])
         x_bits = list(map(int, bin(int(x.hex(), 16))[2:].zfill(unknown_len*8)))
@@ -101,14 +104,16 @@ if __name__ == '__main__':
     stub = get_stub()
     ping(stub)
 
-    if len(argv) == 4:
-        username = argv
+    if len(argv) == 3:
+        username = argv[2]
     else:
+        print('FAKE check')
         password = generators.gen_string()
         private_person, username = gen_person()
         register(stub, username, password, private_person)
 
     public_person = get_public_info(stub, username)
+    print(public_person)
     fake_public_person = public_to_private_person(public_person)
 
     test = fake_public_person.SerializeToString()
