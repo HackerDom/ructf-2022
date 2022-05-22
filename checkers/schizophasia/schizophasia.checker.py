@@ -20,7 +20,6 @@ from gornilo.http_clients import requests_with_retries
 from gornilo.models.verdict import OK
 checker = NewChecker()
 PG_PORT = 5432
-PG_CONN_STRING = "host=%s port=%d user=svcuser dbname=postgres password=svcpass"
 DOCTOR_PORT = 18181
 GET_RETRIES_COUNT = 15
 GET_RETRY_DELAY = 2
