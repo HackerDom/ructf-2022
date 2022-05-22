@@ -13,46 +13,47 @@ from utils import raise_not_found_exc, VerdictDataException, VerdictHttpExceptio
 checker = NewChecker()
 
 
+@checker.define_check
+def check(request: CheckRequest) -> Verdict:
+    client = Client(request.hostname)
+
+    patient = Patient.gen()
+    doc1 = Doctor.gen()
+
+    try:
+        print("checking Patient")
+        patient = client.create_patient(patient.patient_id, patient.name, patient.diagnosis)
+
+        print("checking Doctor")
+        doc1 = client.create_doctor(doc1.doc_id, doc1.name, doc1.proc_desc, doc1.edu_lvl)
+        check_get_doctors(client, doc1)
+
+        print("checking Contract")
+        contract = Contract.gen(patient, doc1)
+        client.create_contract(contract.contract_id, contract.patient, contract.doctor, contract.expired)
+
+        print("checking Procedures")
+        procedure = Procedure.gen(contract)
+        client.prescribe_procedure(procedure.procedure_id, contract, procedure.procedure_type)
+        client.perform_procedure(procedure.procedure_id, patient.patient_token)
+
+        return Verdict.OK()
+    except VerdictDataException as e:
+        print(e)
+        return e.verdict
+    except VerdictHttpException as e:
+        print(e)
+        return e.verdict
+    except VerdictNotFoundException as e:
+        print(e)
+        return e.verdict
+    except Exception as e:
+        traceback.print_exc()
+        return Verdict.MUMBLE("Smth went wrong during CHECK")
+
+
 @checker.define_vuln('flag is doctor')
 class ClinicChecker(VulnChecker):
-
-    @staticmethod
-    def check(request: CheckRequest) -> Verdict:
-        client = Client(request.hostname)
-
-        patient = Patient.gen()
-        doc1 = Doctor.gen()
-
-        try:
-            print("checking Patient")
-            patient = client.create_patient(patient.patient_id, patient.name, patient.diagnosis)
-
-            print("checking Doctor")
-            doc1 = client.create_doctor(doc1.doc_id, doc1.name, doc1.proc_desc, doc1.edu_lvl)
-            check_get_doctors(client, doc1)
-
-            print("checking Contract")
-            contract = Contract.gen(patient, doc1)
-            client.create_contract(contract.contract_id, contract.patient, contract.doctor, contract.expired)
-
-            print("checking Procedures")
-            procedure = Procedure.gen(contract)
-            client.prescribe_procedure(procedure.procedure_id, contract, procedure.procedure_type)
-            client.perform_procedure(procedure.procedure_id, patient.patient_token)
-
-            return Verdict.OK()
-        except VerdictDataException as e:
-            print(e)
-            return e.verdict
-        except VerdictHttpException as e:
-            print(e)
-            return e.verdict
-        except VerdictNotFoundException as e:
-            print(e)
-            return e.verdict
-        except Exception as e:
-            traceback.print_exc()
-            return Verdict.MUMBLE("Smth went wrong during CHECK")
 
     @staticmethod
     def put(request: PutRequest) -> Verdict:
