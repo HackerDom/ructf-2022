@@ -1,14 +1,15 @@
-#!/usr/bin/env python3
-
 import random
 import string
 import websockets
 import json
+import logging
 from gornilo.http_clients import requests_with_retries
 from crypto import exponentiation
 from gornilo import NewChecker, CheckRequest, GetRequest, PutRequest, Verdict, VulnChecker
 from math import gcd
 from solver import solve, Snake, Direction
+
+logging.getLogger("websockets.client").setLevel(logging.INFO)
 
 checker = NewChecker()
 init_perm = [157, 79, 170, 8, 108, 234, 163, 16, 251, 181, 23, 148, 55, 162, 211, 186, 194, 222, 152, 207, 57, 97,
@@ -44,26 +45,38 @@ def create_game(prize, url):
     res = requests_with_retries().post(f"http://{url}:5051/create", json=body)
     return res.json()["id"], secret, power
 
+def directions_to_keys(directions):
+    moves = []
+    for direction in directions:
+        if direction == Direction.UP:
+            moves.append("w")
+        if direction == Direction.DOWN:
+            moves.append("s")
+        if direction == Direction.LEFT:
+            moves.append("a")
+        if direction == Direction.RIGHT:
+            moves.append("d")
+    return "".join(moves)
+
 
 @checker.define_check
 async def check_service(request: CheckRequest) -> Verdict:
     prize = get_random_str()
     try:
         game_id, secret, power = create_game(prize, request.hostname)
-    except Exception as e:
-        print(e)
+    except Exception:
         return Verdict.DOWN("could not create game")
     try:
         async with websockets.connect(f"ws://{request.hostname}:5051/play") as ws:
             await ws.send(json.dumps({"id": game_id}))
             resp = await ws.recv()
             resp = json.loads(resp)
-            while not resp.get("gameResult"):
-                await ws.send(str(json.dumps({"direction": "w",
-                                              "closeGame": False,
-                                              "newGame": False})))
-                resp = await ws.recv()
-                resp = json.loads(resp)
+            
+            await ws.send(str(json.dumps({"direction": "www",
+                                            "closeGame": False,
+                                            "newGame": False})))
+            resp = await ws.recv()
+            resp = json.loads(resp)
             game_map = resp["permutation"]
             counter = resp["counter"]
     except Exception:
@@ -80,23 +93,14 @@ async def check_service(request: CheckRequest) -> Verdict:
             snake = Snake([(4, 1), (3, 1), (2, 1), (1, 1)], Direction.RIGHT)
             new_field = exponentiation(exponentiation(init_perm, power), int.from_bytes(secret.encode("utf-8"), "big") ^ int(resp["counter"]))
             directions = solve(new_field, snake)
-            for direction in directions:
-                if direction == Direction.UP:
-                    move = "w"
-                if direction == Direction.DOWN:
-                    move = "s"
-                if direction == Direction.LEFT:
-                    move = "a"
-                if direction == Direction.RIGHT:
-                    move = "d"
-                await ws.send(str(json.dumps({
-                    "direction": move,
-                    "closeGame": False,
-                    "newGame": False
-                })))
-                resp = await ws.recv()
-                resp = json.loads(resp)
-            print(resp)
+            move = directions_to_keys(directions)
+            await ws.send(str(json.dumps({
+                "direction": move,
+                "closeGame": False,
+                "newGame": False
+            })))
+            resp = await ws.recv()
+            resp = json.loads(resp)
             if resp.get("gameResult") != "win":
                 return Verdict.MUMBLE("could not win the game")
             if resp.get("prize") != prize:
@@ -129,13 +133,10 @@ class GameChecker(VulnChecker):
 
     @staticmethod
     async def get(request: GetRequest) -> Verdict:
-        try:
-            flag_id = json.loads(request.flag_id)
-            secret = flag_id["secret"]
-            power = flag_id["power"]
-            game_id = flag_id["game_id"]
-        except Exception:
-            return Verdict.MUMBLE("game was not created")
+        flag_id = json.loads(request.flag_id)
+        secret = flag_id["secret"]
+        power = flag_id["power"]
+        game_id = flag_id["game_id"]
         try:
             async with websockets.connect(f"ws://{request.hostname}:5051/play") as ws:
                 await ws.send(json.dumps({"id": game_id}))
@@ -145,23 +146,14 @@ class GameChecker(VulnChecker):
                 new_field = exponentiation(exponentiation(init_perm, power),
                                            int.from_bytes(secret.encode("utf-8"), "big") ^ int(resp["counter"]))
                 directions = solve(new_field, snake)
-                for direction in directions:
-                    if direction == Direction.UP:
-                        move = "w"
-                    if direction == Direction.DOWN:
-                        move = "s"
-                    if direction == Direction.LEFT:
-                        move = "a"
-                    if direction == Direction.RIGHT:
-                        move = "d"
-                    await ws.send(str(json.dumps({
-                        "direction": move,
-                        "closeGame": False,
-                        "newGame": False
-                    })))
-                    resp = await ws.recv()
-                    resp = json.loads(resp)
-                print(resp)
+                move = directions_to_keys(directions)
+                await ws.send(str(json.dumps({
+                "direction": move,
+                "closeGame": False,
+                "newGame": False
+                })))
+                resp = await ws.recv()
+                resp = json.loads(resp)
                 if resp.get("gameResult") != "win":
                     return Verdict.MUMBLE("could not win the game")
                 if resp.get("prize") != request.flag:

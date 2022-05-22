@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        .wrapper {
+            display: grid;
+            border-style: solid;
+            border-color: red;
+            background-color: darkgrey;
+            grid-template-columns: 0.2fr 0.6fr 0.2fr;
+            grid-template-rows: 0.2fr 0.6fr 0.2fr;
+            grid-gap: 10px;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .center {
+            border-style: solid;
+            border-color: blue;
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        li:focus {
+            background: lightgreen;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="center">
+
+        <div id="id_list" style="overflow: scroll; height: 80%; width: 30%">
+
+        </div>
+        <button style="height: 31px; width: 30%; background-color: lightgoldenrodyellow"
+                onclick="getIds()">
+            Show more
+        </button>
+    </div>
+</div>
+<script type="text/javascript">
+    let _offset = 0
+    function getIds() {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", "http://"+ window.location.host + "/gameList", false);
+        let body = JSON.stringify({offset: _offset, limit : 10});
+        _offset += 10
+        xmlHttp.send(body);
+        let _list = JSON.parse(xmlHttp.responseText);
+        _list.ids.forEach(id => document.getElementById("id_list").innerHTML += `<li><a href=/playGame/${id}>${id}</a></li>`)
+    }
+</script>
+</body>
+</html>
