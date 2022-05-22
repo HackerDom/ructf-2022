@@ -26,8 +26,6 @@ jobs:
       run: (cd ./services/ambulance && docker-compose pull && docker-compose build && docker-compose up --build -d)
     - name: Prepare python for checker
       uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
     - name: Setup checker libraries
       run: if [ -f checkers/ambulance/requirements.txt ]; then python -m pip install -r checkers/ambulance/requirements.txt; fi
     - name: Test checker on service
