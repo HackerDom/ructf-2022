@@ -57,7 +57,7 @@ async def check_service(request: CheckRequest) -> Verdict:
         return Verdict.MUMBLE('service down')
 
 
-@checker.define_vuln('base64 corruption')
+@checker.define_vuln('flags container')
 class Base64Vuln(VulnChecker):
     @staticmethod
     def put(req: PutRequest) -> Verdict:
