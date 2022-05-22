@@ -18,4 +18,4 @@ Renderer.Render($"{value.ToString()}"); // -> "{value.ToString()}"
 * Perform this ```Procedure``` to get a flag :)
 
 # Defense
-Downgrade to .NET5.0 or remove ```.ToString()``` from rendering Contract identity.
+Downgrade to .NET5.0 or remove ```.ToString()``` from rendering ```Contract```'s identity.
