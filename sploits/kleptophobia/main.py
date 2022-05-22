@@ -101,14 +101,16 @@ if __name__ == '__main__':
     stub = get_stub()
     ping(stub)
 
-    if len(argv) == 4:
-        username = argv
+    if len(argv) == 3:
+        username = argv[2]
     else:
+        print('FAKE check')
         password = generators.gen_string()
         private_person, username = gen_person()
         register(stub, username, password, private_person)
 
     public_person = get_public_info(stub, username)
+    print(public_person)
     fake_public_person = public_to_private_person(public_person)
 
     test = fake_public_person.SerializeToString()
