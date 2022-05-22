@@ -91,6 +91,7 @@ func play(w http.ResponseWriter, r *http.Request) {
 	msg := make(map[string]string)
 	_ = conn.ReadJSON(&msg)
 	if msg["id"] != "" {
+		conn.SetReadDeadline(time.Now().Add(5 * 60 * time.Second))
 		gameConn := NewGameConn(conn, msg["id"])
 		go gameConn.Play()
 		return

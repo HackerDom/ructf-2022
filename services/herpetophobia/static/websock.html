@@ -6,20 +6,26 @@
     <style>
         * {
             box-sizing: border-box;
+            font-family: 'Rubik', sans-serif;
             padding: 0;
             margin: 0;
         }
 
         .wrapper {
             display: grid;
-            border-style: solid;
-            border-color: red;
+            border-style: none;
             background-color: darkgrey;
-            grid-template-columns: 0.2fr 0.6fr 0.2fr;
-            grid-template-rows: 0.2fr 0.6fr 0.2fr;
-            grid-gap: 10px;
+            grid-template-columns: 0.5fr 500px 0.5fr;
+            grid-template-rows: 0.5fr 500px 0.5fr;
             width: 100vw;
             height: 100vh;
+        }
+
+        .leftTop {
+            grid-row: 1;
+            grid-column: 1;
+            border-style: double;
+            border-color: bisque;
         }
 
         .centerTop {
@@ -49,298 +55,310 @@
 <body>
 <div class="wrapper">
     <div id="game_id" style="display:none;">{{ .}}</div>
+    <div id="rules" class="leftTop">
+        <br>
+        <p style="font-size: 20px; text-align: center">Game Rules</p>
+        <br>
+        This is snake game. You can use 'W', 'A', 'S', 'D' to move.
+        <br><br>
+        Food spawns every 32 steps and lives 3 steps.
+        <br><br>
+        You must collect 8 food to win the game and get the prize.
+        <br><br>
+        Good Luck!
+    </div>
     <div class="centerTop" id="info"></div>
     <div class="center">
-            <table class="gameTable">
-                <tr>
-                    <td id=0I0></td>
-                    <td id=0I1></td>
-                    <td id=0I2></td>
-                    <td id=0I3></td>
-                    <td id=0I4></td>
-                    <td id=0I5></td>
-                    <td id=0I6></td>
-                    <td id=0I7></td>
-                    <td id=0I8></td>
-                    <td id=0I9></td>
-                    <td id=0I10></td>
-                    <td id=0I11></td>
-                    <td id=0I12></td>
-                    <td id=0I13></td>
-                    <td id=0I14></td>
-                    <td id=0I15></td>
-                </tr>
-                <tr>
-                    <td id=1I0></td>
-                    <td id=1I1></td>
-                    <td id=1I2></td>
-                    <td id=1I3></td>
-                    <td id=1I4></td>
-                    <td id=1I5></td>
-                    <td id=1I6></td>
-                    <td id=1I7></td>
-                    <td id=1I8></td>
-                    <td id=1I9></td>
-                    <td id=1I10></td>
-                    <td id=1I11></td>
-                    <td id=1I12></td>
-                    <td id=1I13></td>
-                    <td id=1I14></td>
-                    <td id=1I15></td>
-                </tr>
-                <tr>
-                    <td id=2I0></td>
-                    <td id=2I1></td>
-                    <td id=2I2></td>
-                    <td id=2I3></td>
-                    <td id=2I4></td>
-                    <td id=2I5></td>
-                    <td id=2I6></td>
-                    <td id=2I7></td>
-                    <td id=2I8></td>
-                    <td id=2I9></td>
-                    <td id=2I10></td>
-                    <td id=2I11></td>
-                    <td id=2I12></td>
-                    <td id=2I13></td>
-                    <td id=2I14></td>
-                    <td id=2I15></td>
-                </tr>
-                <tr>
-                    <td id=3I0></td>
-                    <td id=3I1></td>
-                    <td id=3I2></td>
-                    <td id=3I3></td>
-                    <td id=3I4></td>
-                    <td id=3I5></td>
-                    <td id=3I6></td>
-                    <td id=3I7></td>
-                    <td id=3I8></td>
-                    <td id=3I9></td>
-                    <td id=3I10></td>
-                    <td id=3I11></td>
-                    <td id=3I12></td>
-                    <td id=3I13></td>
-                    <td id=3I14></td>
-                    <td id=3I15></td>
-                </tr>
-                <tr>
-                    <td id=4I0></td>
-                    <td id=4I1></td>
-                    <td id=4I2></td>
-                    <td id=4I3></td>
-                    <td id=4I4></td>
-                    <td id=4I5></td>
-                    <td id=4I6></td>
-                    <td id=4I7></td>
-                    <td id=4I8></td>
-                    <td id=4I9></td>
-                    <td id=4I10></td>
-                    <td id=4I11></td>
-                    <td id=4I12></td>
-                    <td id=4I13></td>
-                    <td id=4I14></td>
-                    <td id=4I15></td>
-                </tr>
-                <tr>
-                    <td id=5I0></td>
-                    <td id=5I1></td>
-                    <td id=5I2></td>
-                    <td id=5I3></td>
-                    <td id=5I4></td>
-                    <td id=5I5></td>
-                    <td id=5I6></td>
-                    <td id=5I7></td>
-                    <td id=5I8></td>
-                    <td id=5I9></td>
-                    <td id=5I10></td>
-                    <td id=5I11></td>
-                    <td id=5I12></td>
-                    <td id=5I13></td>
-                    <td id=5I14></td>
-                    <td id=5I15></td>
-                </tr>
-                <tr>
-                    <td id=6I0></td>
-                    <td id=6I1></td>
-                    <td id=6I2></td>
-                    <td id=6I3></td>
-                    <td id=6I4></td>
-                    <td id=6I5></td>
-                    <td id=6I6></td>
-                    <td id=6I7></td>
-                    <td id=6I8></td>
-                    <td id=6I9></td>
-                    <td id=6I10></td>
-                    <td id=6I11></td>
-                    <td id=6I12></td>
-                    <td id=6I13></td>
-                    <td id=6I14></td>
-                    <td id=6I15></td>
-                </tr>
-                <tr>
-                    <td id=7I0></td>
-                    <td id=7I1></td>
-                    <td id=7I2></td>
-                    <td id=7I3></td>
-                    <td id=7I4></td>
-                    <td id=7I5></td>
-                    <td id=7I6></td>
-                    <td id=7I7></td>
-                    <td id=7I8></td>
-                    <td id=7I9></td>
-                    <td id=7I10></td>
-                    <td id=7I11></td>
-                    <td id=7I12></td>
-                    <td id=7I13></td>
-                    <td id=7I14></td>
-                    <td id=7I15></td>
-                </tr>
-                <tr>
-                    <td id=8I0></td>
-                    <td id=8I1></td>
-                    <td id=8I2></td>
-                    <td id=8I3></td>
-                    <td id=8I4></td>
-                    <td id=8I5></td>
-                    <td id=8I6></td>
-                    <td id=8I7></td>
-                    <td id=8I8></td>
-                    <td id=8I9></td>
-                    <td id=8I10></td>
-                    <td id=8I11></td>
-                    <td id=8I12></td>
-                    <td id=8I13></td>
-                    <td id=8I14></td>
-                    <td id=8I15></td>
-                </tr>
-                <tr>
-                    <td id=9I0></td>
-                    <td id=9I1></td>
-                    <td id=9I2></td>
-                    <td id=9I3></td>
-                    <td id=9I4></td>
-                    <td id=9I5></td>
-                    <td id=9I6></td>
-                    <td id=9I7></td>
-                    <td id=9I8></td>
-                    <td id=9I9></td>
-                    <td id=9I10></td>
-                    <td id=9I11></td>
-                    <td id=9I12></td>
-                    <td id=9I13></td>
-                    <td id=9I14></td>
-                    <td id=9I15></td>
-                </tr>
-                <tr>
-                    <td id=10I0></td>
-                    <td id=10I1></td>
-                    <td id=10I2></td>
-                    <td id=10I3></td>
-                    <td id=10I4></td>
-                    <td id=10I5></td>
-                    <td id=10I6></td>
-                    <td id=10I7></td>
-                    <td id=10I8></td>
-                    <td id=10I9></td>
-                    <td id=10I10></td>
-                    <td id=10I11></td>
-                    <td id=10I12></td>
-                    <td id=10I13></td>
-                    <td id=10I14></td>
-                    <td id=10I15></td>
-                </tr>
-                <tr>
-                    <td id=11I0></td>
-                    <td id=11I1></td>
-                    <td id=11I2></td>
-                    <td id=11I3></td>
-                    <td id=11I4></td>
-                    <td id=11I5></td>
-                    <td id=11I6></td>
-                    <td id=11I7></td>
-                    <td id=11I8></td>
-                    <td id=11I9></td>
-                    <td id=11I10></td>
-                    <td id=11I11></td>
-                    <td id=11I12></td>
-                    <td id=11I13></td>
-                    <td id=11I14></td>
-                    <td id=11I15></td>
-                </tr>
-                <tr>
-                    <td id=12I0></td>
-                    <td id=12I1></td>
-                    <td id=12I2></td>
-                    <td id=12I3></td>
-                    <td id=12I4></td>
-                    <td id=12I5></td>
-                    <td id=12I6></td>
-                    <td id=12I7></td>
-                    <td id=12I8></td>
-                    <td id=12I9></td>
-                    <td id=12I10></td>
-                    <td id=12I11></td>
-                    <td id=12I12></td>
-                    <td id=12I13></td>
-                    <td id=12I14></td>
-                    <td id=12I15></td>
-                </tr>
-                <tr>
-                    <td id=13I0></td>
-                    <td id=13I1></td>
-                    <td id=13I2></td>
-                    <td id=13I3></td>
-                    <td id=13I4></td>
-                    <td id=13I5></td>
-                    <td id=13I6></td>
-                    <td id=13I7></td>
-                    <td id=13I8></td>
-                    <td id=13I9></td>
-                    <td id=13I10></td>
-                    <td id=13I11></td>
-                    <td id=13I12></td>
-                    <td id=13I13></td>
-                    <td id=13I14></td>
-                    <td id=13I15></td>
-                </tr>
-                <tr>
-                    <td id=14I0></td>
-                    <td id=14I1></td>
-                    <td id=14I2></td>
-                    <td id=14I3></td>
-                    <td id=14I4></td>
-                    <td id=14I5></td>
-                    <td id=14I6></td>
-                    <td id=14I7></td>
-                    <td id=14I8></td>
-                    <td id=14I9></td>
-                    <td id=14I10></td>
-                    <td id=14I11></td>
-                    <td id=14I12></td>
-                    <td id=14I13></td>
-                    <td id=14I14></td>
-                    <td id=14I15></td>
-                </tr>
-                <tr>
-                    <td id=15I0></td>
-                    <td id=15I1></td>
-                    <td id=15I2></td>
-                    <td id=15I3></td>
-                    <td id=15I4></td>
-                    <td id=15I5></td>
-                    <td id=15I6></td>
-                    <td id=15I7></td>
-                    <td id=15I8></td>
-                    <td id=15I9></td>
-                    <td id=15I10></td>
-                    <td id=15I11></td>
-                    <td id=15I12></td>
-                    <td id=15I13></td>
-                    <td id=15I14></td>
-                    <td id=15I15></td>
-                </tr>
-            </table>
+        <table class="gameTable">
+            <tr>
+                <td id=0I0></td>
+                <td id=0I1></td>
+                <td id=0I2></td>
+                <td id=0I3></td>
+                <td id=0I4></td>
+                <td id=0I5></td>
+                <td id=0I6></td>
+                <td id=0I7></td>
+                <td id=0I8></td>
+                <td id=0I9></td>
+                <td id=0I10></td>
+                <td id=0I11></td>
+                <td id=0I12></td>
+                <td id=0I13></td>
+                <td id=0I14></td>
+                <td id=0I15></td>
+            </tr>
+            <tr>
+                <td id=1I0></td>
+                <td id=1I1></td>
+                <td id=1I2></td>
+                <td id=1I3></td>
+                <td id=1I4></td>
+                <td id=1I5></td>
+                <td id=1I6></td>
+                <td id=1I7></td>
+                <td id=1I8></td>
+                <td id=1I9></td>
+                <td id=1I10></td>
+                <td id=1I11></td>
+                <td id=1I12></td>
+                <td id=1I13></td>
+                <td id=1I14></td>
+                <td id=1I15></td>
+            </tr>
+            <tr>
+                <td id=2I0></td>
+                <td id=2I1></td>
+                <td id=2I2></td>
+                <td id=2I3></td>
+                <td id=2I4></td>
+                <td id=2I5></td>
+                <td id=2I6></td>
+                <td id=2I7></td>
+                <td id=2I8></td>
+                <td id=2I9></td>
+                <td id=2I10></td>
+                <td id=2I11></td>
+                <td id=2I12></td>
+                <td id=2I13></td>
+                <td id=2I14></td>
+                <td id=2I15></td>
+            </tr>
+            <tr>
+                <td id=3I0></td>
+                <td id=3I1></td>
+                <td id=3I2></td>
+                <td id=3I3></td>
+                <td id=3I4></td>
+                <td id=3I5></td>
+                <td id=3I6></td>
+                <td id=3I7></td>
+                <td id=3I8></td>
+                <td id=3I9></td>
+                <td id=3I10></td>
+                <td id=3I11></td>
+                <td id=3I12></td>
+                <td id=3I13></td>
+                <td id=3I14></td>
+                <td id=3I15></td>
+            </tr>
+            <tr>
+                <td id=4I0></td>
+                <td id=4I1></td>
+                <td id=4I2></td>
+                <td id=4I3></td>
+                <td id=4I4></td>
+                <td id=4I5></td>
+                <td id=4I6></td>
+                <td id=4I7></td>
+                <td id=4I8></td>
+                <td id=4I9></td>
+                <td id=4I10></td>
+                <td id=4I11></td>
+                <td id=4I12></td>
+                <td id=4I13></td>
+                <td id=4I14></td>
+                <td id=4I15></td>
+            </tr>
+            <tr>
+                <td id=5I0></td>
+                <td id=5I1></td>
+                <td id=5I2></td>
+                <td id=5I3></td>
+                <td id=5I4></td>
+                <td id=5I5></td>
+                <td id=5I6></td>
+                <td id=5I7></td>
+                <td id=5I8></td>
+                <td id=5I9></td>
+                <td id=5I10></td>
+                <td id=5I11></td>
+                <td id=5I12></td>
+                <td id=5I13></td>
+                <td id=5I14></td>
+                <td id=5I15></td>
+            </tr>
+            <tr>
+                <td id=6I0></td>
+                <td id=6I1></td>
+                <td id=6I2></td>
+                <td id=6I3></td>
+                <td id=6I4></td>
+                <td id=6I5></td>
+                <td id=6I6></td>
+                <td id=6I7></td>
+                <td id=6I8></td>
+                <td id=6I9></td>
+                <td id=6I10></td>
+                <td id=6I11></td>
+                <td id=6I12></td>
+                <td id=6I13></td>
+                <td id=6I14></td>
+                <td id=6I15></td>
+            </tr>
+            <tr>
+                <td id=7I0></td>
+                <td id=7I1></td>
+                <td id=7I2></td>
+                <td id=7I3></td>
+                <td id=7I4></td>
+                <td id=7I5></td>
+                <td id=7I6></td>
+                <td id=7I7></td>
+                <td id=7I8></td>
+                <td id=7I9></td>
+                <td id=7I10></td>
+                <td id=7I11></td>
+                <td id=7I12></td>
+                <td id=7I13></td>
+                <td id=7I14></td>
+                <td id=7I15></td>
+            </tr>
+            <tr>
+                <td id=8I0></td>
+                <td id=8I1></td>
+                <td id=8I2></td>
+                <td id=8I3></td>
+                <td id=8I4></td>
+                <td id=8I5></td>
+                <td id=8I6></td>
+                <td id=8I7></td>
+                <td id=8I8></td>
+                <td id=8I9></td>
+                <td id=8I10></td>
+                <td id=8I11></td>
+                <td id=8I12></td>
+                <td id=8I13></td>
+                <td id=8I14></td>
+                <td id=8I15></td>
+            </tr>
+            <tr>
+                <td id=9I0></td>
+                <td id=9I1></td>
+                <td id=9I2></td>
+                <td id=9I3></td>
+                <td id=9I4></td>
+                <td id=9I5></td>
+                <td id=9I6></td>
+                <td id=9I7></td>
+                <td id=9I8></td>
+                <td id=9I9></td>
+                <td id=9I10></td>
+                <td id=9I11></td>
+                <td id=9I12></td>
+                <td id=9I13></td>
+                <td id=9I14></td>
+                <td id=9I15></td>
+            </tr>
+            <tr>
+                <td id=10I0></td>
+                <td id=10I1></td>
+                <td id=10I2></td>
+                <td id=10I3></td>
+                <td id=10I4></td>
+                <td id=10I5></td>
+                <td id=10I6></td>
+                <td id=10I7></td>
+                <td id=10I8></td>
+                <td id=10I9></td>
+                <td id=10I10></td>
+                <td id=10I11></td>
+                <td id=10I12></td>
+                <td id=10I13></td>
+                <td id=10I14></td>
+                <td id=10I15></td>
+            </tr>
+            <tr>
+                <td id=11I0></td>
+                <td id=11I1></td>
+                <td id=11I2></td>
+                <td id=11I3></td>
+                <td id=11I4></td>
+                <td id=11I5></td>
+                <td id=11I6></td>
+                <td id=11I7></td>
+                <td id=11I8></td>
+                <td id=11I9></td>
+                <td id=11I10></td>
+                <td id=11I11></td>
+                <td id=11I12></td>
+                <td id=11I13></td>
+                <td id=11I14></td>
+                <td id=11I15></td>
+            </tr>
+            <tr>
+                <td id=12I0></td>
+                <td id=12I1></td>
+                <td id=12I2></td>
+                <td id=12I3></td>
+                <td id=12I4></td>
+                <td id=12I5></td>
+                <td id=12I6></td>
+                <td id=12I7></td>
+                <td id=12I8></td>
+                <td id=12I9></td>
+                <td id=12I10></td>
+                <td id=12I11></td>
+                <td id=12I12></td>
+                <td id=12I13></td>
+                <td id=12I14></td>
+                <td id=12I15></td>
+            </tr>
+            <tr>
+                <td id=13I0></td>
+                <td id=13I1></td>
+                <td id=13I2></td>
+                <td id=13I3></td>
+                <td id=13I4></td>
+                <td id=13I5></td>
+                <td id=13I6></td>
+                <td id=13I7></td>
+                <td id=13I8></td>
+                <td id=13I9></td>
+                <td id=13I10></td>
+                <td id=13I11></td>
+                <td id=13I12></td>
+                <td id=13I13></td>
+                <td id=13I14></td>
+                <td id=13I15></td>
+            </tr>
+            <tr>
+                <td id=14I0></td>
+                <td id=14I1></td>
+                <td id=14I2></td>
+                <td id=14I3></td>
+                <td id=14I4></td>
+                <td id=14I5></td>
+                <td id=14I6></td>
+                <td id=14I7></td>
+                <td id=14I8></td>
+                <td id=14I9></td>
+                <td id=14I10></td>
+                <td id=14I11></td>
+                <td id=14I12></td>
+                <td id=14I13></td>
+                <td id=14I14></td>
+                <td id=14I15></td>
+            </tr>
+            <tr>
+                <td id=15I0></td>
+                <td id=15I1></td>
+                <td id=15I2></td>
+                <td id=15I3></td>
+                <td id=15I4></td>
+                <td id=15I5></td>
+                <td id=15I6></td>
+                <td id=15I7></td>
+                <td id=15I8></td>
+                <td id=15I9></td>
+                <td id=15I10></td>
+                <td id=15I11></td>
+                <td id=15I12></td>
+                <td id=15I13></td>
+                <td id=15I14></td>
+                <td id=15I15></td>
+            </tr>
+        </table>
     </div>
 </div>
 <script src="/js/webSock.js" defer></script>

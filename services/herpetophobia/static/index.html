@@ -6,16 +6,16 @@
     <style>
         * {
             box-sizing: border-box;
+            font-family: 'Rubik', sans-serif;
             padding: 0;
             margin: 0;
         }
 
         .wrapper {
             display: grid;
-            border-style: solid;
-            border-color: red;
+            border-style: none;
             background-color: darkgrey;
-            grid-template-columns: 0.2fr 0.6fr 0.2fr;
+            grid-template-columns: 0.3fr 0.4fr 0.3fr;
             grid-template-rows: 0.2fr 0.6fr 0.2fr;
             grid-gap: 10px;
             width: 100vw;
@@ -27,6 +27,12 @@
             border-color: blue;
             grid-column: 2;
             grid-row: 2;
+            height: 600px;
+        }
+
+        .ids {
+            margin-left: 15%;
+            margin-right: auto;
         }
 
         li:focus {
@@ -34,14 +40,13 @@
         }
     </style>
 </head>
-<body>
+<body onload="getIds()">
 <div class="wrapper">
     <div class="center">
-
-        <div id="id_list" style="overflow: scroll; height: 80%; width: 30%">
+        <div id="id_list" style="overflow: scroll; height: 80%; width: 90%; margin-left: 5%">
 
         </div>
-        <button style="height: 31px; width: 30%; background-color: lightgoldenrodyellow"
+        <button style="margin-left: 15%; height: 31px; width: 70%; background-color: lightgoldenrodyellow"
                 onclick="getIds()">
             Show more
         </button>
@@ -56,7 +61,9 @@
         _offset += 10
         xmlHttp.send(body);
         let _list = JSON.parse(xmlHttp.responseText);
-        _list.ids.forEach(id => document.getElementById("id_list").innerHTML += `<li><a href=/playGame/${id}>${id}</a></li>`)
+        _list.ids.forEach(
+            id => document.getElementById("id_list").innerHTML += `<li class="ids"><a href=/playGame/${id}>${id}</a></li>`
+        )
     }
 </script>
 </body>

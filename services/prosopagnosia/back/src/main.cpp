@@ -31,6 +31,10 @@ response create_demo(const request &req, demo_service &demo_service) {
         return response(BAD_REQUEST);
     }
 
+    if (req.get_header_value("Content-Type").find("multipart/form-data") == std::string::npos) {
+        return response(BAD_REQUEST);
+    }
+
     crow::multipart::message msg(req);
 
     if (msg.parts.size() != 1) {
@@ -43,6 +47,8 @@ response create_demo(const request &req, demo_service &demo_service) {
     std::vector<uint8_t> body;
     body.resize(part.body.size());
     std::copy_n(part.body.begin(), part.body.size(), body.begin());
+
+    CROW_LOG_INFO << "rom size is " << body.size();
 
     auto demo = demo_service.create(name, author, secret, body);
 
