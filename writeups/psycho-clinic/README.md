@@ -6,7 +6,7 @@ You are an owner and at the same time a patient in clinic for the mentally ill. 
 Flag is located in ```Doctor```'s description. Every time ```Doctor``` performs ```Procedure```, he writes it to report. Your aim is to prescribe to yourself a ```Procedure``` from needed ```Doctor```.
 
 # Original vuln (please read till the end)*
-It is expected* that you can't create a ```Contract``` with an arbitrary ```Doctor``` because you do not know ```Signature```. Therefore, you can't prescribe a procedure from this doctor. But ```Contract```'s comparasion uses identity rendering. And there is a bug in interpolated string rendering:
+It is expected* that you can't create a ```Contract``` with an arbitrary ```Doctor``` because you do not know ```Signature```. Therefore, you can't prescribe a procedure from this doctor. But ```Contract```'s comparasion [uses](../../services/psycho-clinic/src/psycho-clinic/Models/Contract.cs#L19) identity rendering. And there is a bug in interpolated string rendering:
 ```C#
 var value = 42;
 Renderer.Render($"{value}"); // -> "{42}"
@@ -20,9 +20,11 @@ Renderer.Render($"{value.ToString()}"); // -> "{value.ToString()}"
 * Use fake ```Contract``` to prescribe some ```Procedure``` from ```Doctor``` with ```doctorId```.
 * Perform this ```Procedure``` to get a flag :)
 
+You can find sploit [here](../../sploits/psycho-clinic/sploit.py)
+
 # Defense
 Downgrade to .NET5.0 or remove ```.ToString()``` from rendering ```Contract``` identity.
 
 ### * P.S. 
 There was an unintended vuln in ```Doctor```. It's ```Signature``` builds from fields, that given in public ```DoctorModel```.  
-It means that from ```doctors/``` you can get all information about ```Doctor``` and do what you want :)
+It means that from ```doctors/``` you can get all information about ```Doctor``` and do what you want :) (thnx [jnovikov](https://github.com/jnovikov) for report)
