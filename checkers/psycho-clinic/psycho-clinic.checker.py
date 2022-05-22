@@ -126,10 +126,10 @@ def check_get_doctors(client, doctor_to_find: Doctor):
 
     count, doctors = response["count"], response["doctors"]
     print(f"{count} doctors was found")
-    take = len(doctors)
     skip = 0
+    take = 10
 
-    while skip < count:
+    while len(doctors) > 0:
         ids = [x["id"]["id"] for x in doctors]
         if doctor_to_find.doc_id in ids:
             return
@@ -137,7 +137,7 @@ def check_get_doctors(client, doctor_to_find: Doctor):
         time.sleep(1.5)
 
         skip += take
-        doctors = client.send_get_doctors(doctor_to_find.edu_lvl)["doctors"]
+        doctors = client.send_get_doctors(doctor_to_find.edu_lvl, skip, take)["doctors"]
 
     raise_not_found_exc("Doctor", doctor_to_find.doc_id)
 
