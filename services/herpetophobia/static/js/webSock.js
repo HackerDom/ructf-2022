@@ -55,9 +55,9 @@ function makeMap(map) {
 }
 
 function makeRes(res) {
-    document.getElementById('info').innerText = `result: ${res.gameResult}\ncounter: ${res.counter}`;
+    document.getElementById('info').innerText = `result: ${res.gameResult}\ntry: ${res.counter}`;
 }
 
 function makeInfo(msg) {
-    document.getElementById('info').innerText = `step: ${msg.step}\ncounter: ${msg.counter}`;
+    document.getElementById('info').innerText = `step: ${msg.step}\ntry: ${msg.counter}`;
 }
