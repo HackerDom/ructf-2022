@@ -1,8 +1,9 @@
 #include <ctype.h>
 
 #include "diag.h"
+#include "sha3.h"
 
-int drugs_count = 69;
+uint64_t drugs_count = 69;
 char * drugs[] = {
 	"agomelatine",
 	"alprazolam",
@@ -78,11 +79,6 @@ char * drugs[] = {
 void prescribe(char* diag, char* meds) {
 	DEBUG("!! prescribe for '%s'\n", diag);
 
-	uint32_t h = 0;
-	char c;
-	while (c = *diag++) {
-		if (isalnum(c))
-			h = (h * 1677) ^ c;
-	}
+	uint64_t h = hash(diag, strlen(diag));
 	strcpy(meds, drugs[h % drugs_count]);
 }
