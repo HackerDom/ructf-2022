@@ -62,6 +62,7 @@ class PgErrorChecker:
             traceback.print_tb(exc_traceback, file=sys.stdout)
 
         if exc_type:
+            self.verdict = Verdict.MUMBLE("unexpected postgres response")
             print(exc_type)
             print(exc_value)
             traceback.print_tb(exc_traceback, file=sys.stdout)
